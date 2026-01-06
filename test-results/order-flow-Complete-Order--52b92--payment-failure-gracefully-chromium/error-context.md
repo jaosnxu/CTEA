@@ -1,0 +1,89 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img [ref=e8]
+          - textbox "Поиск напитков..." [ref=e11]
+        - button "Самовывоз" [ref=e13] [cursor=pointer]
+      - generic [ref=e14]:
+        - generic [ref=e18]:
+          - button "🍓 Сезонное" [ref=e19] [cursor=pointer]:
+            - generic [ref=e21]: 🍓
+            - generic [ref=e22]: Сезонное
+          - button "🧋 Молочный чай" [ref=e23] [cursor=pointer]:
+            - generic [ref=e24]: 🧋
+            - generic [ref=e25]: Молочный чай
+          - button "🍋 Фруктовый чай" [ref=e26] [cursor=pointer]:
+            - generic [ref=e27]: 🍋
+            - generic [ref=e28]: Фруктовый чай
+          - button "🧊 Слаш" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]: 🧊
+            - generic [ref=e31]: Слаш
+        - generic [ref=e35]:
+          - heading "Сезонное" [level=2] [ref=e36]
+          - generic [ref=e37]:
+            - generic [ref=e38]:
+              - img "Клубничный Чиз" [ref=e40]
+              - generic [ref=e41]:
+                - generic [ref=e42]:
+                  - heading "Клубничный Чиз" [level=3] [ref=e43]
+                  - paragraph [ref=e44]: Свежая клубника, жасминовый чай, сырная пенка. Слои вкуса в каждом глотке.
+                - generic [ref=e45]:
+                  - generic [ref=e46]:
+                    - generic [ref=e47]: ₽
+                    - generic [ref=e48]: "500"
+                  - button "Выбрать" [ref=e49] [cursor=pointer]
+            - generic [ref=e50]:
+              - img "Манго Чиз" [ref=e52]
+              - generic [ref=e53]:
+                - generic [ref=e54]:
+                  - heading "Манго Чиз" [level=3] [ref=e55]
+                  - paragraph [ref=e56]: Спелое манго, кокосовое молоко, сырная пенка. Тропическое наслаждение.
+                - generic [ref=e57]:
+                  - generic [ref=e58]:
+                    - generic [ref=e59]: ₽
+                    - generic [ref=e60]: "310"
+                  - button "Выбрать" [ref=e61] [cursor=pointer]
+            - generic [ref=e62]:
+              - img "Виноградный Чиз" [ref=e64]
+              - generic [ref=e65]:
+                - generic [ref=e66]:
+                  - heading "Виноградный Чиз" [level=3] [ref=e67]
+                  - paragraph [ref=e68]: Сочный виноград, чай улун, фирменная сырная шапка. Освежающий и нежный.
+                - generic [ref=e69]:
+                  - generic [ref=e70]:
+                    - generic [ref=e71]: ₽
+                    - generic [ref=e72]: "290"
+                  - button "Выбрать" [ref=e73] [cursor=pointer]
+    - generic [ref=e75]:
+      - link "Главная" [ref=e76] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e77]:
+          - img [ref=e78]
+          - generic [ref=e81]: Главная
+      - link "Меню" [ref=e82] [cursor=pointer]:
+        - /url: /order
+        - generic [ref=e83]:
+          - img [ref=e84]
+          - generic [ref=e87]: Меню
+      - link "Маркет" [ref=e88] [cursor=pointer]:
+        - /url: /mall
+        - generic [ref=e89]:
+          - img [ref=e90]
+          - generic [ref=e94]: Маркет
+      - link "Заказы" [ref=e95] [cursor=pointer]:
+        - /url: /orders
+        - generic [ref=e96]:
+          - img [ref=e97]
+          - generic [ref=e100]: Заказы
+      - link "Профиль" [ref=e101] [cursor=pointer]:
+        - /url: /profile
+        - generic [ref=e102]:
+          - img [ref=e103]
+          - generic [ref=e106]: Профиль
+```
