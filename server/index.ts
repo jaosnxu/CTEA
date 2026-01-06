@@ -17,22 +17,25 @@ async function startServer() {
       ? path.resolve(__dirname, "public")
       : path.resolve(__dirname, "..", "dist", "public");
 
-  app.use(express.static(staticPath));
-
-  // API Routes
+  // API Routes - MUST be defined before static middleware
   app.get("/api/products", (req, res) => {
+    console.log("API /api/products called");
     res.json(PRODUCTS);
   });
 
-  // Handle client-side routing - serve index.html for all routes
+  // Serve static files
+  app.use(express.static(staticPath));
+
+  // Handle client-side routing - serve index.html for all other routes
   app.get("*", (_req, res) => {
     res.sendFile(path.join(staticPath, "index.html"));
   });
 
-  const port = process.env.PORT || 3000;
+  // Use port 5000 for backend to avoid conflict with Vite (3000)
+  const port = 5000;
 
-  server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
+  server.listen(port, "0.0.0.0", () => {
+    console.log(`Backend server running on http://0.0.0.0:${port}/`);
   });
 }
 

@@ -70,7 +70,14 @@ export default function Order() {
   // 获取后端数据
   useEffect(() => {
     fetch("/api/products")
-      .then((res) => res.json())
+      .then((res) => {
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          return res.json();
+        } else {
+          throw new Error("API returned non-JSON response");
+        }
+      })
       .then((data) => setProducts(data))
       .catch((err) => console.error("Failed to fetch products:", err));
   }, []);
@@ -182,7 +189,12 @@ export default function Order() {
             </h2>
             <div className="space-y-6">
               {products
-                .filter((p) => p.category === selectedCategory)
+                .filter((p) => {
+                  if (selectedCategory === "seasonal") {
+                    return p.tags && p.tags.includes("Seasonal");
+                  }
+                  return p.category === selectedCategory;
+                })
                 .map((product) => (
                   <div key={product.id} className="flex gap-3">
                     <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 shrink-0">
@@ -313,30 +325,26 @@ export default function Order() {
               <div className="p-4 bg-white border-t border-gray-100 shrink-0">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-1">
-                      <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm disabled:opacity-50"
-                        disabled={quantity <= 1}
-                      >
-                        -
-                      </button>
-                      <span className="text-sm font-bold w-4 text-center">{quantity}</span>
-                      <button
-                        onClick={() => setQuantity(quantity + 1)}
-                        className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm"
-                      >
-                        +
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-lg font-medium"
+                    >
+                      -
+                    </button>
+                    <span className="text-lg font-bold w-4 text-center">{quantity}</span>
+                    <button
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-lg font-medium"
+                    >
+                      +
+                    </button>
                   </div>
                   <div className="text-xl font-bold">
-                    <span className="text-sm font-normal mr-1">₽</span>
-                    {calculateCurrentPrice()}
+                    ₽{calculateCurrentPrice()}
                   </div>
                 </div>
                 <Button 
-                  className="w-full h-12 rounded-xl bg-black text-white font-bold text-base hover:bg-gray-800"
+                  className="w-full h-12 rounded-full bg-black text-white font-bold text-base shadow-lg hover:bg-gray-800"
                   onClick={addToCart}
                 >
                   {t("order.add_to_cart")}
@@ -347,22 +355,22 @@ export default function Order() {
         </DialogContent>
       </Dialog>
 
-      {/* Cart Summary Bar */}
+      {/* Cart Bar */}
       {cart.length > 0 && (
-        <div className="fixed bottom-20 left-4 right-4 z-50">
+        <div className="fixed bottom-20 left-4 right-4 z-20">
           <div className="bg-black text-white rounded-full p-4 shadow-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-yellow-400 text-black w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+              <div className="w-10 h-10 rounded-full bg-yellow-400 text-black flex items-center justify-center font-bold">
                 {cartCount}
               </div>
               <div className="flex flex-col">
-                <span className="font-bold text-lg">₽{cartTotal}</span>
-                <span className="text-[10px] text-gray-400">Delivery fee not included</span>
+                <span className="text-sm font-medium text-gray-300">{t("order.total")}</span>
+                <span className="text-xl font-bold">₽{cartTotal}</span>
               </div>
             </div>
-            <Button className="bg-yellow-400 text-black hover:bg-yellow-500 rounded-full px-6 font-bold">
+            <button className="px-6 py-2 bg-white text-black rounded-full font-bold text-sm hover:bg-gray-100 transition-colors">
               {t("order.checkout")}
-            </Button>
+            </button>
           </div>
         </div>
       )}
