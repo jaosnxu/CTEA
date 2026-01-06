@@ -49,3 +49,85 @@
 - [x] Generate Nginx configuration for port 80 → 3000 proxy (embedded in script)
 - [x] Add deployment verification commands (curl tests embedded in script)
 - [x] Test deployment script locally before delivery
+
+## Feature Development (1-8) - Admin Controlled, UI Preserved
+
+### 1. Payment Integration (Tinkoff/YooKassa)
+- [x] Create payment gateway adapter (Tinkoff + YooKassa)
+- [x] Implement Hold-Capture-Void state machine
+- [x] Add admin payment settings panel (enable/disable, test mode, API keys)
+- [ ] Update checkout flow to use real payment gateway (deferred - frontend integration)
+- [ ] Add payment status webhook handlers (deferred - webhook setup)
+
+### 2. IIKO POS Integration
+- [x] Create IIKO API adapter (products, orders, stock)
+- [x] Add admin IIKO settings panel
+- [x] Implement manual sync with override protection
+- [ ] Implement scheduled auto-sync job (every 5 minutes) - deferred
+- [ ] Add admin IIKO settings panel (API credentials, sync frequency)
+- [ ] Add admin manual sync trigger button
+- [ ] Respect is_manual_override flag during sync
+
+### 3. Telegram Mini App
+- [x] Create Telegram bot integration module
+- [x] Add admin Telegram settings panel
+- [x] Implement order notifications via Telegram
+- [ ] Create Telegram Bot with Mini App support
+- [ ] Implement T-prefix order generation
+- [ ] Add Telegram authentication flow
+- [ ] Add admin Telegram settings panel (bot token, webhook URL)
+- [ ] Sync Telegram orders to main order system
+
+### 4. Membership System
+- [x] Create membership tiers (Bronze, Silver, Gold, Platinum)
+- [x] Implement points accumulation and redemption
+- [x] Add coupon system
+- [x] Create admin membership management endpoints
+- [ ] Create users/members database schema
+- [ ] Implement points accumulation logic
+- [ ] Create coupons system (generation, validation, redemption)
+- [ ] Add VIP level tiers (Bronze/Silver/Gold/Platinum)
+- [ ] Add admin membership panel (points rules, coupon management, VIP benefits)
+- [ ] Update Profile page to show membership info (no UI redesign)
+
+### 5. Delivery Management
+- [x] Create delivery zones and fee calculation
+- [x] Implement address management
+- [x] Add driver assignment system
+- [x] Create admin delivery management endpoints
+- [ ] Create delivery addresses database schema
+- [ ] Implement address CRUD in Profile page
+- [ ] Create delivery zones and pricing rules
+- [ ] Add admin delivery settings panel (zones, pricing, estimated time)
+- [ ] Add order tracking status updates
+
+### 6. Marketing Features
+- [x] Create campaign system (Discount, BOGO, Flash Sale, Happy Hour)
+- [x] Implement time-based and condition-based rules
+- [x] Add admin campaign builder endpoints
+- [ ] Create promotions database schema (discounts, BOGO, bundle deals)
+- [ ] Implement promotion engine (automatic price calculation)
+- [ ] Add admin marketing panel (create campaigns, set rules, schedule)
+- [ ] Update product cards to show promotion badges (no UI redesign)
+- [ ] Add promotion code input in checkout
+
+### 7. Multi-language Switcher
+- [x] Create i18n translation system (ZH/EN/RU)
+- [x] Add admin translation editor endpoints
+- [x] Implement translation import/export
+- [ ] Add language selector to Profile page
+- [ ] Create i18n translation files (zh.json, en.json, ru.json)
+- [ ] Implement frontend language switching logic
+- [ ] Add admin translation editor panel
+- [ ] Persist user language preference in database
+
+### 8. Analytics Dashboard
+- [x] Create sales report generator
+- [x] Implement product analytics tracking
+- [x] Add user behavior analytics
+- [x] Create admin dashboard summary endpoint
+- [ ] Create analytics events tracking (page views, orders, revenue)
+- [ ] Implement sales reports (daily/weekly/monthly)
+- [ ] Add popular products ranking
+- [ ] Create admin analytics dashboard (charts, tables, exports)
+- [ ] Add user behavior tracking (funnel analysis)

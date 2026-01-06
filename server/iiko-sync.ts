@@ -1,40 +1,138 @@
-import { PRODUCTS, Product } from "./db_mock";
-
 /**
- * IIKO Sync Simulator
+ * CHU TEA - IIKO Sync Service
  * 
- * Simulates product sync from IIKO POS system.
- * Respects `is_manual_override` flag to prevent overwriting admin changes.
+ * This module handles synchronization from IIKO POS system.
  */
 
-interface IIKOProduct {
-  id: number;
-  name_ru: string;
-  price: number;
+import { PRODUCTS } from './db_mock';
+import { createIIKOClient, MockIIKOClient } from './iiko-api';
+import { getIIKOSettings, updateLastSyncTime } from './db_iiko_settings';
+
+export interface SyncResult {
+  success: boolean;
+  message: string;
+  updated: number;
+  skipped: number;
+  conflicts?: Array<{ id: number; name: string; reason: string }>;
 }
 
-// Mock IIKO API response
-const MOCK_IIKO_PRODUCTS: IIKOProduct[] = [
-  { id: 1, name_ru: "Клубничный Чиз (IIKO)", price: 300 },
-  { id: 2, name_ru: "Манго Чиз (IIKO)", price: 310 },
-  { id: 3, name_ru: "Виноградный Чиз (IIKO)", price: 290 },
-];
+/**
+ * Sync products from IIKO (with real API integration)
+ */
+export async function syncFromIIKO(forceOverride: boolean = false): Promise<SyncResult> {
+  const settings = getIIKOSettings();
+  
+  if (!settings.enabled) {
+    console.log('[IIKO Sync] IIKO integration is disabled');
+    return {
+      success: false,
+      message: 'IIKO integration is disabled',
+      updated: 0,
+      skipped: 0,
+    };
+  }
+  
+  // Use mock client for demo, real client when credentials are provided
+  const client = settings.apiLogin && settings.organizationId
+    ? createIIKOClient({
+        apiUrl: settings.apiUrl,
+        apiLogin: settings.apiLogin,
+        organizationId: settings.organizationId,
+        enabled: settings.enabled,
+        syncInterval: settings.syncInterval,
+      })
+    : new MockIIKOClient({
+        apiUrl: settings.apiUrl,
+        apiLogin: settings.apiLogin,
+        organizationId: settings.organizationId,
+        enabled: settings.enabled,
+        syncInterval: settings.syncInterval,
+      });
+  
+  try {
+    const iikoProducts = await client.getProducts();
+    console.log(`[IIKO Sync] Fetched ${iikoProducts.length} products from IIKO`);
+    
+    let updated = 0;
+    let skipped = 0;
+    const conflicts: Array<{ id: number; name: string; reason: string }> = [];
+    
+    for (const iikoProduct of iikoProducts) {
+      // Find product by IIKO ID or name
+      const existingProduct = PRODUCTS.find(
+        p => p.iiko_id === iikoProduct.id || p.name_ru === iikoProduct.name
+      );
+      
+      if (!existingProduct) {
+        console.log(`[IIKO Sync] Product "${iikoProduct.name}" not found in local DB, skipping`);
+        skipped++;
+        continue;
+      }
+      
+      // Check manual override flag
+      if (existingProduct.is_manual_override && !forceOverride && settings.respectManualOverride) {
+        console.log(`[IIKO Sync] Skipping product ${existingProduct.id} (manual override active)`);
+        conflicts.push({
+          id: existingProduct.id,
+          name: existingProduct.name_ru,
+          reason: `Manual override active. Local=₽${existingProduct.price}, IIKO=₽${iikoProduct.price}`,
+        });
+        skipped++;
+        continue;
+      }
+      
+      // Update product
+      const oldPrice = existingProduct.price;
+      existingProduct.price = iikoProduct.price;
+      existingProduct.name_ru = iikoProduct.name;
+      existingProduct.description_ru = iikoProduct.description || existingProduct.description_ru;
+      existingProduct.iiko_id = iikoProduct.id;
+      existingProduct.is_manual_override = false;
+      
+      console.log(`[IIKO Sync] Updated product ${existingProduct.id}: ₽${oldPrice} → ₽${iikoProduct.price}`);
+      updated++;
+    }
+    
+    updateLastSyncTime();
+    
+    return {
+      success: true,
+      message: `Synced ${updated} products, skipped ${skipped} (manual override)`,
+      updated,
+      skipped,
+      conflicts,
+    };
+  } catch (error: any) {
+    console.error('[IIKO Sync] Error:', error);
+    return {
+      success: false,
+      message: error.message,
+      updated: 0,
+      skipped: 0,
+    };
+  }
+}
 
 /**
- * Sync products from IIKO
- * @param forceOverride - If true, ignore manual override flags (dangerous!)
+ * Legacy mock sync function (for backward compatibility)
  */
-export function syncFromIIKO(forceOverride: boolean = false): {
+export function syncFromIIKOMock(forceOverride: boolean = false): {
   updated: number;
   skipped: number;
   conflicts: Array<{ id: number; name: string; reason: string }>;
 } {
+  const MOCK_IIKO_PRODUCTS = [
+    { id: 1, name_ru: "Клубничный Чиз (IIKO)", price: 300 },
+    { id: 2, name_ru: "Манго Чиз (IIKO)", price: 310 },
+    { id: 3, name_ru: "Виноградный Чиз (IIKO)", price: 290 },
+  ];
+
   let updated = 0;
   let skipped = 0;
   const conflicts: Array<{ id: number; name: string; reason: string }> = [];
 
   console.log("\n========================================");
-  console.log("🔄 [IIKO SYNC] Starting product sync...");
+  console.log("🔄 [IIKO SYNC MOCK] Starting product sync...");
   console.log("========================================\n");
 
   MOCK_IIKO_PRODUCTS.forEach((iikoProduct) => {
@@ -80,7 +178,7 @@ export function syncFromIIKO(forceOverride: boolean = false): {
   });
 
   console.log("========================================");
-  console.log("📊 [IIKO SYNC] Summary");
+  console.log("📊 [IIKO SYNC MOCK] Summary");
   console.log("========================================");
   console.log(`✅ Updated: ${updated}`);
   console.log(`🛡️  Protected: ${skipped}`);

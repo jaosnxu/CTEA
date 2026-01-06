@@ -10,6 +10,7 @@ import Mall from "./pages/Mall";
 import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
 import AdminProducts from "./pages/AdminProducts";
+import AdminPaymentSettings from "./pages/AdminPaymentSettings";
 import IIKOSyncDemo from "./pages/IIKOSyncDemo";
 import BottomNav from "./components/BottomNav";
 import { AdminRoute } from "./components/AdminRoute";
@@ -26,6 +27,11 @@ function Router() {
         <Route path={"/admin/products"}>
           <AdminRoute>
             <AdminProducts />
+          </AdminRoute>
+        </Route>
+        <Route path={"/admin/payment"}>
+          <AdminRoute>
+            <AdminPaymentSettings />
           </AdminRoute>
         </Route>
         <Route path={"/iiko-sync-demo"} component={IIKOSyncDemo} />
