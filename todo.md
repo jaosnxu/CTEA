@@ -26,3 +26,10 @@
 - [x] Add size/sugar/ice level variants to all products
 - [x] Create 3 preset demo orders (COMPLETED, VOIDED, PENDING)
 - [x] Generate 1-page executive summary (English + Russian)
+
+## Full-Stack Logic Testing
+
+- [x] Test 1: Real-time price sync (Admin change → Frontend auto-update without refresh)
+- [x] Test 2: Manual override protection (is_manual_override=true blocks IIKO sync)
+- [x] Test 3: Stress test (5 rapid price changes → verify tRPC subscription stability)
+- [x] Generate comprehensive test report (TEST_REPORT.md created)
