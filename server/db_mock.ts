@@ -33,7 +33,7 @@ export interface Product {
 }
 
 export const PRODUCTS: Product[] = [
-  // --- Seasonal (Season) ---
+  // --- Seasonal (Сезонные) ---
   {
     id: 1,
     name_zh: "草莓芝士",
@@ -41,9 +41,9 @@ export const PRODUCTS: Product[] = [
     name_ru: "Клубничный Чиз",
     description_zh: "新鲜草莓搭配茉莉茶底，覆盖浓郁芝士奶盖。",
     description_en: "Fresh strawberries blended with jasmine tea, topped with rich cheese foam.",
-    description_ru: "Свежая клубника, взбитая с жасминовым чаем, под шапкой из сливочного сыра.",
-    price: 350,
-    image: "/images/products/strawberry_cheeso.png",
+    description_ru: "Свежая клубника, жасминовый чай, сырная пенка. Слои вкуса в каждом глотке.",
+    price: 500,
+    image: "/products/strawberry-cheezo.png",
     category: "seasonal",
     tags: ["Bestseller", "New"],
     variants: [
@@ -54,6 +54,7 @@ export const PRODUCTS: Product[] = [
       { id: "a3", name_zh: "芝士奶盖", name_en: "Cheese Foam", name_ru: "Сырная пенка", price: 50 },
       { id: "a4", name_zh: "果冻", name_en: "Jelly", name_ru: "Желе", price: 30 },
     ],
+    is_manual_override: true, // Admin manually changed price to 500
   },
   {
     id: 2,
@@ -62,9 +63,9 @@ export const PRODUCTS: Product[] = [
     name_ru: "Манго Чиз",
     description_zh: "熟透芒果与椰奶的完美结合，搭配芝士奶盖。",
     description_en: "Ripe mango meets coconut milk, topped with cheese foam.",
-    description_ru: "Спелое манго, кокосовое молоко и сырная пенка. Тропическое наслаждение.",
-    price: 360,
-    image: "/images/products/mango_cheeso.png",
+    description_ru: "Спелое манго, кокосовое молоко, сырная пенка. Тропическое наслаждение.",
+    price: 310,
+    image: "/products/mango-cheezo.png",
     category: "seasonal",
     tags: ["Tropical"],
     variants: [
@@ -83,9 +84,9 @@ export const PRODUCTS: Product[] = [
     name_ru: "Виноградный Чиз",
     description_zh: "多汁葡萄搭配乌龙茶底和招牌芝士奶盖。",
     description_en: "Juicy grapes with oolong tea base and signature cheese foam.",
-    description_ru: "Сочный виноград с чаем улун и фирменной сырной шапкой.",
-    price: 340,
-    image: "/images/products/grape_cheeso.png",
+    description_ru: "Сочный виноград, чай улун, фирменная сырная шапка. Освежающий и нежный.",
+    price: 290,
+    image: "/products/grape-cheezo.png",
     category: "seasonal",
     tags: ["Refreshing"],
     variants: [
@@ -98,7 +99,7 @@ export const PRODUCTS: Product[] = [
     ],
   },
 
-  // --- Milk Tea (Milk Tea) ---
+  // --- Milk Tea (Молочный чай) ---
   {
     id: 4,
     name_zh: "经典珍珠奶茶",
@@ -106,9 +107,9 @@ export const PRODUCTS: Product[] = [
     name_ru: "Классический чай с молоком и тапиокой",
     description_zh: "浓郁红茶搭配Q弹珍珠，口感平衡。",
     description_en: "Rich black tea with chewy tapioca pearls. Perfectly balanced.",
-    description_ru: "Насыщенный черный чай с молоком и жевательными шариками тапиоки.",
+    description_ru: "Насыщенный черный чай, молоко, жевательные шарики тапиоки. Классика жанра.",
     price: 290,
-    image: "/images/products/boba_milk.png",
+    image: "/products/classic-milktea.png",
     category: "milktea",
     tags: ["Classic", "Bestseller"],
     variants: [
@@ -127,9 +128,9 @@ export const PRODUCTS: Product[] = [
     name_ru: "Молоко с коричневым сахаром и тапиокой",
     description_zh: "古法黑糖熬制珍珠，搭配新鲜牛乳。",
     description_en: "Slow-cooked brown sugar boba with fresh milk.",
-    description_ru: "Тапиока в коричневом сахаре со свежим молоком. Сладкий и сливочный.",
+    description_ru: "Тапиока в коричневом сахаре, свежее молоко. Тигровые полоски сиропа. Сладкий и сливочный.",
     price: 320,
-    image: "/images/products/boba_milk.png", // Reusing placeholder for demo
+    image: "/products/brown-sugar-milktea.png",
     category: "milktea",
     tags: ["Sweet", "No Caffeine"],
     variants: [
@@ -146,9 +147,9 @@ export const PRODUCTS: Product[] = [
     name_ru: "Жасминовый зеленый чай с молоком",
     description_zh: "清新茉莉花茶搭配丝滑奶香。",
     description_en: "Fresh jasmine green tea with silky milk.",
-    description_ru: "Свежий жасминовый чай с нежным молоком.",
+    description_ru: "Свежий жасминовый зеленый чай, нежное молоко, тапиока. Легкий и ароматный.",
     price: 280,
-    image: "/images/products/lemon_tea.png", // Reusing placeholder for demo
+    image: "/products/jasmine-greentea.png",
     category: "milktea",
     tags: ["Light"],
     variants: [
@@ -160,7 +161,7 @@ export const PRODUCTS: Product[] = [
     ],
   },
 
-  // --- Mall (Mall) ---
+  // --- Mall (Маркет) ---
   {
     id: 7,
     name_zh: "CHU 随行杯",
@@ -168,9 +169,9 @@ export const PRODUCTS: Product[] = [
     name_ru: "Термокружка CHU",
     description_zh: "双层不锈钢保温杯，磨砂质感。",
     description_en: "Double-walled stainless steel tumbler with matte finish.",
-    description_ru: "Двухстенная термокружка из нержавеющей стали с матовым покрытием.",
+    description_ru: "Двухстенная термокружка из нержавеющей стали. Матовое покрытие, гравировка логотипа.",
     price: 1290,
-    image: "/images/products/berry_slush.png", // Placeholder
+    image: "/products/tumbler.png",
     category: "mall",
     tags: ["Merch"],
     variants: [],
@@ -183,9 +184,9 @@ export const PRODUCTS: Product[] = [
     name_ru: "Шоппер CHU",
     description_zh: "环保棉质帆布袋，大容量设计。",
     description_en: "Eco-friendly cotton canvas tote bag. Large capacity.",
-    description_ru: "Экологичная сумка-шоппер из хлопка. Большая вместимость.",
+    description_ru: "Экологичная сумка-шоппер из натурального хлопка. Большая вместимость, стильный дизайн.",
     price: 590,
-    image: "/images/products/peach_oolong.png", // Placeholder
+    image: "/products/tote-bag.png",
     category: "mall",
     tags: ["Merch", "Eco"],
     variants: [],
@@ -198,9 +199,9 @@ export const PRODUCTS: Product[] = [
     name_ru: "Подарочная карта (500₽)",
     description_zh: "送给朋友的一杯温暖。",
     description_en: "A warm gift for your friends.",
-    description_ru: "Теплый подарок для друзей.",
+    description_ru: "Подарочная карта на 500₽. Теплый подарок для друзей и близких.",
     price: 500,
-    image: "/images/products/mixed_fruit.png", // Placeholder
+    image: "/products/gift-card.png",
     category: "mall",
     tags: ["Gift"],
     variants: [],
@@ -213,9 +214,9 @@ export const PRODUCTS: Product[] = [
     name_ru: "Набор для приготовления чая",
     description_zh: "在家也能做出的专业味道。",
     description_en: "Professional taste made at home.",
-    description_ru: "Профессиональный вкус, приготовленный дома.",
+    description_ru: "Набор для домашнего приготовления чая. Стеклянный чайник, бамбуковая ложка, образцы чая.",
     price: 1590,
-    image: "/images/products/boba_milk.png", // Placeholder
+    image: "/products/tea-kit.png",
     category: "mall",
     tags: ["Kit"],
     variants: [],
@@ -241,26 +242,41 @@ export interface Order {
 }
 
 export const ORDERS: Order[] = [
+  // Demo Order 1: COMPLETED (Success)
   {
-    id: "P20240106001",
+    id: "P20260106001",
     prefix: "P",
     items: [
-      { productId: 1, productName: "Strawberry Cheezo", variant: "Regular", quantity: 1, price: 350 },
-      { productId: 4, productName: "Classic Boba Milk Tea", variant: "Large", quantity: 1, price: 340 }
+      { productId: 1, productName: "Клубничный Чиз", variant: "Стандарт (500мл)", quantity: 2, price: 1000 },
+      { productId: 4, productName: "Классический чай с молоком и тапиокой", variant: "Большой (700мл)", quantity: 1, price: 340 }
     ],
-    total: 690,
+    total: 1340,
     status: "COMPLETED",
-    createdAt: "2024-01-06T10:30:00Z"
+    createdAt: "2026-01-06T08:30:00Z"
   },
+  // Demo Order 2: VOIDED (Payment Fail-Safe)
   {
-    id: "M20240106002",
-    prefix: "M",
+    id: "P20260106002",
+    prefix: "P",
     items: [
-      { productId: 2, productName: "Mango Cheezo", variant: "Regular", quantity: 2, price: 720 }
+      { productId: 2, productName: "Манго Чиз", variant: "Стандарт (500мл)", quantity: 1, price: 310 },
+      { productId: 5, productName: "Молоко с коричневым сахаром и тапиокой", variant: "Стандарт (500мл)", quantity: 1, price: 320 }
     ],
-    total: 720,
-    status: "PAID",
-    createdAt: "2024-01-06T11:15:00Z"
+    total: 630,
+    status: "VOIDED",
+    createdAt: "2026-01-06T09:15:00Z"
+  },
+  // Demo Order 3: PENDING (In Progress)
+  {
+    id: "K20260106003",
+    prefix: "K",
+    items: [
+      { productId: 3, productName: "Виноградный Чиз", variant: "Большой (700мл)", quantity: 1, price: 340 },
+      { productId: 6, productName: "Жасминовый зеленый чай с молоком", variant: "Стандарт (500мл)", quantity: 2, price: 560 }
+    ],
+    total: 900,
+    status: "PENDING",
+    createdAt: "2026-01-06T10:00:00Z"
   }
 ];
 
@@ -276,10 +292,10 @@ export interface UserProfile {
 
 export const USER_PROFILE: UserProfile = {
   id: "u1",
-  name: "Tea Lover",
-  phone: "138****8888",
+  name: "Александр",
+  phone: "+7 916 ***-**-88",
   level: "VIP.1",
-  points: 128,
-  coupons: 2,
-  balance: 0
+  points: 328,
+  coupons: 3,
+  balance: 150
 };

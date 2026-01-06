@@ -18,3 +18,11 @@
 - [x] Test manual override prevents IIKO overwrite
 - [x] Execute full security demo (login -> edit -> sync -> verify)
 - [x] Generate final deployment report
+
+## Roadshow Optimization
+
+- [x] Generate 10 high-quality CHU TEA product images using AI
+- [x] Update db_mock.ts with new product images and Russian descriptions
+- [x] Add size/sugar/ice level variants to all products
+- [x] Create 3 preset demo orders (COMPLETED, VOIDED, PENDING)
+- [x] Generate 1-page executive summary (English + Russian)
