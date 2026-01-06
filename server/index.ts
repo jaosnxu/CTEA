@@ -1,4 +1,5 @@
 import express from "express";
+import { PRODUCTS } from "./db_mock.js";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -17,6 +18,11 @@ async function startServer() {
       : path.resolve(__dirname, "..", "dist", "public");
 
   app.use(express.static(staticPath));
+
+  // API Routes
+  app.get("/api/products", (req, res) => {
+    res.json(PRODUCTS);
+  });
 
   // Handle client-side routing - serve index.html for all routes
   app.get("*", (_req, res) => {

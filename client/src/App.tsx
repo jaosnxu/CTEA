@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -7,7 +8,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Order from "./pages/Order";
 import BottomNav from "./components/BottomNav";
-
+import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 
 function Router() {
   return (
@@ -21,22 +23,20 @@ function Router() {
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    // 强制切换为俄语进行测试
+    i18n.changeLanguage("ru");
+  }, []);
+
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
           <Router />
-          <BottomNav />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

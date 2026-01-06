@@ -2,14 +2,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Coffee, ShoppingBag, Gift, CreditCard } from "lucide-react";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 
 export default function Home() {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Hero Section */}
       <div className="relative h-[60vh] w-full overflow-hidden bg-muted">
         <img
-          src="https://images.unsplash.com/photo-1558160074-4d7d8bdf4256?q=80&w=2070&auto=format&fit=crop"
+          src="/images/products/strawberry_cheeso.png"
           alt="Seasonal Special"
           className="w-full h-full object-cover"
         />
@@ -26,8 +29,12 @@ export default function Home() {
 
         {/* Hero Content */}
         <div className="absolute bottom-8 left-6 text-white">
-          <h1 className="text-4xl font-bold mb-2 tracking-tight">Yangmei Season</h1>
-          <p className="text-white/90 text-sm font-medium">Freshly squeezed, perfectly balanced.</p>
+          <div className="flex items-center gap-2 mb-2">
+             <img src="/images/logo.png" alt="CHU TEA" className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm p-1" />
+             <img src="/images/brand_text.png" alt="CHU TEA" className="h-6 brightness-0 invert" />
+          </div>
+          <h1 className="text-4xl font-bold mb-2 tracking-tight">Strawberry Cheezo</h1>
+          <p className="text-white/90 text-sm font-medium">Fresh strawberries, jasmine tea, cheese foam.</p>
         </div>
       </div>
 
@@ -37,8 +44,8 @@ export default function Home() {
           {/* Member Status */}
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                <UserAvatar />
+              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                <img src="/images/logo.png" alt="User" className="w-full h-full object-cover" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
@@ -61,8 +68,8 @@ export default function Home() {
                   <Coffee className="w-6 h-6 text-primary" />
                 </div>
                 <div className="text-center">
-                  <h3 className="font-bold text-base">Pick Up</h3>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Order ahead, no queue</p>
+                  <h3 className="font-bold text-base">{t('home.pickup')}</h3>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{t('home.pickup_desc')}</p>
                 </div>
               </div>
             </Link>
@@ -73,8 +80,8 @@ export default function Home() {
                   <ShoppingBag className="w-6 h-6 text-primary" />
                 </div>
                 <div className="text-center">
-                  <h3 className="font-bold text-base">Delivery</h3>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Fresh to your door</p>
+                  <h3 className="font-bold text-base">{t('home.delivery')}</h3>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{t('home.delivery_desc')}</p>
                 </div>
               </div>
             </Link>
@@ -84,9 +91,9 @@ export default function Home() {
 
       {/* Secondary Actions */}
       <div className="px-4 mt-4 grid grid-cols-3 gap-3">
-        <SecondaryCard title="Gift Card" subtitle="Send love" icon={Gift} color="bg-pink-50" />
-        <SecondaryCard title="Group Order" subtitle="Office party" icon={Coffee} color="bg-orange-50" />
-        <SecondaryCard title="Wallet" subtitle="Top up" icon={CreditCard} color="bg-blue-50" />
+        <SecondaryCard title={t('home.gift_card')} subtitle="Send love" icon={Gift} color="bg-pink-50" />
+        <SecondaryCard title={t('home.group_order')} subtitle="Office party" icon={Coffee} color="bg-orange-50" />
+        <SecondaryCard title={t('home.wallet')} subtitle="Top up" icon={CreditCard} color="bg-blue-50" />
       </div>
     </div>
   );
@@ -103,15 +110,6 @@ function SecondaryCard({ title, subtitle, icon: Icon, color }: { title: string, 
         <Icon className="w-4 h-4 opacity-50" />
       </div>
     </div>
-  );
-}
-
-function UserAvatar() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
   );
 }
 

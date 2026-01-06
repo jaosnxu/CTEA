@@ -1,246 +1,371 @@
-import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Minus, Search, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Search, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-// Mock Data
+// 定义后端数据接口
+interface Variant {
+  id: string;
+  name_zh: string;
+  name_en: string;
+  name_ru: string;
+  price_adjustment: number;
+}
+
+interface Addon {
+  id: string;
+  name_zh: string;
+  name_en: string;
+  name_ru: string;
+  price: number;
+}
+
+interface Product {
+  id: number;
+  name_zh: string;
+  name_en: string;
+  name_ru: string;
+  description_zh: string;
+  description_en: string;
+  description_ru: string;
+  price: number;
+  image: string;
+  category: string;
+  tags: string[];
+  variants: Variant[];
+  addons: Addon[];
+}
+
+interface CartItem extends Product {
+  cartId: string;
+  selectedVariant: Variant;
+  selectedAddons: Addon[];
+  quantity: number;
+  totalPrice: number;
+}
+
 const CATEGORIES = [
-  { id: "seasonal", name: "Seasonal", icon: "🍓" },
-  { id: "top", name: "Top Picks", icon: "🔥" },
-  { id: "milktea", name: "Milk Tea", icon: "🧋" },
-  { id: "fruit", name: "Fruit Tea", icon: "🍋" },
-  { id: "pure", name: "Pure Tea", icon: "🍵" },
-  { id: "coffee", name: "Coffee", icon: "☕" },
-  { id: "bakery", name: "Bakery", icon: "🥐" },
-];
-
-const PRODUCTS = [
-  {
-    id: 1,
-    category: "seasonal",
-    name: "Very Grape Cheezo",
-    description: "Selected premium grapes, hand-peeled daily. Paired with signature Cheezo.",
-    price: 29,
-    image: "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?q=80&w=2070&auto=format&fit=crop",
-    tags: ["New", "Grape"]
-  },
-  {
-    id: 2,
-    category: "seasonal",
-    name: "Very Mango Grapefruit",
-    description: "Fresh mango blended with ice, topped with ruby grapefruit pulp and sago.",
-    price: 25,
-    image: "https://images.unsplash.com/photo-1546173159-315724a31696?q=80&w=1974&auto=format&fit=crop",
-    tags: ["Best Seller"]
-  },
-  {
-    id: 3,
-    category: "milktea",
-    name: "Roasted Brown Sugar Boba Milk",
-    description: "Slow-cooked brown sugar boba with fresh milk and roasted cheese foam.",
-    price: 28,
-    image: "https://images.unsplash.com/photo-1558160074-4d7d8bdf4256?q=80&w=2070&auto=format&fit=crop",
-    tags: []
-  },
-  {
-    id: 4,
-    category: "milktea",
-    name: "Original Cheezo Tea",
-    description: "Classic tea base topped with our signature salty cream cheese foam.",
-    price: 22,
-    image: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?q=80&w=2070&auto=format&fit=crop",
-    tags: []
-  }
+  { id: "seasonal", icon: "🍓" },
+  { id: "milktea", icon: "🧋" },
+  { id: "fruit_tea", icon: "🍋" },
+  { id: "slush", icon: "🧊" },
 ];
 
 export default function Order() {
-  const [activeCategory, setActiveCategory] = useState("seasonal");
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [cart, setCart] = useState<{id: number, quantity: number, price: number}[]>([]);
+  const { t, i18n } = useTranslation();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("seasonal");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  
+  // 选中的规格和加料状态
+  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
+  const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
+  const [quantity, setQuantity] = useState(1);
 
-  const addToCart = (product: any) => {
-    setCart([...cart, { id: product.id, quantity: 1, price: product.price }]);
+  // 获取后端数据
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch((err) => console.error("Failed to fetch products:", err));
+  }, []);
+
+  // 当打开弹窗时，重置选择状态
+  useEffect(() => {
+    if (selectedProduct) {
+      // 默认选中第一个规格
+      if (selectedProduct.variants && selectedProduct.variants.length > 0) {
+        setSelectedVariant(selectedProduct.variants[0]);
+      }
+      setSelectedAddons([]);
+      setQuantity(1);
+    }
+  }, [selectedProduct]);
+
+  // 计算当前商品总价
+  const calculateCurrentPrice = () => {
+    if (!selectedProduct) return 0;
+    let price = selectedProduct.price;
+    if (selectedVariant) {
+      price += selectedVariant.price_adjustment;
+    }
+    selectedAddons.forEach((addon) => {
+      price += addon.price;
+    });
+    return price * quantity;
+  };
+
+  // 获取当前语言对应的文本
+  const getLocalizedText = (item: any, field: string) => {
+    const lang = i18n.language; // 'en', 'zh', 'ru'
+    return item[`${field}_${lang}`] || item[`${field}_en`];
+  };
+
+  const addToCart = () => {
+    if (!selectedProduct || !selectedVariant) return;
+    
+    const newItem: CartItem = {
+      ...selectedProduct,
+      cartId: Math.random().toString(36).substr(2, 9),
+      selectedVariant,
+      selectedAddons,
+      quantity,
+      totalPrice: calculateCurrentPrice(),
+    };
+
+    setCart([...cart, newItem]);
     setSelectedProduct(null);
   };
 
-  const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartTotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="flex flex-col h-screen bg-white">
       {/* Header */}
-      <div className="px-4 py-3 bg-white border-b border-border flex items-center gap-3 z-20">
-        <div className="flex-1 bg-secondary rounded-full h-9 flex items-center px-3 gap-2">
-          <Search className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Search drinks...</span>
-        </div>
-        <div className="flex items-center gap-1 bg-black text-white px-3 py-1.5 rounded-full text-xs font-medium">
-          <span>Pickup</span>
+      <div className="px-4 py-3 bg-white sticky top-0 z-10 shadow-sm">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder={t("order.search_placeholder")}
+              className="w-full bg-gray-100 rounded-full py-2 pl-9 pr-4 text-sm outline-none"
+            />
+          </div>
+          <div className="flex bg-black text-white rounded-full p-1">
+            <button className="px-4 py-1 rounded-full bg-gray-800 text-xs font-medium">
+              {t("order.pickup_toggle")}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden relative">
+      {/* Main Content */}
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Categories */}
-        <div className="w-[85px] bg-secondary h-full overflow-y-auto no-scrollbar pb-32">
-          {CATEGORIES.map((cat) => (
-            <div
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={cn(
-                "flex flex-col items-center justify-center py-5 px-1 cursor-pointer transition-colors relative",
-                activeCategory === cat.id ? "bg-white text-foreground font-medium" : "text-muted-foreground hover:text-foreground/80"
-              )}
-            >
-              <span className="text-xl mb-1">{cat.icon}</span>
-              <span className="text-[10px] text-center leading-tight">{cat.name}</span>
-              {activeCategory === cat.id && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-black rounded-r-full" />
-              )}
-            </div>
-          ))}
-        </div>
+        <ScrollArea className="w-[85px] bg-gray-50 h-full">
+          <div className="flex flex-col pb-24">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={cn(
+                  "flex flex-col items-center justify-center py-4 px-1 w-full transition-colors relative",
+                  selectedCategory === cat.id
+                    ? "bg-white text-black font-medium"
+                    : "text-gray-400 hover:text-gray-600"
+                )}
+              >
+                {selectedCategory === cat.id && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-black rounded-r-full" />
+                )}
+                <span className="text-xl mb-1">{cat.icon}</span>
+                <span className="text-[10px] text-center leading-tight">
+                  {t(`categories.${cat.id}`)}
+                </span>
+              </button>
+            ))}
+          </div>
+        </ScrollArea>
 
         {/* Product List */}
-        <ScrollArea className="flex-1 bg-white h-full pb-32">
-          <div className="p-4">
-            <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-              {CATEGORIES.find(c => c.id === activeCategory)?.name}
+        <ScrollArea className="flex-1 bg-white h-full">
+          <div className="p-4 pb-32">
+            <h2 className="text-sm font-bold mb-4 sticky top-0 bg-white py-2 z-10">
+              {t(`categories.${selectedCategory}`)}
             </h2>
-            
-            <div className="grid grid-cols-1 gap-6">
-              {PRODUCTS.filter(p => p.category === activeCategory || activeCategory === 'top').map((product) => (
-                <div key={product.id} className="flex gap-3" onClick={() => setSelectedProduct(product)}>
-                  <div className="w-24 h-24 rounded-xl overflow-hidden bg-muted flex-shrink-0">
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 flex flex-col justify-between py-0.5">
-                    <div>
-                      <h3 className="font-bold text-base leading-tight mb-1">{product.name}</h3>
-                      <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">{product.description}</p>
-                      <div className="flex gap-1 mt-1.5">
-                        {product.tags.map(tag => (
-                          <span key={tag} className="text-[9px] px-1.5 py-0.5 bg-red-50 text-red-600 rounded border border-red-100">
-                            {tag}
-                          </span>
-                        ))}
+            <div className="space-y-6">
+              {products
+                .filter((p) => p.category === selectedCategory)
+                .map((product) => (
+                  <div key={product.id} className="flex gap-3">
+                    <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                      <img
+                        src={product.image}
+                        alt={getLocalizedText(product, "name")}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 flex flex-col justify-between py-1">
+                      <div>
+                        <h3 className="font-bold text-base leading-tight mb-1">
+                          {getLocalizedText(product, "name")}
+                        </h3>
+                        <p className="text-[10px] text-gray-400 line-clamp-2 leading-relaxed">
+                          {getLocalizedText(product, "description")}
+                        </p>
+                      </div>
+                      <div className="flex items-end justify-between mt-2">
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xs font-medium">₽</span>
+                          <span className="text-lg font-bold">{product.price}</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          className="h-7 px-3 rounded-full bg-yellow-400 hover:bg-yellow-500 text-black font-medium text-xs shadow-none"
+                          onClick={() => setSelectedProduct(product)}
+                        >
+                          {t("order.select")}
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex justify-between items-end">
-                      <span className="font-bold text-lg">¥{product.price}</span>
-                      <Button size="sm" className="h-7 px-3 rounded-full text-xs bg-secondary text-foreground hover:bg-secondary/80 shadow-none border-none">
-                        Select
-                      </Button>
-                    </div>
                   </div>
-                </div>
-              ))}
-              
-              {/* Spacer for bottom nav */}
-              <div className="h-20" />
+                ))}
             </div>
           </div>
         </ScrollArea>
       </div>
 
-      {/* Floating Settlement Capsule */}
-      {totalItems > 0 && (
-        <div className="absolute bottom-20 left-4 right-4 z-30">
-          <div className="bg-[#1A1A1A] text-white rounded-full h-14 shadow-xl flex items-center justify-between px-1 pr-1.5 pl-5">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <ShoppingBag className="w-6 h-6" />
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                  {totalItems}
-                </span>
+      {/* Product Detail Modal */}
+      <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
+        <DialogContent className="w-[92%] max-w-[400px] rounded-[20px] p-0 overflow-hidden border-none bg-white/90 backdrop-blur-[10px] shadow-2xl gap-0">
+          <DialogTitle className="sr-only">Product Details</DialogTitle>
+          {selectedProduct && (
+            <div className="flex flex-col max-h-[85vh]">
+              {/* Image Header */}
+              <div className="relative h-48 shrink-0">
+                <img
+                  src={selectedProduct.image}
+                  alt={getLocalizedText(selectedProduct, "name")}
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  onClick={() => setSelectedProduct(null)}
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-lg leading-none">¥{totalAmount}</span>
-                <span className="text-[10px] text-white/60">Free delivery applied</span>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-5">
+                <h2 className="text-xl font-bold mb-2">
+                  {getLocalizedText(selectedProduct, "name")}
+                </h2>
+                <p className="text-xs text-gray-500 mb-6 leading-relaxed">
+                  {getLocalizedText(selectedProduct, "description")}
+                </p>
+
+                {/* Variants */}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-xs font-bold text-gray-400 mb-3 tracking-wider">
+                      {t("order.size")}
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProduct.variants.map((variant) => (
+                        <button
+                          key={variant.id}
+                          onClick={() => setSelectedVariant(variant)}
+                          className={cn(
+                            "px-4 py-2 rounded-lg text-xs font-medium transition-all border",
+                            selectedVariant?.id === variant.id
+                              ? "bg-blue-50 border-blue-500 text-blue-600"
+                              : "bg-gray-50 border-transparent text-gray-600 hover:bg-gray-100"
+                          )}
+                        >
+                          {getLocalizedText(variant, "name")}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xs font-bold text-gray-400 mb-3 tracking-wider">
+                      {t("order.toppings")}
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProduct.addons.map((addon) => {
+                        const isSelected = selectedAddons.some((a) => a.id === addon.id);
+                        return (
+                          <button
+                            key={addon.id}
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedAddons(selectedAddons.filter((a) => a.id !== addon.id));
+                              } else {
+                                setSelectedAddons([...selectedAddons, addon]);
+                              }
+                            }}
+                            className={cn(
+                              "px-4 py-2 rounded-lg text-xs font-medium transition-all border",
+                              isSelected
+                                ? "bg-blue-50 border-blue-500 text-blue-600"
+                                : "bg-gray-50 border-transparent text-gray-600 hover:bg-gray-100"
+                            )}
+                          >
+                            {getLocalizedText(addon, "name")} (+₽{addon.price})
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 bg-white border-t border-gray-100 shrink-0">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-1">
+                      <button
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm disabled:opacity-50"
+                        disabled={quantity <= 1}
+                      >
+                        -
+                      </button>
+                      <span className="text-sm font-bold w-4 text-center">{quantity}</span>
+                      <button
+                        onClick={() => setQuantity(quantity + 1)}
+                        className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-xl font-bold">
+                    <span className="text-sm font-normal mr-1">₽</span>
+                    {calculateCurrentPrice()}
+                  </div>
+                </div>
+                <Button 
+                  className="w-full h-12 rounded-xl bg-black text-white font-bold text-base hover:bg-gray-800"
+                  onClick={addToCart}
+                >
+                  {t("order.add_to_cart")}
+                </Button>
               </div>
             </div>
-            <Button className="rounded-full px-6 h-11 bg-white text-black hover:bg-white/90 font-bold">
-              Checkout
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Cart Summary Bar */}
+      {cart.length > 0 && (
+        <div className="fixed bottom-20 left-4 right-4 z-50">
+          <div className="bg-black text-white rounded-full p-4 shadow-2xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-yellow-400 text-black w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                {cartCount}
+              </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-lg">₽{cartTotal}</span>
+                <span className="text-[10px] text-gray-400">Delivery fee not included</span>
+              </div>
+            </div>
+            <Button className="bg-yellow-400 text-black hover:bg-yellow-500 rounded-full px-6 font-bold">
+              {t("order.checkout")}
             </Button>
           </div>
         </div>
       )}
-
-      {/* Product Detail Modal */}
-      <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
-        <DialogContent className="w-[92%] max-w-md rounded-[20px] p-0 overflow-hidden border-none bg-white/80 backdrop-blur-xl shadow-2xl gap-0">
-          {selectedProduct && (
-            <>
-              <div className="relative h-64 w-full bg-muted">
-                <img src={selectedProduct.image} alt={selectedProduct.name} className="w-full h-full object-cover" />
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="absolute top-3 right-3 bg-black/20 hover:bg-black/30 text-white rounded-full w-8 h-8 backdrop-blur-sm"
-                  onClick={() => setSelectedProduct(null)}
-                >
-                  <span className="sr-only">Close</span>
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L11 11M1 11L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                </Button>
-              </div>
-              
-              <div className="p-5 pb-24">
-                <DialogHeader className="mb-4 text-left">
-                  <DialogTitle className="text-xl font-bold mb-1">{selectedProduct.name}</DialogTitle>
-                  <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
-                    {selectedProduct.description}
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-xs font-bold mb-2 text-muted-foreground uppercase tracking-wider">Size</h4>
-                    <div className="flex gap-2">
-                      <Button variant="outline" className="rounded-xl h-9 text-xs border-primary bg-primary/5 text-primary font-medium">Regular (500ml)</Button>
-                      <Button variant="outline" className="rounded-xl h-9 text-xs border-border text-muted-foreground font-normal">Large (700ml)</Button>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-xs font-bold mb-2 text-muted-foreground uppercase tracking-wider">Sugar</h4>
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="outline" className="rounded-xl h-9 text-xs border-primary bg-primary/5 text-primary font-medium">Standard</Button>
-                      <Button variant="outline" className="rounded-xl h-9 text-xs border-border text-muted-foreground font-normal">Less (70%)</Button>
-                      <Button variant="outline" className="rounded-xl h-9 text-xs border-border text-muted-foreground font-normal">Half (50%)</Button>
-                      <Button variant="outline" className="rounded-xl h-9 text-xs border-border text-muted-foreground font-normal">None (0%)</Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Footer - Fixed Bottom */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t border-border/50 flex items-center justify-between">
-                <div className="flex flex-col">
-                  <span className="text-xl font-bold">¥{selectedProduct.price}</span>
-                  <span className="text-[10px] text-muted-foreground">Base price</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 bg-secondary rounded-full px-2 h-9">
-                    <Button variant="ghost" size="icon" className="w-6 h-6 rounded-full p-0 h-6 w-6">
-                      <Minus className="w-3 h-3" />
-                    </Button>
-                    <span className="text-sm font-medium w-4 text-center">1</span>
-                    <Button variant="ghost" size="icon" className="w-6 h-6 rounded-full p-0 h-6 w-6">
-                      <Plus className="w-3 h-3" />
-                    </Button>
-                  </div>
-                  <Button className="rounded-full px-6 h-10 font-bold" onClick={() => addToCart(selectedProduct)}>
-                    Add to Cart
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
