@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 import { Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 // 定义后端数据接口
 interface Variant {
@@ -67,20 +69,18 @@ export default function Order() {
   const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
   const [quantity, setQuantity] = useState(1);
 
-  // 获取后端数据
+  // tRPC Query with auto-revalidation
+  const { data: productsData = [] } = trpc.products.list.useQuery();
+  
+  // tRPC Mutation for payment
+  const createPayment = trpc.payment.create.useMutation();
+
+  // Sync to local state
   useEffect(() => {
-    fetch("/api/products")
-      .then((res) => {
-        const contentType = res.headers.get("content-type");
-        if (contentType && contentType.indexOf("application/json") !== -1) {
-          return res.json();
-        } else {
-          throw new Error("API returned non-JSON response");
-        }
-      })
-      .then((data) => setProducts(data))
-      .catch((err) => console.error("Failed to fetch products:", err));
-  }, []);
+    if (productsData.length > 0) {
+      setProducts(productsData);
+    }
+  }, [productsData]);
 
   // 当打开弹窗时，重置选择状态
   useEffect(() => {
@@ -131,6 +131,33 @@ export default function Order() {
 
   const cartTotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  const handleCheckout = async () => {
+    try {
+      // 1. Create Order ID
+      const orderId = `P${Date.now()}`;
+      
+      // 2. Call Payment API via tRPC
+      const data = await createPayment.mutateAsync({
+        orderId,
+        amount: cartTotal,
+        items: cart as any[]
+      });
+      
+      if (data.status === "PAID") {
+        // Success -> Go to Orders
+        window.location.href = "/orders";
+      } else if (data.status === "VOIDED") {
+        // Fail-Safe Triggered -> Go to Orders (to show Voided status)
+        // In real app, might show a toast first
+        alert(t("order.payment_voided_alert") || "Payment voided due to system timeout.");
+        window.location.href = "/orders";
+      }
+    } catch (err) {
+      console.error("Checkout failed", err);
+      alert("Checkout failed. Please try again.");
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-white">
@@ -363,7 +390,10 @@ export default function Order() {
                 <span className="text-xl font-bold">₽{cartTotal}</span>
               </div>
             </div>
-            <button className="px-6 py-2 bg-white text-black rounded-full font-bold text-sm hover:bg-gray-100 transition-colors">
+            <button 
+              className="px-6 py-2 bg-white text-black rounded-full font-bold text-sm hover:bg-gray-100 transition-colors"
+              onClick={handleCheckout}
+            >
               {t("order.checkout")}
             </button>
           </div>

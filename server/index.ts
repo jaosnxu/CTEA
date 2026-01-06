@@ -40,13 +40,13 @@ async function startServer() {
     res.json(PRODUCTS);
   });
 
-  app.put("/api/admin/products/:id", (req, res) => {
+  app.patch("/api/admin/products/:id", (req, res) => {
     const id = parseInt(req.params.id);
     const { price } = req.body;
     
     const product = PRODUCTS.find(p => p.id === id);
     if (product) {
-      product.price = price;
+      if (price !== undefined) product.price = price;
       res.json({ success: true, product });
     } else {
       res.status(404).json({ error: "Product not found" });

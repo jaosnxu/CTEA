@@ -2,76 +2,33 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ShoppingBag } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { trpc } from "@/lib/trpc";
+import { useMemo } from "react";
 
 interface Product {
   id: number;
-  name: string;
+  name_zh: string;
+  name_en: string;
+  name_ru: string;
+  description_zh: string;
+  description_en: string;
+  description_ru: string;
   price: number;
   category: string;
   image: string;
-  description: string;
 }
 
 export default function Mall() {
   const { t } = useTranslation();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/products")
-      .then((res) => res.json())
-      .then((data) => {
-        // Filter for "Mall" category items or simulate if none exist
-        const mallItems = data.filter((p: Product) => p.category === "Mall" || p.category === "Merch");
-        
-        // If no mall items in mock DB, use some fallbacks for display
-        if (mallItems.length === 0) {
-          setProducts([
-            {
-              id: 101,
-              name: "CHU Tote Bag",
-              price: 1299,
-              category: "Merch",
-              image: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80",
-              description: "Limited edition canvas tote"
-            },
-            {
-              id: 102,
-              name: "Glass Tumbler",
-              price: 899,
-              category: "Merch",
-              image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80",
-              description: "Double-walled glass bottle"
-            },
-            {
-              id: 103,
-              name: "Tea Gift Set",
-              price: 2599,
-              category: "Gift",
-              image: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=800&q=80",
-              description: "Premium loose leaf selection"
-            },
-            {
-              id: 104,
-              name: "Plush Mascot",
-              price: 1599,
-              category: "Toy",
-              image: "https://images.unsplash.com/photo-1585336261022-680e295ce3fe?auto=format&fit=crop&w=800&q=80",
-              description: "Cute tea cup plushie"
-            }
-          ]);
-        } else {
-          setProducts(mallItems);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch mall products:", err);
-        setLoading(false);
-      });
-  }, []);
+  
+  // tRPC Query with auto-revalidation
+  const { data: allProducts = [], isLoading: loading } = trpc.products.list.useQuery();
+  
+  // Filter mall products
+  const products = useMemo(() => {
+    return allProducts.filter((p: any) => p.category === "mall");
+  }, [allProducts]);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -108,7 +65,7 @@ export default function Mall() {
               <div className="aspect-[3/4] relative bg-gray-100">
                 <img 
                   src={product.image} 
-                  alt={product.name}
+                  alt={product.name_ru}
                   className="w-full h-full object-cover"
                 />
                 <Badge className="absolute top-2 left-2 bg-black/50 backdrop-blur-sm border-none text-white">
@@ -116,8 +73,8 @@ export default function Mall() {
                 </Badge>
               </div>
               <CardContent className="p-3">
-                <h3 className="font-bold text-gray-900 line-clamp-1">{product.name}</h3>
-                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{product.description}</p>
+                <h3 className="font-bold text-gray-900 line-clamp-1">{product.name_ru}</h3>
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{product.description_ru}</p>
               </CardContent>
               <CardFooter className="p-3 pt-0 flex items-center justify-between">
                 <span className="font-bold text-lg">₽{product.price}</span>

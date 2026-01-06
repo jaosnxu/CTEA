@@ -29,6 +29,7 @@ export interface Product {
   tags: string[];
   variants: ProductVariant[];
   addons: ProductAddon[];
+  is_manual_override?: boolean; // Shadow DB: Prevent IIKO sync from overwriting manual changes
 }
 
 export const PRODUCTS: Product[] = [

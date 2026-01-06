@@ -1,3 +1,4 @@
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Coffee, ShoppingBag, Gift, CreditCard } from "lucide-react";
@@ -5,6 +6,10 @@ import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
 
 export default function Home() {
+  // The userAuth hooks provides authentication state
+  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
+  let { user, loading, error, isAuthenticated, logout } = useAuth();
+
   const { t } = useTranslation();
 
   return (

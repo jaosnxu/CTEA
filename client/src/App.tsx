@@ -11,8 +11,8 @@ import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
 import AdminProducts from "./pages/AdminProducts";
 import BottomNav from "./components/BottomNav";
-
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <div className="pb-16">
       <Switch>

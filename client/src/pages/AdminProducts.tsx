@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useTranslation } from "react-i18next";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 interface Product {
   id: number;
@@ -10,54 +11,47 @@ interface Product {
   name_ru: string;
   price: number;
   category: string;
+  is_manual_override?: boolean;
 }
 
 export default function AdminProducts() {
-  const { t } = useTranslation();
-  const [products, setProducts] = useState<Product[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editPrice, setEditPrice] = useState<string>("");
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  // tRPC Query with auto-revalidation
+  const { data: products = [], refetch } = trpc.admin.products.list.useQuery();
 
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch("/api/admin/products");
-      const data = await res.json();
-      setProducts(data);
-    } catch (err) {
-      console.error("Failed to fetch products", err);
-    }
-  };
+  // tRPC Mutation
+  const updateProduct = trpc.admin.products.update.useMutation({
+    onSuccess: () => {
+      toast.success("Price updated successfully");
+      setEditingId(null);
+      refetch(); // Trigger revalidation
+    },
+    onError: (error) => {
+      toast.error(`Failed to update: ${error.message}`);
+    },
+  });
 
   const handleEdit = (product: Product) => {
     setEditingId(product.id);
     setEditPrice(product.price.toString());
   };
 
-  const handleSave = async (id: number) => {
-    try {
-      const res = await fetch(`/api/admin/products/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ price: parseInt(editPrice) }),
-      });
-      
-      if (res.ok) {
-        setEditingId(null);
-        fetchProducts();
-      }
-    } catch (err) {
-      console.error("Failed to update price", err);
+  const handleSave = (id: number) => {
+    const newPrice = parseInt(editPrice);
+    if (isNaN(newPrice) || newPrice <= 0) {
+      toast.error("Invalid price");
+      return;
     }
+
+    updateProduct.mutate({ id, price: newPrice });
   };
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Product Management (Admin)</h1>
-      
+
       <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-gray-50 border-b">
@@ -66,6 +60,7 @@ export default function AdminProducts() {
               <th className="p-4 font-medium text-gray-500">Name (RU)</th>
               <th className="p-4 font-medium text-gray-500">Category</th>
               <th className="p-4 font-medium text-gray-500">Price (₽)</th>
+              <th className="p-4 font-medium text-gray-500">Override</th>
               <th className="p-4 font-medium text-gray-500">Actions</th>
             </tr>
           </thead>
@@ -88,18 +83,30 @@ export default function AdminProducts() {
                   )}
                 </td>
                 <td className="p-4">
+                  {product.is_manual_override ? (
+                    <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                      Manual
+                    </span>
+                  ) : (
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                      IIKO
+                    </span>
+                  )}
+                </td>
+                <td className="p-4">
                   {editingId === product.id ? (
                     <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         onClick={() => handleSave(product.id)}
                         className="h-8 bg-green-600 hover:bg-green-700"
+                        disabled={updateProduct.isPending}
                       >
-                        Save
+                        {updateProduct.isPending ? "Saving..." : "Save"}
                       </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={() => setEditingId(null)}
                         className="h-8"
                       >
@@ -107,9 +114,9 @@ export default function AdminProducts() {
                       </Button>
                     </div>
                   ) : (
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() => handleEdit(product)}
                       className="h-8"
                     >

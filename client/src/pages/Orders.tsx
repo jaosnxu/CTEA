@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Clock, ShoppingBag } from "lucide-react";
+import { Clock, ShoppingBag } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 interface OrderItem {
   productId: number;
@@ -22,21 +22,9 @@ interface Order {
 
 export default function Orders() {
   const { t, i18n } = useTranslation();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/orders")
-      .then((res) => res.json())
-      .then((data) => {
-        setOrders(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch orders:", err);
-        setLoading(false);
-      });
-  }, []);
+  
+  // tRPC Query with auto-revalidation
+  const { data: orders = [], isLoading: loading } = trpc.orders.list.useQuery();
 
   const getStatusText = (status: string) => {
     switch (status) {
