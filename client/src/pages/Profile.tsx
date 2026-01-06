@@ -14,9 +14,28 @@ import {
   Wallet
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
+
+interface UserProfile {
+  id: string;
+  name: string;
+  phone: string;
+  level: string;
+  points: number;
+  coupons: number;
+  balance: number;
+}
 
 export default function Profile() {
   const { t, i18n } = useTranslation();
+  const [user, setUser] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    fetch("/api/user/me")
+      .then((res) => res.json())
+      .then((data) => setUser(data))
+      .catch((err) => console.error("Failed to fetch user profile:", err));
+  }, []);
 
   const toggleLanguage = () => {
     const nextLang = i18n.language === "zh" ? "en" : i18n.language === "en" ? "ru" : "zh";
@@ -42,12 +61,12 @@ export default function Profile() {
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-gray-900">Tea Lover</h2>
+            <h2 className="text-xl font-bold text-gray-900">{user?.name || "Guest"}</h2>
             <div className="flex items-center gap-2 mt-1">
               <span className="px-2 py-0.5 bg-black text-white text-xs font-bold rounded-full">
-                VIP.1
+                {user?.level || "VIP.0"}
               </span>
-              <span className="text-sm text-gray-500">138****8888</span>
+              <span className="text-sm text-gray-500">{user?.phone || ""}</span>
             </div>
           </div>
           <Button variant="ghost" size="icon" className="text-gray-400">
@@ -58,15 +77,15 @@ export default function Profile() {
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-4 text-center">
           <div className="space-y-1">
-            <div className="text-2xl font-bold text-gray-900">0</div>
+            <div className="text-2xl font-bold text-gray-900">{user?.balance || 0}</div>
             <div className="text-xs text-gray-500">{t("home.wallet")}</div>
           </div>
           <div className="space-y-1">
-            <div className="text-2xl font-bold text-gray-900">2</div>
+            <div className="text-2xl font-bold text-gray-900">{user?.coupons || 0}</div>
             <div className="text-xs text-gray-500">{t("profile.coupons")}</div>
           </div>
           <div className="space-y-1">
-            <div className="text-2xl font-bold text-gray-900">128</div>
+            <div className="text-2xl font-bold text-gray-900">{user?.points || 0}</div>
             <div className="text-xs text-gray-500">{t("profile.points")}</div>
           </div>
         </div>

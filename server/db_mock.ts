@@ -198,3 +198,64 @@ export const PRODUCTS: Product[] = [
     ],
   },
 ];
+
+export interface OrderItem {
+  productId: number;
+  productName: string;
+  variant: string;
+  quantity: number;
+  price: number;
+}
+
+export interface Order {
+  id: string;
+  prefix: "T" | "P" | "K" | "M";
+  items: OrderItem[];
+  total: number;
+  status: "PENDING" | "PAID" | "COMPLETED" | "CANCELLED" | "VOIDED";
+  createdAt: string;
+}
+
+export const ORDERS: Order[] = [
+  {
+    id: "P20240106001",
+    prefix: "P",
+    items: [
+      { productId: 2, productName: "Strawberry Cheezo", variant: "Regular", quantity: 1, price: 350 },
+      { productId: 1, productName: "Classic Boba Milk Tea", variant: "Large", quantity: 1, price: 340 }
+    ],
+    total: 690,
+    status: "COMPLETED",
+    createdAt: "2024-01-06T10:30:00Z"
+  },
+  {
+    id: "M20240106002",
+    prefix: "M",
+    items: [
+      { productId: 3, productName: "Mango Cheezo", variant: "Regular", quantity: 2, price: 720 }
+    ],
+    total: 720,
+    status: "PAID",
+    createdAt: "2024-01-06T11:15:00Z"
+  }
+];
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  phone: string;
+  level: string;
+  points: number;
+  coupons: number;
+  balance: number;
+}
+
+export const USER_PROFILE: UserProfile = {
+  id: "u1",
+  name: "Tea Lover",
+  phone: "138****8888",
+  level: "VIP.1",
+  points: 128,
+  coupons: 2,
+  balance: 0
+};

@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import Order from "./pages/Order";
 import Mall from "./pages/Mall";
 import Profile from "./pages/Profile";
+import Orders from "./pages/Orders";
 import BottomNav from "./components/BottomNav";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
         <Route path={"/"} component={Home} />
         <Route path={"/order"} component={Order} />
         <Route path={"/mall"} component={Mall} />
+        <Route path={"/orders"} component={Orders} />
         <Route path={"/profile"} component={Profile} />
         <Route path={"/404"} component={NotFound} />
         {/* Final fallback route */}

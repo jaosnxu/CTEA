@@ -1,5 +1,6 @@
 import express from "express";
-import { PRODUCTS } from "./db_mock.js";
+import { PRODUCTS, ORDERS, USER_PROFILE } from "./db_mock.js";
+import { createPayment } from "./payment.controller.js";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -11,27 +12,40 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
+  app.use(express.json());
+
   // Serve static files from dist/public in production
   const staticPath =
     process.env.NODE_ENV === "production"
       ? path.resolve(__dirname, "public")
       : path.resolve(__dirname, "..", "dist", "public");
 
-  // API Routes - MUST be defined before static middleware
+  // API Routes
   app.get("/api/products", (req, res) => {
     console.log("API /api/products called");
     res.json(PRODUCTS);
   });
 
+  app.get("/api/orders", (req, res) => {
+    console.log("API /api/orders called");
+    res.json(ORDERS);
+  });
+
+  app.get("/api/user/me", (req, res) => {
+    console.log("API /api/user/me called");
+    res.json(USER_PROFILE);
+  });
+
+  app.post("/api/payment/create", createPayment);
+
   // Serve static files
   app.use(express.static(staticPath));
 
-  // Handle client-side routing - serve index.html for all other routes
+  // Handle client-side routing
   app.get("*", (_req, res) => {
     res.sendFile(path.join(staticPath, "index.html"));
   });
 
-  // Use port 5000 for backend to avoid conflict with Vite (3000)
   const port = 5000;
 
   server.listen(port, "0.0.0.0", () => {
