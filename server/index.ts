@@ -22,17 +22,14 @@ async function startServer() {
 
   // API Routes
   app.get("/api/products", (req, res) => {
-    console.log("API /api/products called");
     res.json(PRODUCTS);
   });
 
   app.get("/api/orders", (req, res) => {
-    console.log("API /api/orders called");
     res.json(ORDERS);
   });
 
   app.get("/api/user/me", (req, res) => {
-    console.log("API /api/user/me called");
     res.json(USER_PROFILE);
   });
 

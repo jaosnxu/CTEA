@@ -189,12 +189,7 @@ export default function Order() {
             </h2>
             <div className="space-y-6">
               {products
-                .filter((p) => {
-                  if (selectedCategory === "seasonal") {
-                    return p.tags && p.tags.includes("Seasonal");
-                  }
-                  return p.category === selectedCategory;
-                })
+                .filter((p) => p.category === selectedCategory)
                 .map((product) => (
                   <div key={product.id} className="flex gap-3">
                     <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 shrink-0">

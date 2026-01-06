@@ -5,12 +5,12 @@ import { ORDERS } from "./db_mock.js";
 // Mock IIKO API call
 const pushOrderToIIKO = async (orderId: string): Promise<boolean> => {
   console.log(`[IIKO] Pushing order ${orderId}...`);
-  // Simulate timeout/failure
-  return new Promise((resolve, reject) => {
+  // Simulate success
+  return new Promise((resolve) => {
     setTimeout(() => {
-      console.log(`[IIKO] Order ${orderId} push TIMEOUT (Simulated)`);
-      reject(new Error("IIKO Gateway Timeout"));
-    }, 2000); // Shortened for demo, but logic handles it as failure
+      console.log(`[IIKO] Order ${orderId} push SUCCESS`);
+      resolve(true);
+    }, 500);
   });
 };
 
