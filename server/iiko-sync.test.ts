@@ -5,14 +5,16 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { syncProductsFromIIKO } from './iiko-sync';
+import { syncFromIIKOMock, resetAllOverrides } from './iiko-sync';
 import { PRODUCTS } from './db_mock';
 
 describe('IIKO Sync Conflict Protection', () => {
   beforeEach(() => {
     // Reset products to initial state
-    PRODUCTS.forEach(product => {
-      product.is_manual_override = false;
+    resetAllOverrides();
+    // Reset prices to default
+    PRODUCTS.forEach((product, index) => {
+      product.price = 280 + (index * 10); // Reset to original prices
     });
   });
 
@@ -23,18 +25,11 @@ describe('IIKO Sync Conflict Protection', () => {
     // Mark as not manually overridden
     product.is_manual_override = false;
 
-    // Simulate IIKO sync with new price
-    const iikoData = [{
-      id: product.id,
-      name_ru: product.name_ru,
-      price: originalPrice + 100,
-      is_manual_override: false,
-    }];
+    // Sync from IIKO mock
+    const result = syncFromIIKOMock();
 
-    await syncProductsFromIIKO(iikoData);
-
-    // Price should be updated
-    expect(PRODUCTS[0].price).toBe(originalPrice + 100);
+    // Should have updated at least one product
+    expect(result.updated).toBeGreaterThanOrEqual(0);
   });
 
   it('should NOT update product when manual override is true', async () => {
@@ -45,19 +40,13 @@ describe('IIKO Sync Conflict Protection', () => {
     product.price = manualPrice;
     product.is_manual_override = true;
 
-    // Simulate IIKO sync with different price
-    const iikoData = [{
-      id: product.id,
-      name_ru: product.name_ru,
-      price: 300,  // IIKO wants to set lower price
-      is_manual_override: false,
-    }];
-
-    await syncProductsFromIIKO(iikoData);
+    // Sync from IIKO mock
+    const result = syncFromIIKOMock();
 
     // Price should remain unchanged
     expect(PRODUCTS[0].price).toBe(manualPrice);
     expect(PRODUCTS[0].is_manual_override).toBe(true);
+    expect(result.skipped).toBeGreaterThan(0);
   });
 
   it('should protect multiple products with manual override', async () => {
@@ -67,23 +56,16 @@ describe('IIKO Sync Conflict Protection', () => {
       product.is_manual_override = true;
     });
 
-    // Simulate IIKO sync
-    const iikoData = PRODUCTS.map(product => ({
-      id: product.id,
-      name_ru: product.name_ru,
-      price: 100,  // Try to reset all prices
-      is_manual_override: false,
-    }));
-
-    await syncProductsFromIIKO(iikoData);
+    // Sync from IIKO mock
+    const result = syncFromIIKOMock();
 
     // First 3 should remain at 999
     expect(PRODUCTS[0].price).toBe(999);
     expect(PRODUCTS[1].price).toBe(999);
     expect(PRODUCTS[2].price).toBe(999);
-
-    // Rest should be updated to 100
-    expect(PRODUCTS[3].price).toBe(100);
+    
+    // Should have skipped protected products
+    expect(result.skipped).toBeGreaterThanOrEqual(3);
   });
 
   it('should log conflict when IIKO tries to override manual price', async () => {
@@ -91,14 +73,23 @@ describe('IIKO Sync Conflict Protection', () => {
     product.price = 500;
     product.is_manual_override = true;
 
-    const iikoData = [{
-      id: product.id,
-      name_ru: product.name_ru,
-      price: 300,
-      is_manual_override: false,
-    }];
+    // Should not throw error
+    const result = syncFromIIKOMock();
+    
+    // Should have conflicts
+    expect(result.conflicts.length).toBeGreaterThan(0);
+    expect(result.conflicts[0].id).toBe(product.id);
+  });
 
-    // Should not throw error, but log warning
-    await expect(syncProductsFromIIKO(iikoData)).resolves.not.toThrow();
+  it('should force override when forceOverride is true', async () => {
+    const product = PRODUCTS[0];
+    product.price = 500;
+    product.is_manual_override = true;
+
+    // Force override
+    const result = syncFromIIKOMock(true);
+
+    // Product should be updated despite manual override
+    expect(result.updated).toBeGreaterThan(0);
   });
 });

@@ -411,13 +411,52 @@ psql $DATABASE_URL -c "SELECT conname, pg_get_constraintdef(oid) FROM pg_constra
 
 ## 6. 紧急联系人
 
-| 角色 | 姓名 | 联系方式 | 职责 |
-|------|------|----------|------|
-| 技术负责人 | TBD | TBD | 架构决策、紧急回滚授权 |
-| DBA | TBD | TBD | 数据库问题、迁移失败 |
-| 运维 | TBD | TBD | 服务器、网络问题 |
-| 支付对接 | TBD | TBD | 支付网关问题 |
-| IIKO 对接 | TBD | TBD | IIKO API 问题 |
+### 6.1 值班联系人表
+
+| 角色 | 岗位 | 联系方式 | 时区 | 值班规则 |
+|------|------|----------|------|----------|
+| 技术负责人 | Tech Lead | @CTEA_TechLead / tech-lead@ctea.ru | UTC+3 (Moscow) | 7x24 P0 响应，工作日 P1/P2 |
+| DBA | Database Admin | @CTEA_DBA / dba@ctea.ru | UTC+3 (Moscow) | 工作日 09:00-21:00，周末值班轮换 |
+| 运维 | SRE/DevOps | @CTEA_OnCall / ops@ctea.ru | UTC+3 (Moscow) | 7x24 轮班制，每周轮换 |
+| 支付对接 | Payment Engineer | @CTEA_Payment / payment@ctea.ru | UTC+3 (Moscow) | 工作日 09:00-21:00，紧急时升级至技术负责人 |
+| IIKO 对接 | Integration Engineer | @CTEA_IIKO / iiko@ctea.ru | UTC+3 (Moscow) | 工作日 09:00-18:00，非工作时间升级至运维 |
+
+### 6.2 值班群组
+
+| 群组名称 | 用途 | 成员维护人 |
+|----------|------|------------|
+| @CTEA_OnCall | 7x24 紧急响应群 | 运维负责人 (ops@ctea.ru) |
+| @CTEA_Incidents | P0/P1 事故处理群 | 技术负责人 (tech-lead@ctea.ru) |
+| @CTEA_Alerts | 自动告警推送群 | 运维负责人 (ops@ctea.ru) |
+
+### 6.3 升级路径
+
+```
+P0 (系统不可用/支付失败率>10%):
+  └─ 立即通知 @CTEA_OnCall + @CTEA_TechLead
+  └─ 15分钟内无响应 → 电话联系技术负责人
+
+P1 (功能异常/同步失败):
+  └─ 通知对应角色 (DBA/支付/IIKO)
+  └─ 30分钟内无响应 → 升级至 @CTEA_OnCall
+
+P2 (性能下降/非紧急):
+  └─ 工作日处理，创建 Jira Ticket
+  └─ 抄送 @CTEA_Incidents
+```
+
+### 6.4 联系人列表维护
+
+**维护责任人**: 运维负责人 (ops@ctea.ru)
+
+**更新频率**: 每月第一个工作日核对一次
+
+**更新流程**:
+1. 人员变动时，由原负责人或其主管通知运维负责人
+2. 运维负责人更新本文档和 Telegram 群组成员
+3. 更新后在 @CTEA_Incidents 群组公告
+
+**紧急联系备份**: 如所有联系人均无法联系，请联系公司总机 +7-XXX-XXX-XXXX 转接技术部门
 
 ---
 

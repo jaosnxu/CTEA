@@ -299,3 +299,58 @@ export function calculateDiscount(
 
   return { discount, finalAmount, breakdown };
 }
+
+
+// ============================================================================
+// Additional Functions for Testing
+// ============================================================================
+
+/**
+ * Calculate points for a given amount and tier
+ * @param amount - Order amount in RUB
+ * @param tier - Membership tier (BRONZE, SILVER, GOLD, PLATINUM)
+ * @returns Points earned
+ */
+export function calculatePoints(amount: number, tier: string): number {
+  const basePoints = Math.floor(amount / 10); // 1 point per ₽10
+  
+  const multipliers: Record<string, number> = {
+    'BRONZE': 1.0,
+    'SILVER': 1.5,
+    'GOLD': 2.0,
+    'PLATINUM': 3.0,
+  };
+  
+  const multiplier = multipliers[tier.toUpperCase()] || 1.0;
+  return Math.floor(basePoints * multiplier);
+}
+
+/**
+ * Apply membership discount to order amount
+ * @param amount - Original order amount
+ * @param tier - Membership tier
+ * @returns Discounted amount
+ */
+export function applyMembershipDiscount(amount: number, tier: string): number {
+  const discounts: Record<string, number> = {
+    'BRONZE': 0,
+    'SILVER': 5,
+    'GOLD': 10,
+    'PLATINUM': 15,
+  };
+  
+  const discountPercent = discounts[tier.toUpperCase()] || 0;
+  return Math.floor(amount * (100 - discountPercent) / 100);
+}
+
+/**
+ * Get membership tier based on total points
+ * @param points - Total accumulated points
+ * @returns Tier name
+ */
+export function getMembershipTier(points: number): string {
+  if (points >= 5000) return 'PLATINUM';
+  if (points >= 1500) return 'GOLD';
+  if (points >= 500) return 'SILVER';
+  return 'BRONZE';
+}
