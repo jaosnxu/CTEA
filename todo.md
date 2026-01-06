@@ -263,3 +263,79 @@
 - [x] Include automated test execution report
 - [x] Include deployment script execution logs
 - [x] Final review and delivery (CTO_REVIEW_REPORT.md)
+
+
+---
+
+## 🔴 Final Acceptance Checklist (11 items, 0-10) - CRITICAL
+
+### 0) Baseline Confirmation
+- [ ] Remove all MySQL dependencies (mysql2 / drizzle mysql driver)
+- [ ] DATABASE_URL uses PostgreSQL connection string
+- [ ] CI uses PostgreSQL service and runs full migration + tests
+
+### 1) Schema Implementation
+- [ ] drizzle/schema.ts contains all tables from SCHEMA_FINAL
+- [ ] Migrations split by dependency: base tables → relations → constraints/indexes
+- [ ] Key tables included: member, member_points_history, coupon_template, coupon_instance, order, store, store_product, option_group, option_item, product_option_group, product_option_item, offline_scan_log, iiko_sync_job, iiko_sync_log
+- [ ] All foreign keys/unique constraints/indexes created in migrations
+
+### 2) Timestamp Field Unification
+- [ ] All timestamp fields use timestamptz (withTimezone=true)
+- [ ] Migration strategy documented (rebuild or USING ... AT TIME ZONE 'UTC')
+
+### 3) Naming Convention
+- [ ] DB uses snake_case, TS uses camelCase with explicit mapping
+- [ ] All new table fields use snake_case (e.g., created_at)
+- [ ] Drizzle schema has explicit mapping (e.g., createdAt: timestamptz('created_at'))
+
+### 4) Repository Write Enforcement
+- [ ] server/db.ts only contains connection layer (getDb/closeDb)
+- [ ] All write operations moved to server/repositories/**
+- [ ] lint-db-writes.sh whitelist only allows: server/repositories|server/db/migrations
+- [ ] grep excludes comment false positives (^\s*// and ^\s*\*)
+
+### 5) Drizzle Migration Workflow
+- [ ] Split scripts: db:generate and db:migrate
+- [ ] CI only allows db:migrate (no generate)
+- [ ] Local development can use db:push (documented as not for CI)
+
+### 6) Coupon Concurrency Safety
+- [ ] coupon_instance has state consistency CHECK
+- [ ] coupon_instance has partial unique index on used_order_id
+- [ ] Repository uses conditional update with RETURNING (WHERE status='UNUSED')
+- [ ] No dummy any table
+
+### 7) Points/Coupon Mutual Exclusion
+- [ ] order table has points/coupon mutual exclusion CHECK (DB level)
+- [ ] member_points_history has partial unique index on idempotency_key
+- [ ] Points deduction/grant uses transaction: update balance + write history
+
+### 8) Offline Scan Stability
+- [ ] offline_scan_log.client_event_id uses UUID type + UNIQUE
+- [ ] Business unique key added (campaign_code_id + order_id OR campaign_code_id + store_id + cashier_id + date_bucket)
+- [ ] Conflict strategy: duplicate events increment dup_count instead of creating new records
+
+### 9) Option Default Value Consistency
+- [ ] product_option_group.default_item_id has composite foreign key to option_item(group_id, id)
+- [ ] Composite FK migration order correct (unique index first, then add FK)
+- [ ] option_group business rules enforced (temperature/ice/sugar required single-select, toppings multi-select optional)
+
+### 10) CI Enhancement
+- [ ] CI starts postgres service
+- [ ] CI executes: pnpm lint:db-writes → pnpm db:migrate → pnpm test
+- [ ] E2E tests included (if exists, run on main/develop only)
+
+
+---
+
+## 🔴 CI Refinement & Final Hardening (URGENT)
+
+- [ ] CI: Change `db:push` to `db:migrate` (禁止 generate)
+- [ ] Scripts: Split into `db:generate`, `db:migrate`, `db:push` (本地 only)
+- [ ] Lint: Tighten whitelist to `repositories|migrations` only
+- [ ] BaseRepository: Change `where: SQL` to `where: SQLWrapper`, ban `sql\``
+- [ ] db.ts: Production fail-fast + SSL controlled by env
+- [ ] Migrations: Unify directory to `drizzle/migrations/`
+- [ ] CI: Run e2e tests
+- [ ] CI: Increase healthcheck retries to 10

@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  DATABASE_URL: postgresql://app:app@localhost:5432/milktea
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: milktea
+        options: >-
+          --health-cmd="pg_isready -U app -d milktea"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      # Step 1: Lint DB writes (Repository-only enforcement)
+      - name: Enforce repository-only DB writes
+        run: pnpm lint:db-writes
+      
+      # Step 2: Run database migrations (NEVER use db:generate in CI)
+      - name: Run database migrations
+        run: pnpm db:migrate
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+      
+      # Step 3: Type check
+      - name: Type check
+        run: pnpm check
+      
+      # Step 4: Run unit tests
+      - name: Run tests
+        run: pnpm test
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+
+  # E2E tests (only on main/develop)
+  e2e:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: milktea
+        options: >-
+          --health-cmd="pg_isready -U app -d milktea"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run database migrations
+        run: pnpm db:migrate
+        env:
+          DATABASE_URL: postgresql://app:app@localhost:5432/milktea
+
+      - name: Run E2E tests
+        run: pnpm test:e2e
+        env:
+          DATABASE_URL: postgresql://app:app@localhost:5432/milktea

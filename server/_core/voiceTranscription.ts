@@ -267,15 +267,14 @@ function getLanguageName(langCode: string): string {
  *         });
  *       }
  *       
- *       // Optionally save transcription to database
- *       await db.insert(transcriptions).values({
- *         userId: ctx.user.id,
- *         text: result.text,
- *         duration: result.duration,
- *         language: result.language,
- *         audioUrl: input.audioUrl,
- *         createdAt: new Date(),
- *       });
+ *       // TODO: Optionally save transcription to database via repository
+ *       // await transcriptionRepository.create({
+ *       //   userId: ctx.user.id,
+ *       //   text: result.text,
+ *       //   duration: result.duration,
+ *       //   language: result.language,
+ *       //   audioUrl: input.audioUrl,
+ *       // });
  *       
  *       return result;
  *     }),
