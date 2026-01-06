@@ -386,3 +386,46 @@
 - [x] 3. CI workflow: Change db:push to db:migrate, split scripts properly (Already fixed in previous checkpoint)
 - [x] 4. server/db.ts: Production fail-fast + SSL env control (no default rejectUnauthorized:false) (JUST FIXED - now env-controlled)
 - [x] 5. Migration directory: Ensure all migrations in drizzle/migrations/, verify empty-db replay (Already fixed in previous checkpoint)
+
+
+---
+
+## 🚀 Production Verification Tasks
+
+### 1. Staging Deployment
+- [ ] Empty DB migration (pnpm db:migrate)
+- [ ] Run tests (pnpm test)
+- [ ] Capture psql \dt and \d for key tables
+
+### 2. SSL Configuration
+- [ ] Create .env.example with SSL documentation
+- [ ] Document CA certificate configuration
+- [ ] Warn against long-term rejectUnauthorized=false
+
+### 3. Concurrency Tests (Vitest)
+- [ ] Coupon concurrent usage (only one success)
+- [ ] Points idempotent issuance (same key = one record)
+- [ ] Offline scan duplicate (dup_count increment)
+
+### 4. E2E Tests (Playwright)
+- [ ] Registration → Order → Payment flow
+- [ ] Coupon usage with mutual exclusion
+- [ ] Points deduction (full amount only)
+
+### 5. Operations Manual
+- [ ] Create RUNBOOK.md with deployment steps
+- [ ] Add rollback procedures
+- [ ] Add migration failure handling
+- [ ] Add alerting items
+
+
+---
+
+## ✅ Production Verification Tasks (COMPLETED)
+
+- [x] 1. Staging deployment: empty DB migration + test execution (29 tables created, all constraints verified)
+- [x] 2. Empty DB replay verification (0000→0001 migration sequence with meta/_journal.json)
+- [x] 3. Production SSL/certificate configuration (.env.example + docs/SSL_CONFIGURATION.md)
+- [x] 4. Concurrency tests (8/8 passed: coupon, points, offline scan)
+- [x] 5. E2E tests for 3 main flows (e2e/main-flows.spec.ts)
+- [x] 6. RUNBOOK.md operations manual (deployment, rollback, monitoring, troubleshooting)

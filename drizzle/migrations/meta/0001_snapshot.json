@@ -1,0 +1,14 @@
+{
+  "id": "0001_add_composite_fk",
+  "prevId": "0000_serious_marauders",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {},
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}
