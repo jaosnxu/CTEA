@@ -11,14 +11,17 @@ let _pool: Pool | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      // SSL configuration: controlled by DATABASE_SSL env var
-      // Default: production requires SSL, development does not
+      // SSL configuration: controlled by DATABASE_SSL and DATABASE_SSL_REJECT_UNAUTHORIZED env vars
+      // Default: production requires SSL with certificate validation
+      // Set DATABASE_SSL_REJECT_UNAUTHORIZED=false only for self-signed certs in dev/staging
       const useSSL = process.env.DATABASE_SSL === 'true' || 
                      (process.env.NODE_ENV === 'production' && process.env.DATABASE_SSL !== 'false');
       
+      const rejectUnauthorized = process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false';
+      
       _pool = new Pool({
         connectionString: process.env.DATABASE_URL,
-        ssl: useSSL ? { rejectUnauthorized: false } : undefined,
+        ssl: useSSL ? { rejectUnauthorized } : undefined,
         max: 20, // Maximum pool size
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 5000,

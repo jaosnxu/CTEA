@@ -376,3 +376,13 @@
 - [x] B. Document timestamptz conversion approach - MIGRATION_GUIDE.md
 - [x] C. Implement data cleanup before constraint migration - MIGRATION_GUIDE.md (SQL scripts)
 - [x] D. Optimize BaseRepository batch update performance - Performance notes in base.repository.ts
+
+---
+
+## 🔴 CRITICAL FIXES (User Reported Issues)
+
+- [x] 1. CouponRepository: Remove mock, use real schema import from drizzle/schema (Already fixed in previous checkpoint)
+- [x] 2. lint-db-writes: Restrict whitelist to ONLY server/repositories|drizzle/migrations (Already fixed in previous checkpoint)
+- [x] 3. CI workflow: Change db:push to db:migrate, split scripts properly (Already fixed in previous checkpoint)
+- [x] 4. server/db.ts: Production fail-fast + SSL env control (no default rejectUnauthorized:false) (JUST FIXED - now env-controlled)
+- [x] 5. Migration directory: Ensure all migrations in drizzle/migrations/, verify empty-db replay (Already fixed in previous checkpoint)
