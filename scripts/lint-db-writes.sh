@@ -3,11 +3,11 @@ set -euo pipefail
 
 # Allowed directories for direct DB writes:
 # - server/repositories: Primary location for DB operations via BaseRepository
-# - server/db/migrations: Database migration scripts
+# - drizzle/migrations: Database migration scripts (actual location)
 # REMOVED: server/services (must use repositories)
 # REMOVED: server/db.ts (connection only, no writes)
 # REMOVED: server/_core/voiceTranscription.ts (must migrate to repositories)
-ALLOW_DIR_REGEX="server/repositories|server/db/migrations"
+ALLOW_DIR_REGEX="server/repositories|drizzle/migrations"
 
 # Search for db.* and tx.* write operations outside allowed directories
 HITS=$(grep -R --line-number --include="*.ts" --include="*.tsx" -E "(db|tx)\.(update|insert|delete)\(" server \

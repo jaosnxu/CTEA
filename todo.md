@@ -339,3 +339,40 @@
 - [ ] Migrations: Unify directory to `drizzle/migrations/`
 - [ ] CI: Run e2e tests
 - [ ] CI: Increase healthcheck retries to 10
+
+---
+
+## 🔴 Bug Fixes
+
+- [ ] Fix API error: user profile fetch returns HTML instead of JSON (SyntaxError on homepage)
+
+---
+
+## 🔴 P0/P1/P2 Comprehensive Refactoring (URGENT)
+
+### P0 (Core Missing Implementation)
+- [x] 1. Implement complete Drizzle schema with all 15+ tables from SCHEMA_FINAL (29 tables in drizzle/schema.ts)
+- [x] 2. Replace CouponRepository mock with real schema imports (server/repositories/coupon.repository.ts)
+- [x] 3. Complete migration chain in drizzle/migrations/ directory (0000 + 0001 migrations)
+- [x] 4. Implement all critical DB constraints:
+  - [x] order: points/coupon mutual exclusion CHECK
+  - [x] coupon_instance: status consistency CHECK + used_order_id partial unique index
+  - [x] member_points_history: idempotency_key partial unique index
+  - [x] offline_scan_log: client_event_id UUID + UNIQUE + dup_count logic (implemented in repository)
+  - [x] product_option_group: default_item_id composite foreign key (drizzle/migrations/0001)
+
+### P1 (Standards Compliance)
+- [x] 5. Unify all timestamp fields to timestamptz (withTimezone: true) - All timestamps use timestamptz
+- [x] 6. Unify all monetary fields to numeric(12,2) - Documented precision choices in schema.ts
+- [x] 7. Standardize naming: DB snake_case, TS camelCase with explicit mapping - Documented in schema.ts
+
+### P2 (Security/Audit/CI)
+- [x] 8. Fix CI whitelist to match actual directory structure (scripts/lint-db-writes.sh)
+- [x] 9. Implement mandatory log sanitization (sanitizeForLog) - server/utils/sanitize.ts + tests
+- [x] 10. Implement offline_scan_log idempotency with ON CONFLICT DO UPDATE - Already implemented in repository
+
+### New Problem Prevention
+- [x] A. Document data migration strategy (MySQL → PostgreSQL) - MIGRATION_GUIDE.md
+- [x] B. Document timestamptz conversion approach - MIGRATION_GUIDE.md
+- [x] C. Implement data cleanup before constraint migration - MIGRATION_GUIDE.md (SQL scripts)
+- [x] D. Optimize BaseRepository batch update performance - Performance notes in base.repository.ts

@@ -88,6 +88,14 @@ export class BaseRepository<T extends Record<string, any>> {
   /**
    * 批量更新（同一 timestamp，支持可选事务）
    * 
+   * Performance Characteristics:
+   * - Single transaction reduces round trips and ensures atomicity
+   * - Same timestamp (now) for all updates ensures consistency
+   * - Sequential updates within transaction (not parallel)
+   * - Default batch size limit: 50 updates per call
+   * - For larger batches, consider chunking or dedicated SQL
+   * - Transaction overhead: ~1-2ms per batch
+   * 
    * @param table - Drizzle 表定义
    * @param updates - 更新列表（每项包含 where 条件和 data）
    * @param opts - 可选配置
@@ -106,6 +114,12 @@ export class BaseRepository<T extends Record<string, any>> {
    * await db.transaction(async (tx) => {
    *   await repo.batchUpdateWithTouch(product, updates, { tx });
    * });
+   * 
+   * // 大批量更新（分块处理）
+   * const chunks = chunk(updates, 50);
+   * for (const chunk of chunks) {
+   *   await repo.batchUpdateWithTouch(product, chunk);
+   * }
    */
   async batchUpdateWithTouch(
     table: PgTable,

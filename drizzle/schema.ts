@@ -5,8 +5,18 @@
  * - DB: snake_case (e.g., created_at, member_id)
  * - TS: camelCase with explicit mapping (e.g., createdAt: timestamp('created_at'))
  * 
- * All timestamp fields use timestamptz (with timezone)
- * All monetary fields use numeric(12,2)
+ * Type Standards:
+ * - All timestamp fields use timestamptz (with timezone) for UTC storage
+ * - Monetary fields use numeric(12,2) for currency amounts (max 9,999,999,999.99)
+ * - Points multipliers use numeric(3,2) for percentages (0.00-9.99x)
+ * - Discount percentages use numeric(5,2) for percentage values (0.00-999.99%)
+ * - Geographic coordinates use numeric(10,7) for lat/lng precision
+ * 
+ * Rationale:
+ * - numeric(12,2): Supports up to 10 billion in currency with cent precision
+ * - numeric(3,2): Points multipliers rarely exceed 10x (e.g., 2.5x, 5.0x)
+ * - numeric(5,2): Discount percentages can exceed 100% (e.g., 200% bonus)
+ * - numeric(10,7): Standard GPS precision (~1.1cm accuracy)
  */
 
 import { 
