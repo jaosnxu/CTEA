@@ -1,0 +1,110 @@
+.
+├── client
+│   ├── public
+│   │   ├── images
+│   │   ├── products
+│   │   └── backend_logs.txt
+│   ├── src
+│   │   ├── _core
+│   │   ├── components
+│   │   ├── contexts
+│   │   ├── hooks
+│   │   ├── lib
+│   │   ├── pages
+│   │   ├── App.tsx
+│   │   ├── const.ts
+│   │   ├── i18n.ts
+│   │   ├── index.css
+│   │   └── main.tsx
+│   └── index.html
+├── demo-evidence
+│   ├── roadshow-orders-display.md
+│   ├── roadshow-products-display.md
+│   ├── step1-manual-override.md
+│   └── step2-iiko-sync-protected.md
+├── drizzle
+│   ├── meta
+│   │   ├── 0000_snapshot.json
+│   │   └── _journal.json
+│   ├── migrations
+│   ├── 0000_eager_leper_queen.sql
+│   ├── relations.ts
+│   └── schema.ts
+├── patches
+│   └── wouter@3.7.1.patch
+├── server
+│   ├── _core
+│   │   ├── types
+│   │   ├── context.ts
+│   │   ├── cookies.ts
+│   │   ├── dataApi.ts
+│   │   ├── env.ts
+│   │   ├── imageGeneration.ts
+│   │   ├── index.ts
+│   │   ├── llm.ts
+│   │   ├── logger.ts
+│   │   ├── map.ts
+│   │   ├── notification.ts
+│   │   ├── oauth.ts
+│   │   ├── sdk.ts
+│   │   ├── systemRouter.ts
+│   │   ├── trpc.ts
+│   │   ├── vite.ts
+│   │   └── voiceTranscription.ts
+│   ├── services
+│   │   └── README.md
+│   ├── analytics.ts
+│   ├── auth.logout.test.ts
+│   ├── db.ts
+│   ├── db_iiko_settings.ts
+│   ├── db_mock.ts
+│   ├── db_payment_settings.ts
+│   ├── db_telegram_settings.ts
+│   ├── delivery.ts
+│   ├── i18n.ts
+│   ├── iiko-api.ts
+│   ├── iiko-sync.ts
+│   ├── index.ts
+│   ├── marketing.ts
+│   ├── membership.ts
+│   ├── payment-gateway.ts
+│   ├── payment.controller.ts
+│   ├── routers.ts
+│   ├── storage.ts
+│   └── telegram-bot.ts
+├── shared
+│   ├── _core
+│   │   └── errors.ts
+│   ├── const.ts
+│   └── types.ts
+├── test-results
+│   ├── test1-realtime-sync.md
+│   ├── test2-override-protection.md
+│   └── test3-stress-test.md
+├── ARCHITECTURE.md
+├── DELIVERY.md
+├── DEPLOYMENT_GUIDE.md
+├── DEVELOPMENT.md
+├── ENV_VARIABLES.md
+├── EXECUTIVE_SUMMARY.md
+├── FINAL_REPORT.md
+├── PROJECT_STRUCTURE.txt
+├── QUICK_DEPLOY_INSTRUCTIONS.md
+├── README.md
+├── SCHEMA.md
+├── TEST_REPORT.md
+├── components.json
+├── deploy-oneclick.sh
+├── deploy-tencent.sh
+├── drizzle.config.ts
+├── ideas.md
+├── nginx-chutea.conf
+├── package.json
+├── pnpm-lock.yaml
+├── todo.md
+├── tsconfig.json
+├── tsconfig.node.json
+├── vite.config.ts
+└── vitest.config.ts
+
+23 directories, 84 files

@@ -131,3 +131,41 @@
 - [ ] Add popular products ranking
 - [ ] Create admin analytics dashboard (charts, tables, exports)
 - [ ] Add user behavior tracking (funnel analysis)
+
+## Engineering Standards (Production Ready)
+
+### 1. Git Workflow & Version Control
+- [x] Create dev branch from main
+- [x] Add .gitignore for proper exclusions (already exists)
+- [ ] Document branching strategy in README
+- [ ] Ensure all commits have clear messages
+
+### 2. Environment Consistency
+- [x] Add .nvmrc to lock Node version
+- [x] Verify pnpm-lock.yaml is complete
+- [ ] Test installation on clean environment
+- [ ] Document exact versions in README (in progress)
+
+### 3. Dev/Prod Environment Separation
+- [x] Create ENV_VARIABLES.md documentation
+- [x] Separate dev and prod API endpoints (via NODE_ENV)
+- [x] Add environment-specific build scripts
+- [ ] Document deployment process (in progress)
+
+### 4. Scalable Project Structure
+- [x] Create unified API client wrapper
+- [x] Separate business logic from UI components (service layer created)
+- [x] Add service layer for backend logic
+- [x] Design multi-tenant architecture foundation
+
+### 5. Logging & Error Handling
+- [x] Add unified logging system (Pino)
+- [x] Implement error boundaries in React
+- [x] Add API error interceptors (in api-client.ts)
+- [x] Create error reporting mechanism
+
+### 6. Documentation
+- [x] Write comprehensive README.md
+- [x] Create DEVELOPMENT.md guide
+- [x] Add API documentation (in DEVELOPMENT.md)
+- [x] Write troubleshooting FAQ (in README.md and DEVELOPMENT.md)
