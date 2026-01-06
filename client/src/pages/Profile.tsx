@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Bell,
   ChevronRight,
-  CreditCard,
   Globe,
   HelpCircle,
   MapPin,
@@ -64,11 +63,11 @@ export default function Profile() {
           </div>
           <div className="space-y-1">
             <div className="text-2xl font-bold text-gray-900">2</div>
-            <div className="text-xs text-gray-500">Coupons</div>
+            <div className="text-xs text-gray-500">{t("profile.coupons")}</div>
           </div>
           <div className="space-y-1">
             <div className="text-2xl font-bold text-gray-900">128</div>
-            <div className="text-xs text-gray-500">Points</div>
+            <div className="text-xs text-gray-500">{t("profile.points")}</div>
           </div>
         </div>
       </div>
@@ -78,14 +77,14 @@ export default function Profile() {
         <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-6 text-white shadow-lg">
           <div className="flex justify-between items-start mb-8">
             <div>
-              <div className="text-sm text-gray-300 mb-1">Current Level</div>
+              <div className="text-sm text-gray-300 mb-1">{t("profile.current_level")}</div>
               <div className="text-2xl font-bold italic">CHU CLUB</div>
             </div>
             <ShieldCheck className="w-8 h-8 text-yellow-500" />
           </div>
           <div className="flex justify-between items-end">
             <div className="text-xs text-gray-400">
-              Upgrade to VIP.2 with 30 more points
+              {t("profile.upgrade_tip")}
             </div>
             <div className="w-12 h-1 bg-gray-700 rounded-full overflow-hidden">
               <div className="w-3/4 h-full bg-yellow-500 rounded-full" />
@@ -101,21 +100,21 @@ export default function Profile() {
             <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3">
                 <MapPin className="w-5 h-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">My Addresses</span>
+                <span className="text-sm font-medium text-gray-700">{t("profile.my_addresses")}</span>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300" />
             </button>
             <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3">
                 <Ticket className="w-5 h-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">My Coupons</span>
+                <span className="text-sm font-medium text-gray-700">{t("profile.my_coupons")}</span>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300" />
             </button>
             <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3">
                 <Wallet className="w-5 h-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">Payment Methods</span>
+                <span className="text-sm font-medium text-gray-700">{t("profile.payment_methods")}</span>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300" />
             </button>
@@ -130,7 +129,7 @@ export default function Profile() {
             >
               <div className="flex items-center gap-3">
                 <Globe className="w-5 h-5 text-blue-500" />
-                <span className="text-sm font-medium text-gray-700">Language / Язык</span>
+                <span className="text-sm font-medium text-gray-700">{t("profile.language")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-blue-600 font-medium">{getLangLabel()}</span>
@@ -140,21 +139,21 @@ export default function Profile() {
             <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3">
                 <User className="w-5 h-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">KOL Center</span>
+                <span className="text-sm font-medium text-gray-700">{t("profile.kol_center")}</span>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300" />
             </button>
             <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3">
                 <Bell className="w-5 h-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">Notifications</span>
+                <span className="text-sm font-medium text-gray-700">{t("profile.notifications")}</span>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300" />
             </button>
             <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3">
                 <HelpCircle className="w-5 h-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">Help & Support</span>
+                <span className="text-sm font-medium text-gray-700">{t("profile.help_support")}</span>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300" />
             </button>

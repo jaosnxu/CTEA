@@ -20,7 +20,7 @@ export default function Home() {
         
         {/* Floating Promo Cards - Top */}
         <div className="absolute top-12 left-4 right-4 flex gap-3 overflow-x-auto no-scrollbar py-2">
-          {["New Arrival", "Seasonal", "Best Seller"].map((tag, i) => (
+          {[t("home.tags.new_arrival"), t("home.tags.seasonal"), t("home.tags.best_seller")].map((tag, i) => (
             <div key={i} className="flex-shrink-0 bg-white/90 backdrop-blur-sm px-4 py-1.5 rounded-full text-xs font-medium shadow-sm">
               {tag}
             </div>
@@ -33,8 +33,8 @@ export default function Home() {
              <img src="/images/logo.png" alt="CHU TEA" className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm p-1" />
              <img src="/images/brand_text.png" alt="CHU TEA" className="h-6 brightness-0 invert" />
           </div>
-          <h1 className="text-4xl font-bold mb-2 tracking-tight">Strawberry Cheezo</h1>
-          <p className="text-white/90 text-sm font-medium">Fresh strawberries, jasmine tea, cheese foam.</p>
+          <h1 className="text-4xl font-bold mb-2 tracking-tight">{t("home.hero_title")}</h1>
+          <p className="text-white/90 text-sm font-medium">{t("home.hero_desc")}</p>
         </div>
       </div>
 
@@ -49,10 +49,10 @@ export default function Home() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg">Tea Lover</span>
+                  <span className="font-bold text-lg">{t("home.member_level")}</span>
                   <span className="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded font-bold">VIP.1</span>
                 </div>
-                <p className="text-xs text-muted-foreground">Unlock free delivery with 1 more order</p>
+                <p className="text-xs text-muted-foreground">{t("home.unlock_vip")}</p>
               </div>
             </div>
             <Button variant="ghost" size="icon" className="text-muted-foreground">
@@ -91,9 +91,9 @@ export default function Home() {
 
       {/* Secondary Actions */}
       <div className="px-4 mt-4 grid grid-cols-3 gap-3">
-        <SecondaryCard title={t('home.gift_card')} subtitle="Send love" icon={Gift} color="bg-pink-50" />
-        <SecondaryCard title={t('home.group_order')} subtitle="Office party" icon={Coffee} color="bg-orange-50" />
-        <SecondaryCard title={t('home.wallet')} subtitle="Top up" icon={CreditCard} color="bg-blue-50" />
+        <SecondaryCard title={t('home.gift_card')} subtitle={t('home.gift_card_desc')} icon={Gift} color="bg-pink-50" />
+        <SecondaryCard title={t('home.group_order')} subtitle={t('home.group_order_desc')} icon={Coffee} color="bg-orange-50" />
+        <SecondaryCard title={t('home.wallet')} subtitle={t('home.wallet_desc')} icon={CreditCard} color="bg-blue-50" />
       </div>
     </div>
   );

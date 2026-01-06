@@ -1,16 +1,18 @@
 import { Home, ShoppingBag, ShoppingCart, User, FileText } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export default function BottomNav() {
   const [location] = useLocation();
+  const { t } = useTranslation();
 
   const navItems = [
-    { icon: Home, label: "Home", path: "/" },
-    { icon: ShoppingBag, label: "Order", path: "/order" },
-    { icon: ShoppingCart, label: "Mall", path: "/mall" },
-    { icon: FileText, label: "Orders", path: "/orders" },
-    { icon: User, label: "Profile", path: "/profile" },
+    { icon: Home, label: t("nav.home"), path: "/" },
+    { icon: ShoppingBag, label: t("nav.order"), path: "/order" },
+    { icon: ShoppingCart, label: t("nav.mall"), path: "/mall" },
+    { icon: FileText, label: t("nav.orders"), path: "/orders" },
+    { icon: User, label: t("nav.profile"), path: "/profile" },
   ];
 
   return (
@@ -24,14 +26,14 @@ export default function BottomNav() {
                 <item.icon
                   className={cn(
                     "w-6 h-6 transition-colors duration-200",
-                    isActive ? "text-primary fill-current" : "text-muted-foreground group-hover:text-primary/70"
+                    isActive ? "text-blue-600 fill-current" : "text-gray-400 group-hover:text-blue-500"
                   )}
                   strokeWidth={isActive ? 2.5 : 2}
                 />
                 <span
                   className={cn(
                     "text-[10px] font-medium transition-colors duration-200",
-                    isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary/70"
+                    isActive ? "text-blue-600" : "text-gray-400 group-hover:text-blue-500"
                   )}
                 >
                   {item.label}
