@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -10,6 +9,7 @@ import Order from "./pages/Order";
 import Mall from "./pages/Mall";
 import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
+import AdminProducts from "./pages/AdminProducts";
 import BottomNav from "./components/BottomNav";
 
 function Router() {
@@ -21,6 +21,7 @@ function Router() {
         <Route path={"/mall"} component={Mall} />
         <Route path={"/orders"} component={Orders} />
         <Route path={"/profile"} component={Profile} />
+        <Route path={"/admin/products"} component={AdminProducts} />
         <Route path={"/404"} component={NotFound} />
         {/* Final fallback route */}
         <Route component={NotFound} />

@@ -35,6 +35,24 @@ async function startServer() {
 
   app.post("/api/payment/create", createPayment);
 
+  // Admin Routes
+  app.get("/api/admin/products", (req, res) => {
+    res.json(PRODUCTS);
+  });
+
+  app.put("/api/admin/products/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    const { price } = req.body;
+    
+    const product = PRODUCTS.find(p => p.id === id);
+    if (product) {
+      product.price = price;
+      res.json({ success: true, product });
+    } else {
+      res.status(404).json({ error: "Product not found" });
+    }
+  });
+
   // Serve static files
   app.use(express.static(staticPath));
 
