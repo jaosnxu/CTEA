@@ -1,9 +1,10 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, router, adminProcedure } from "./_core/trpc";
 import { PRODUCTS, ORDERS, USER_PROFILE } from "./db_mock";
 import { z } from "zod";
+import { syncFromIIKO, resetAllOverrides } from "./iiko-sync";
 
 // 演示模式开关：true 为模拟超时失败，false 为正常成功
 const DEMO_FAIL_MODE = true; // Forced for Demo
@@ -148,10 +149,10 @@ export const appRouter = router({
 
   admin: router({
     products: router({
-      list: publicProcedure.query(() => {
+      list: adminProcedure.query(() => {
         return PRODUCTS;
       }),
-      update: publicProcedure
+      update: adminProcedure
         .input(
           z.object({
             id: z.number(),
@@ -175,6 +176,24 @@ export const appRouter = router({
             throw new Error("Product not found");
           }
         }),
+    }),
+  }),
+
+  // IIKO Sync Simulator (Demo purposes)
+  iiko: router({
+    sync: publicProcedure
+      .input(
+        z.object({
+          forceOverride: z.boolean().optional(),
+        })
+      )
+      .mutation(({ input }) => {
+        const result = syncFromIIKO(input.forceOverride || false);
+        return result;
+      }),
+    resetOverrides: publicProcedure.mutation(() => {
+      resetAllOverrides();
+      return { success: true, message: "All override flags cleared" };
     }),
   }),
 });

@@ -10,7 +10,9 @@ import Mall from "./pages/Mall";
 import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
 import AdminProducts from "./pages/AdminProducts";
+import IIKOSyncDemo from "./pages/IIKOSyncDemo";
 import BottomNav from "./components/BottomNav";
+import { AdminRoute } from "./components/AdminRoute";
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -21,7 +23,12 @@ function Router() {
         <Route path={"/mall"} component={Mall} />
         <Route path={"/orders"} component={Orders} />
         <Route path={"/profile"} component={Profile} />
-        <Route path={"/admin/products"} component={AdminProducts} />
+        <Route path={"/admin/products"}>
+          <AdminRoute>
+            <AdminProducts />
+          </AdminRoute>
+        </Route>
+        <Route path={"/iiko-sync-demo"} component={IIKOSyncDemo} />
         <Route path={"/404"} component={NotFound} />
         {/* Final fallback route */}
         <Route component={NotFound} />
