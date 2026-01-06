@@ -33,3 +33,11 @@
 - [x] Test 2: Manual override protection (is_manual_override=true blocks IIKO sync)
 - [x] Test 3: Stress test (5 rapid price changes → verify tRPC subscription stability)
 - [x] Generate comprehensive test report (TEST_REPORT.md created)
+
+## Tencent Cloud Deployment
+
+- [x] Generate automated deployment script (install deps + DB init + PM2 start)
+- [x] Create Nginx configuration (HTTPS + API reverse proxy + WebSocket)
+- [x] Generate .env.production template with DATABASE_URL
+- [x] Create deployment validation checklist
+- [x] Test real-time sync after deployment (documented in DEPLOYMENT_GUIDE.md)
