@@ -169,3 +169,52 @@
 - [x] Create DEVELOPMENT.md guide
 - [x] Add API documentation (in DEVELOPMENT.md)
 - [x] Write troubleshooting FAQ (in README.md and DEVELOPMENT.md)
+
+## Test Environment Deployment
+
+### Phase 1: Infrastructure Setup
+- [x] Install and configure PostgreSQL (test database)
+- [x] Install and configure Redis (caching layer)
+- [x] Integrate Sentry SDK (frontend + backend)
+- [x] Configure test payment gateway (Tinkoff Sandbox)
+- [x] Setup environment variables for test environment
+- [x] Create test environment deployment script
+
+### Phase 2: System Deployment
+- [ ] Deploy Node.js backend with PM2
+- [ ] Build and deploy PWA frontend
+- [ ] Configure Nginx reverse proxy
+- [ ] Verify all services health checks
+- [ ] Test frontend-backend connectivity
+
+### Phase 3: Core Business Flow Testing (10 iterations)
+- [ ] Test 1: Order creation (PWA)
+- [ ] Test 2: Payment pre-authorization (Hold)
+- [ ] Test 3: IIKO order push
+- [ ] Test 4: Payment capture on success
+- [ ] Test 5: Payment void on IIKO failure
+- [ ] Test 6: Order status update (PENDING → COMPLETED)
+- [ ] Test 7: Manual price override protection
+- [ ] Test 8: Membership points calculation
+- [ ] Test 9: Coupon application
+- [ ] Test 10: Delivery zone calculation
+
+### Phase 4: Caching & Performance
+- [ ] Implement Redis caching for product list
+- [ ] Verify cache invalidation on admin price change
+- [ ] Test concurrent order processing (50 requests)
+- [ ] Validate frontend-backend data consistency
+
+### Phase 5: Error Tracking & Logging
+- [ ] Verify Sentry error capture (frontend)
+- [ ] Verify Sentry error capture (backend)
+- [ ] Test Pino log completeness
+- [ ] Simulate payment failure and verify error handling
+- [ ] Simulate IIKO timeout and verify auto-void
+
+### Phase 6: CTO Review Deliverables
+- [ ] Generate test environment deployment script
+- [ ] Create core flow test results document
+- [ ] Export Sentry error logs and screenshots
+- [ ] Document frontend-backend integration validation
+- [ ] Prepare final test report

@@ -1,5 +1,7 @@
 import "dotenv/config";
 import express from "express";
+import { initSentry } from "./sentry";
+import { initRedis } from "./redis";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
@@ -28,6 +30,10 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
+  // Initialize infrastructure
+  initSentry();
+  initRedis();
+  
   const app = express();
   const server = createServer(app);
   // Configure body parser with larger size limit for file uploads

@@ -8,6 +8,10 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 import "./i18n"; // Import i18n configuration
+import { initSentry } from "./lib/sentry";
+
+// Initialize Sentry error tracking
+initSentry();
 
 const queryClient = new QueryClient();
 

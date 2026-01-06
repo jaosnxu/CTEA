@@ -62,6 +62,24 @@ This document lists all environment variables used in the project. For productio
 | `VITE_APP_TITLE` | Application title | `CHU TEA` | No |
 | `VITE_APP_LOGO` | Logo path | `/logo.png` | No |
 
+## Infrastructure
+
+### Redis Cache
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `REDIS_URL` | Redis connection URL | `redis://localhost:6379` | No (optional in dev) |
+
+**Note:** Redis is optional in development (will use in-memory fallback). Required in production for high-performance caching.
+
+### Sentry Error Tracking
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `SENTRY_DSN` | Backend Sentry DSN | No (optional) |
+| `VITE_SENTRY_DSN` | Frontend Sentry DSN | No (optional) |
+| `VITE_APP_VERSION` | App version for release tracking | No |
+
 ## Logging & Monitoring
 
 | Variable | Description | Options | Default |
@@ -101,12 +119,28 @@ LOG_LEVEL=debug
 NODE_ENV=production
 PORT=3000
 VITE_API_URL=https://your-domain.com
+
+# Database
 DATABASE_URL=postgresql://user:pass@db-host:5432/chutea_db
+
+# Redis Cache
+REDIS_URL=redis://redis-host:6379
+
+# Sentry Error Tracking
+SENTRY_DSN=https://your-backend-dsn@sentry.io/project-id
+VITE_SENTRY_DSN=https://your-frontend-dsn@sentry.io/project-id
+VITE_APP_VERSION=1.0.0
+
+# Payment
 PAYMENT_PROVIDER=tinkoff
 TINKOFF_TERMINAL_KEY=your-key
 TINKOFF_SECRET_KEY=your-secret
+
+# IIKO Integration
 IIKO_API_LOGIN=your-login
 IIKO_ORGANIZATION_ID=your-org-id
+
+# Logging
 LOG_LEVEL=info
 ```
 
