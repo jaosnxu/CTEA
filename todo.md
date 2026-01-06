@@ -344,7 +344,7 @@
 
 ## 🔴 Bug Fixes
 
-- [ ] Fix API error: user profile fetch returns HTML instead of JSON (SyntaxError on homepage)
+- [x] Fix API error: user profile fetch returns HTML instead of JSON on homepage (SyntaxError) - Changed Profile.tsx to use tRPC instead of fetch
 
 ---
 

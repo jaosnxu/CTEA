@@ -14,28 +14,13 @@ import {
   Wallet
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
-
-interface UserProfile {
-  id: string;
-  name: string;
-  phone: string;
-  level: string;
-  points: number;
-  coupons: number;
-  balance: number;
-}
+import { trpc } from "@/lib/trpc";
 
 export default function Profile() {
   const { t, i18n } = useTranslation();
-  const [user, setUser] = useState<UserProfile | null>(null);
-
-  useEffect(() => {
-    fetch("/api/user/me")
-      .then((res) => res.json())
-      .then((data) => setUser(data))
-      .catch((err) => console.error("Failed to fetch user profile:", err));
-  }, []);
+  
+  // Use tRPC to fetch user profile instead of raw fetch
+  const { data: user, isLoading } = trpc.user.me.useQuery();
 
   const toggleLanguage = () => {
     const nextLang = i18n.language === "zh" ? "en" : i18n.language === "en" ? "ru" : "zh";
@@ -61,10 +46,10 @@ export default function Profile() {
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-gray-900">{user?.name || "Guest"}</h2>
+            <h2 className="text-xl font-bold text-gray-900">{user?.name || "Любитель Чая"}</h2>
             <div className="flex items-center gap-2 mt-1">
               <span className="px-2 py-0.5 bg-black text-white text-xs font-bold rounded-full">
-                {user?.level || "VIP.0"}
+                {user?.level || "VIP.1"}
               </span>
               <span className="text-sm text-gray-500">{user?.phone || ""}</span>
             </div>
