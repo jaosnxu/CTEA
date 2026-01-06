@@ -7,30 +7,28 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Order from "./pages/Order";
+import Mall from "./pages/Mall";
+import Profile from "./pages/Profile";
 import BottomNav from "./components/BottomNav";
-import { useTranslation } from "react-i18next";
-import { useEffect } from "react";
 
 function Router() {
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/order"} component={Order} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <div className="pb-16">
+      <Switch>
+        <Route path={"/"} component={Home} />
+        <Route path={"/order"} component={Order} />
+        <Route path={"/mall"} component={Mall} />
+        <Route path={"/profile"} component={Profile} />
+        <Route path={"/404"} component={NotFound} />
+        {/* Final fallback route */}
+        <Route component={NotFound} />
+      </Switch>
+      <BottomNav />
+    </div>
   );
 }
 
 function App() {
-  const { i18n } = useTranslation();
-
-  useEffect(() => {
-    // 强制切换为俄语进行测试
-    i18n.changeLanguage("ru");
-  }, []);
-
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
