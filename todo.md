@@ -41,3 +41,11 @@
 - [x] Generate .env.production template with DATABASE_URL
 - [x] Create deployment validation checklist
 - [x] Test real-time sync after deployment (documented in DEPLOYMENT_GUIDE.md)
+
+## One-Click Deployment for 43.166.239.99
+
+- [x] Generate comprehensive deployment script with environment setup
+- [x] Create schema.sql for database initialization with 10 SKUs (embedded in script)
+- [x] Generate Nginx configuration for port 80 → 3000 proxy (embedded in script)
+- [x] Add deployment verification commands (curl tests embedded in script)
+- [x] Test deployment script locally before delivery
