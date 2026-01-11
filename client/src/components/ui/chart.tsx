@@ -2,6 +2,7 @@ import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/i18n";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
@@ -132,7 +133,7 @@ function ChartTooltipContent({
     }
 
     const [item] = payload;
-    const key = `${labelKey || item?.dataKey || item?.name || "value"}`;
+    const key = `${formatCurrency(labelKey || item?.dataKey || item?.name || "value")}`;
     const itemConfig = getPayloadConfigFromPayload(config, item, key);
     const value =
       !labelKey && typeof label === "string"
@@ -180,7 +181,7 @@ function ChartTooltipContent({
         {payload
           .filter(item => item.type !== "none")
           .map((item, index) => {
-            const key = `${nameKey || item.name || item.dataKey || "value"}`;
+            const key = `${formatCurrency(nameKey || item.name || item.dataKey || "value")}`;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
             const indicatorColor = color || item.payload.fill || item.color;
 

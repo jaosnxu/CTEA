@@ -172,6 +172,7 @@ import {
 import { useState } from "react";
 import { toast as sonnerToast } from "sonner";
 import { AIChatBox, type Message } from "@/components/AIChatBox";
+import { formatCurrency } from "@/lib/i18n";
 
 export default function ComponentsShowcase() {
   const { theme, toggleTheme } = useTheme();
@@ -585,11 +586,11 @@ export default function ComponentsShowcase() {
                                 }}
                               >
                                 <Check
-                                  className={`mr-2 h-4 w-4 ${
+                                  className={`mr-2 h-4 w-4 ${formatCurrency(
                                     selectedFramework === framework.value
                                       ? "opacity-100"
                                       : "opacity-0"
-                                  }`}
+                                  )}`}
                                 />
                                 {framework.label}
                               </CommandItem>
@@ -793,19 +794,19 @@ export default function ComponentsShowcase() {
                         <TableCell className="font-medium">INV001</TableCell>
                         <TableCell>Paid</TableCell>
                         <TableCell>Credit Card</TableCell>
-                        <TableCell className="text-right">$250.00</TableCell>
+                        <TableCell className="text-right">{formatCurrency(250.00)}</TableCell>
                       </TableRow>
                       <TableRow>
                         <TableCell className="font-medium">INV002</TableCell>
                         <TableCell>Pending</TableCell>
                         <TableCell>PayPal</TableCell>
-                        <TableCell className="text-right">$150.00</TableCell>
+                        <TableCell className="text-right">{formatCurrency(150.00)}</TableCell>
                       </TableRow>
                       <TableRow>
                         <TableCell className="font-medium">INV003</TableCell>
                         <TableCell>Unpaid</TableCell>
                         <TableCell>Bank Transfer</TableCell>
-                        <TableCell className="text-right">$350.00</TableCell>
+                        <TableCell className="text-right">{formatCurrency(350.00)}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>

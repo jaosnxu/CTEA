@@ -1,404 +1,292 @@
-
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState, useRef, useEffect } from "react";
+import { Search, MapPin, ShoppingCart, ArrowLeft } from "lucide-react";
+import MobileLayout from "@/components/layout/MobileLayout";
 import { cn } from "@/lib/utils";
-import { Search, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
-
-// 定义后端数据接口
-interface Variant {
-  id: string;
-  name_zh: string;
-  name_en: string;
-  name_ru: string;
-  price_adjustment: number;
-}
-
-interface Addon {
-  id: string;
-  name_zh: string;
-  name_en: string;
-  name_ru: string;
-  price: number;
-}
-
-interface Product {
-  id: number;
-  name_zh: string;
-  name_en: string;
-  name_ru: string;
-  description_zh: string;
-  description_en: string;
-  description_ru: string;
-  price: number;
-  image: string;
-  category: string;
-  tags: string[];
-  variants: Variant[];
-  addons: Addon[];
-}
-
-interface CartItem extends Product {
-  cartId: string;
-  selectedVariant: Variant;
-  selectedAddons: Addon[];
-  quantity: number;
-  totalPrice: number;
-}
-
-const CATEGORIES = [
-  { id: "seasonal", icon: "🍓" },
-  { id: "milktea", icon: "🧋" },
-  { id: "fruit_tea", icon: "🍋" },
-  { id: "slush", icon: "🧊" },
-];
+import { Link, useLocation } from "wouter";
+import { useApp, PRODUCTS, CATEGORIES } from "@/contexts/AppContext";
+import ProductSpecModal from "@/components/ProductSpecModal";
+import CartDrawer from "@/components/CartDrawer";
+import { formatCurrency } from "@/lib/i18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Order() {
-  const { t, i18n } = useTranslation();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState("seasonal");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [, setLocation] = useLocation();
+  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].id);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isSpecModalOpen, setIsSpecModalOpen] = useState(false);
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   
-  // 选中的规格和加料状态
-  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
-  const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
-  const [quantity, setQuantity] = useState(1);
-
-  // tRPC Query with auto-revalidation
-  const { data: productsData = [] } = trpc.products.list.useQuery();
+  const { drinkCart, drinkCartCount } = useApp();
+  const { t } = useLanguage();
   
-  // tRPC Mutation for payment
-  const createPayment = trpc.payment.create.useMutation();
+  // Refs for scroll sync
+  const productListRef = useRef<HTMLDivElement | null>(null);
+  const categoryRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const isScrollingProgrammatically = useRef(false);
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Sync to local state
-  useEffect(() => {
-    if (productsData.length > 0) {
-      setProducts(productsData);
-    }
-  }, [productsData]);
-
-  // 当打开弹窗时，重置选择状态
-  useEffect(() => {
-    if (selectedProduct) {
-      // 默认选中第一个规格
-      if (selectedProduct.variants && selectedProduct.variants.length > 0) {
-        setSelectedVariant(selectedProduct.variants[0]);
-      }
-      setSelectedAddons([]);
-      setQuantity(1);
-    }
-  }, [selectedProduct]);
-
-  // 计算当前商品总价
-  const calculateCurrentPrice = () => {
-    if (!selectedProduct) return 0;
-    let price = selectedProduct.price;
-    if (selectedVariant) {
-      price += selectedVariant.price_adjustment;
-    }
-    selectedAddons.forEach((addon) => {
-      price += addon.price;
-    });
-    return price * quantity;
-  };
-
-  // 获取当前语言对应的文本
-  const getLocalizedText = (item: any, field: string) => {
-    const lang = i18n.language; // 'en', 'zh', 'ru'
-    return item[`${field}_${lang}`] || item[`${field}_en`];
-  };
-
-  const addToCart = () => {
-    if (!selectedProduct || !selectedVariant) return;
+  // 左侧点击 -> 右侧滚动
+  const handleCategoryClick = (categoryId: string) => {
+    setActiveCategory(categoryId);
     
-    const newItem: CartItem = {
-      ...selectedProduct,
-      cartId: Math.random().toString(36).substr(2, 9),
-      selectedVariant,
-      selectedAddons,
-      quantity,
-      totalPrice: calculateCurrentPrice(),
-    };
-
-    setCart([...cart, newItem]);
-    setSelectedProduct(null);
-  };
-
-  const cartTotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  const handleCheckout = async () => {
-    try {
-      // 1. Create Order ID
-      const orderId = `P${Date.now()}`;
+    const categoryElement = categoryRefs.current[categoryId];
+    if (categoryElement && productListRef.current) {
+      isScrollingProgrammatically.current = true;
       
-      // 2. Call Payment API via tRPC
-      const data = await createPayment.mutateAsync({
-        orderId,
-        amount: cartTotal,
-        items: cart as any[]
+      const offsetTop = categoryElement.offsetTop - 16;
+      productListRef.current.scrollTo({
+        top: offsetTop,
+        behavior: "smooth"
       });
       
-      if (data.status === "PAID") {
-        // Success -> Go to Orders
-        window.location.href = "/orders";
-      } else if (data.status === "VOIDED") {
-        // Fail-Safe Triggered -> Go to Orders (to show Voided status)
-        // In real app, might show a toast first
-        alert(t("order.payment_voided_alert") || "Payment voided due to system timeout.");
-        window.location.href = "/orders";
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
       }
-    } catch (err) {
-      console.error("Checkout failed", err);
-      alert("Checkout failed. Please try again.");
+      scrollTimeout.current = setTimeout(() => {
+        isScrollingProgrammatically.current = false;
+      }, 800);
     }
+  };
+
+  // 右侧滚动 -> 左侧高亮
+  useEffect(() => {
+    const productList = productListRef.current;
+    if (!productList) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isScrollingProgrammatically.current) return;
+
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            const categoryId = entry.target.getAttribute('data-category-id');
+            if (categoryId) {
+              setActiveCategory(categoryId);
+            }
+          }
+        });
+      },
+      {
+        root: productList,
+        threshold: [0, 0.5, 1],
+        rootMargin: '-20% 0px -60% 0px'
+      }
+    );
+
+    Object.values(categoryRefs.current).forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Filter products by search query
+  const filteredProducts = searchQuery
+    ? PRODUCTS.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.desc.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : PRODUCTS;
+
+  const groupedProducts = CATEGORIES.map(cat => ({
+    ...cat,
+    products: filteredProducts.filter(p => p.category === cat.id)
+  })).filter(cat => cat.products.length > 0);
+
+  const handleProductClick = (product: any) => {
+    // Convert PRODUCTS format to ProductSpecModal format
+    const modalProduct = {
+      id: product.id,
+      name: product.name,
+      image: product.image,
+      price: product.price,
+      description: product.desc,
+      calories: product.energy,
+      sugar: product.sugar,
+      sizes: [
+        { name: "Средний", price: product.price },
+        { name: "Большой", price: product.price + 5 }
+      ],
+      temperatures: ["Холодный", "Мало льда", "Без льда", "Горячий"],
+      sweetness: ["Без сахара", "Меньше", "Стандарт", "Больше сахара"],
+      toppings: [
+        { name: "Тапиока", price: 3 },
+        { name: "Кокос", price: 3 },
+        { name: "Пудинг", price: 4 },
+        { name: "Красная фасоль", price: 3 }
+      ]
+    };
+    
+    setSelectedProduct(modalProduct);
+    setIsSpecModalOpen(true);
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
-      {/* Header */}
-      <div className="px-4 py-3 bg-white sticky top-0 z-10 shadow-sm">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+    <MobileLayout>
+      <div className="flex flex-col h-screen bg-gray-50">
+        {/* Header */}
+        <div className="bg-white px-4 py-3 space-y-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            {/* Back Button */}
+            <Link href="/">
+              <ArrowLeft size={24} className="text-foreground cursor-pointer" />
+            </Link>
+            
+            {/* Location */}
+            <Link href="/stores" className="flex-1">
+              <div className="flex items-center gap-2 cursor-pointer">
+                <MapPin size={20} className="text-primary" />
+                <span className="font-bold">{t("pages_order_莫斯科_go_店")}</span>
+                <span className="text-xs text-muted-foreground">{t("pages_order_距离_12_km")}</span>
+              </div>
+            </Link>
+          </div>
+
+          {/* Search */}
+          <div className="relative">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
-              placeholder={t("order.search_placeholder")}
-              className="w-full bg-gray-100 rounded-full py-2 pl-9 pr-4 text-sm outline-none"
+              placeholder={t("pages_order_Поиск напитков")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full text-sm outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
-          <div className="flex bg-black text-white rounded-full p-1">
-            <button className="px-4 py-1 rounded-full bg-gray-800 text-xs font-medium">
-              {t("order.pickup_toggle")}
-            </button>
-          </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar Categories */}
-        <ScrollArea className="w-[85px] bg-gray-50 h-full">
-          <div className="flex flex-col pb-24">
-            {CATEGORIES.map((cat) => (
+        {/* Main Content */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left Category Sidebar */}
+          <div className="w-24 bg-white overflow-y-auto flex-shrink-0">
+            {groupedProducts.map((category) => (
               <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
+                key={category.id}
+                onClick={() => handleCategoryClick(category.id)}
                 className={cn(
-                  "flex flex-col items-center justify-center py-4 px-1 w-full transition-colors relative",
-                  selectedCategory === cat.id
-                    ? "bg-white text-black font-medium"
-                    : "text-gray-400 hover:text-gray-600"
+                  "w-full px-2 py-4 text-sm transition-colors relative",
+                  activeCategory === category.id
+                    ? "bg-gray-50 text-primary font-bold"
+                    : "text-muted-foreground hover:bg-gray-50"
                 )}
               >
-                {selectedCategory === cat.id && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-black rounded-r-full" />
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-2xl">{category.icon}</span>
+                  <span className="text-xs">{category.name}</span>
+                </div>
+                {activeCategory === category.id && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
                 )}
-                <span className="text-xl mb-1">{cat.icon}</span>
-                <span className="text-[10px] text-center leading-tight">
-                  {t(`categories.${cat.id}`)}
-                </span>
               </button>
             ))}
           </div>
-        </ScrollArea>
 
-        {/* Product List */}
-        <ScrollArea className="flex-1 bg-white h-full">
-          <div className="p-4 pb-32">
-            <h2 className="text-sm font-bold mb-4 sticky top-0 bg-white py-2 z-10">
-              {t(`categories.${selectedCategory}`)}
-            </h2>
-            <div className="space-y-6">
-              {products
-                .filter((p) => p.category === selectedCategory)
-                .map((product) => (
-                  <div key={product.id} className="flex gap-3">
-                    <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+          {/* Right Product List */}
+          <div
+            ref={productListRef}
+            className="flex-1 overflow-y-auto px-4 py-4 pb-32 space-y-6"
+          >
+            {groupedProducts.map((category) => (
+              <div
+                key={category.id}
+                ref={(el) => { categoryRefs.current[category.id] = el; }}
+                data-category-id={category.id}
+              >
+                <h2 className="font-bold text-lg mb-3 sticky top-0 bg-gray-50 py-2 z-10">
+                  {category.name}
+                </h2>
+                <div className="space-y-3">
+                  {category.products.map((product) => (
+                    <div
+                      key={product.id}
+                      className="bg-white rounded-xl p-3 flex gap-3 shadow-sm hover:shadow-md transition-shadow"
+                    >
                       <img
                         src={product.image}
-                        alt={getLocalizedText(product, "name")}
-                        className="w-full h-full object-cover"
+                        alt={product.name}
+                        onClick={() => setLocation(`/product/${product.id}`)}
+                        className="w-24 h-24 object-cover rounded-lg flex-shrink-0 cursor-pointer"
                       />
-                    </div>
-                    <div className="flex-1 flex flex-col justify-between py-1">
-                      <div>
-                        <h3 className="font-bold text-base leading-tight mb-1">
-                          {getLocalizedText(product, "name")}
+                      <div className="flex-1 min-w-0">
+                        <h3 
+                          onClick={() => setLocation(`/product/${product.id}`)}
+                          className="font-bold mb-1 truncate cursor-pointer hover:text-primary transition-colors"
+                        >
+                          {product.name}
                         </h3>
-                        <p className="text-[10px] text-gray-400 line-clamp-2 leading-relaxed">
-                          {getLocalizedText(product, "description")}
+                        <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                          {product.desc}
                         </p>
-                      </div>
-                      <div className="flex items-end justify-between mt-2">
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-xs font-medium">₽</span>
-                          <span className="text-lg font-bold">{product.price}</span>
-                        </div>
-                        <Button
-                          size="sm"
-                          className="h-7 px-3 rounded-full bg-yellow-400 hover:bg-yellow-500 text-black font-medium text-xs shadow-none"
-                          onClick={() => setSelectedProduct(product)}
-                        >
-                          {t("order.select")}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </ScrollArea>
-      </div>
-
-      {/* Product Detail Modal */}
-      <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
-        <DialogContent className="w-[92%] max-w-[400px] rounded-[20px] p-0 overflow-hidden border-none bg-white/90 backdrop-blur-[10px] shadow-2xl gap-0">
-          <DialogTitle className="sr-only">Product Details</DialogTitle>
-          {selectedProduct && (
-            <div className="flex flex-col max-h-[85vh]">
-              {/* Image Header */}
-              <div className="relative h-48 shrink-0">
-                <img
-                  src={selectedProduct.image}
-                  alt={getLocalizedText(selectedProduct, "name")}
-                  className="w-full h-full object-cover"
-                />
-                <button
-                  onClick={() => setSelectedProduct(null)}
-                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 overflow-y-auto p-5">
-                <h2 className="text-xl font-bold mb-2">
-                  {getLocalizedText(selectedProduct, "name")}
-                </h2>
-                <p className="text-xs text-gray-500 mb-6 leading-relaxed">
-                  {getLocalizedText(selectedProduct, "description")}
-                </p>
-
-                {/* Variants */}
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-xs font-bold text-gray-400 mb-3 tracking-wider">
-                      {t("order.size")}
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedProduct.variants.map((variant) => (
-                        <button
-                          key={variant.id}
-                          onClick={() => setSelectedVariant(variant)}
-                          className={cn(
-                            "px-4 py-2 rounded-lg text-xs font-medium transition-all border",
-                            selectedVariant?.id === variant.id
-                              ? "bg-blue-50 border-blue-500 text-blue-600"
-                              : "bg-gray-50 border-transparent text-gray-600 hover:bg-gray-100"
-                          )}
-                        >
-                          {getLocalizedText(variant, "name")}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xs font-bold text-gray-400 mb-3 tracking-wider">
-                      {t("order.toppings")}
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedProduct.addons.map((addon) => {
-                        const isSelected = selectedAddons.some((a) => a.id === addon.id);
-                        return (
-                          <button
-                            key={addon.id}
-                            onClick={() => {
-                              if (isSelected) {
-                                setSelectedAddons(selectedAddons.filter((a) => a.id !== addon.id));
-                              } else {
-                                setSelectedAddons([...selectedAddons, addon]);
-                              }
-                            }}
-                            className={cn(
-                              "px-4 py-2 rounded-lg text-xs font-medium transition-all border",
-                              isSelected
-                                ? "bg-blue-50 border-blue-500 text-blue-600"
-                                : "bg-gray-50 border-transparent text-gray-600 hover:bg-gray-100"
-                            )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-primary font-bold">{formatCurrency(product.price)}</span>
+                          <button 
+                            onClick={() => handleProductClick(product)}
+                            className="px-4 py-1.5 bg-primary text-white text-xs rounded-full hover:bg-primary/90 transition-colors"
                           >
-                            {getLocalizedText(addon, "name")} (+₽{addon.price})
+                            加购
                           </button>
-                        );
-                      })}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
               </div>
-
-              {/* Footer */}
-              <div className="p-4 bg-white border-t border-gray-100 shrink-0">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-lg font-medium"
-                    >
-                      -
-                    </button>
-                    <span className="text-lg font-bold w-4 text-center">{quantity}</span>
-                    <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-lg font-medium"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <div className="text-xl font-bold">
-                    ₽{calculateCurrentPrice()}
-                  </div>
-                </div>
-                <Button 
-                  className="w-full h-12 rounded-full bg-black text-white font-bold text-base shadow-lg hover:bg-gray-800"
-                  onClick={addToCart}
-                >
-                  {t("order.add_to_cart")}
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Cart Bar */}
-      {cart.length > 0 && (
-        <div className="fixed bottom-20 left-4 right-4 z-20">
-          <div className="bg-black text-white rounded-full p-4 shadow-2xl flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-yellow-400 text-black flex items-center justify-center font-bold">
-                {cartCount}
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-300">{t("order.total")}</span>
-                <span className="text-xl font-bold">₽{cartTotal}</span>
-              </div>
-            </div>
-            <button 
-              className="px-6 py-2 bg-white text-black rounded-full font-bold text-sm hover:bg-gray-100 transition-colors"
-              onClick={handleCheckout}
-            >
-              {t("order.checkout")}
-            </button>
+            ))}
           </div>
         </div>
-      )}
-    </div>
+
+        {/* Bottom Cart Bar */}
+        {drinkCartCount > 0 && (
+          <div className="fixed bottom-14 left-0 right-0 bg-[#2c2c2c] px-4 py-3 flex items-center justify-between shadow-lg z-40">
+            {/* Left: Cart Icon, Count, and Total Price */}
+            <div 
+              onClick={() => setIsCartDrawerOpen(true)}
+              className="flex items-center gap-3 cursor-pointer"
+            >
+              <div className="relative">
+                <ShoppingCart size={24} className="text-white" />
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                  {drinkCartCount}
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-white font-bold text-lg">
+                  {formatCurrency(drinkCart.reduce((sum, item) => sum + item.price * item.quantity, 0))}
+                </span>
+                <span className="text-gray-400 text-xs">另需配送费约 {formatCurrency(3)}-{formatCurrency(5)}</span>
+              </div>
+            </div>
+            
+            {/* Right: Checkout Button */}
+            <Link href="/checkout?source=drink">
+              <button className="bg-primary hover:bg-primary/90 text-white font-bold px-8 py-3 rounded-full transition-colors">
+                去结算
+              </button>
+            </Link>
+          </div>
+        )}
+
+        {/* Product Spec Modal */}
+        {selectedProduct && (
+          <ProductSpecModal
+            open={isSpecModalOpen}
+            onClose={() => {
+              setIsSpecModalOpen(false);
+              setSelectedProduct(null);
+            }}
+            product={selectedProduct}
+            type="drink"
+          />
+        )}
+
+        {/* Cart Drawer */}
+        <CartDrawer
+          open={isCartDrawerOpen}
+          onClose={() => setIsCartDrawerOpen(false)}
+          type="drink"
+        />
+      </div>
+    </MobileLayout>
   );
 }

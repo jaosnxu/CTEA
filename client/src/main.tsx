@@ -7,7 +7,8 @@ import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
-import "./i18n"; // Import i18n configuration
+import { LanguageProvider } from "./contexts/LanguageContext";
+import "./pwa-update"; // PWA 自动更新检测
 
 const queryClient = new QueryClient();
 
@@ -56,7 +57,9 @@ const trpcClient = trpc.createClient({
 createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
-      <App />
+      <LanguageProvider>
+        <App />
+      </LanguageProvider>
     </QueryClientProvider>
   </trpc.Provider>
 );

@@ -1,188 +1,156 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Bell,
-  ChevronRight,
-  Globe,
-  HelpCircle,
-  MapPin,
-  Settings,
-  ShieldCheck,
-  Ticket,
-  User,
-  Wallet
-} from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
-
-interface UserProfile {
-  id: string;
-  name: string;
-  phone: string;
-  level: string;
-  points: number;
-  coupons: number;
-  balance: number;
-}
+import { User, Heart, MapPin, Gift, Settings, CreditCard, Star, PartyPopper, ShieldCheck, Camera, ChevronRight } from "lucide-react";
+import MobileLayout from "@/components/layout/MobileLayout";
+import { Link } from "wouter";
+import InstallPWA from "@/components/InstallPWA";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { useApp, MEMBER_LEVELS } from "@/contexts/AppContext";
+import { useState } from "react";
+import { formatCurrency } from "@/lib/i18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Profile() {
-  const { t, i18n } = useTranslation();
-  const [user, setUser] = useState<UserProfile | null>(null);
-
-  useEffect(() => {
-    fetch("/api/user/me")
-      .then((res) => res.json())
-      .then((data) => setUser(data))
-      .catch((err) => console.error("Failed to fetch user profile:", err));
-  }, []);
-
-  const toggleLanguage = () => {
-    const nextLang = i18n.language === "zh" ? "en" : i18n.language === "en" ? "ru" : "zh";
-    i18n.changeLanguage(nextLang);
-  };
-
-  const getLangLabel = () => {
-    switch (i18n.language) {
-      case "zh": return "中文";
-      case "en": return "English";
-      case "ru": return "Русский";
-      default: return "Русский";
+  const { isInstalled, canInstall } = usePWAInstall();
+  const { userProfile } = useApp();
+  const { t } = useLanguage();
+  const [avatarUrl, setAvatarUrl] = useState<string>("/images/default-avatar.jpg");
+  
+  const currentLevel = MEMBER_LEVELS[userProfile.level];
+  
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setAvatarUrl(event.target.result as string);
+          localStorage.setItem("userAvatar", event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
+  const menuItems = [
+    { title: t("pages_profile_我的优惠券"), icon: Gift, path: "/coupons", badge: t("pages_profile_3张可用") },
+    { title: t("pages_profile_我的礼品卡"), icon: CreditCard, path: "/gift-cards", badge: "" },
+    { title: t("pages_profile_活动中心"), icon: PartyPopper, path: "/activity-center", badge: t("pages_profile_新") },
+    { title: t("pages_profile_会员中心"), icon: Star, path: "/membership", badge: t(`member_level_${userProfile.level}`) },
+    { title: t("pages_profile_我的收藏"), icon: Heart, path: "/favorites", badge: "" },
+    { title: t("pages_profile_我的地址"), icon: MapPin, path: "/addresses", badge: "" },
+    { title: t("pages_profile_达人中心"), icon: ShieldCheck, path: "/influencer", badge: "" },
+    { title: t("pages_profile_设置"), icon: Settings, path: "/settings", badge: "" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Header Section */}
-      <div className="bg-white px-6 pt-12 pb-6 rounded-b-[2rem] shadow-sm">
-        <div className="flex items-center gap-4 mb-8">
-          <Avatar className="w-16 h-16 border-2 border-white shadow-md">
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold text-gray-900">{user?.name || "Guest"}</h2>
+    <MobileLayout>
+      <div className="bg-gray-50 min-h-full">
+        {/* Header with Centered Avatar */}
+        <div className="bg-white px-6 pt-12 pb-8">
+          <div className="flex flex-col items-center">
+            {/* Avatar */}
+            <div className="relative mb-4">
+              <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <User size={40} className="text-gray-400" />
+                )}
+              </div>
+              {/* Upload Button */}
+              <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-primary/90 transition-colors">
+                <Camera size={16} className="text-white" />
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            
+            {/* User Info */}
+            <h2 className="text-xl font-bold mb-1">{userProfile.name}</h2>
             <div className="flex items-center gap-2 mt-1">
-              <span className="px-2 py-0.5 bg-black text-white text-xs font-bold rounded-full">
-                {user?.level || "VIP.0"}
-              </span>
-              <span className="text-sm text-gray-500">{user?.phone || ""}</span>
+              <div 
+                className="px-3 py-1 rounded-full text-xs font-bold text-white flex items-center gap-1"
+                style={{ backgroundColor: currentLevel.color }}
+              >
+                {userProfile.level === "Platinum" ? "💎" : 
+                 userProfile.level === "Gold" ? "🏆" : 
+                 userProfile.level === "Silver" ? "⭐" : "👤"}
+                <span className="text-[11px]">{t(`member_level_${userProfile.level}`)}</span>
+              </div>
+              <span className="text-xs text-muted-foreground">{t("pages_profile_累计消费")} {formatCurrency(userProfile.totalSpent.toFixed(2))}</span>
             </div>
+            
+            {/* PWA Install Status */}
+            {isInstalled && (
+              <div className="mt-3 flex items-center gap-1 text-xs text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                <span>✓</span>
+                <span>{t("pages_profile_已安装")}</span>
+              </div>
+            )}
           </div>
-          <Button variant="ghost" size="icon" className="text-gray-400">
-            <Settings className="w-6 h-6" />
-          </Button>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div className="space-y-1">
-            <div className="text-2xl font-bold text-gray-900">{user?.balance || 0}</div>
-            <div className="text-xs text-gray-500">{t("home.wallet")}</div>
+        {/* PWA Install Card */}
+        {canInstall && !isInstalled && (
+          <div className="px-4 py-4">
+            <div className="bg-gradient-to-r from-black to-gray-800 text-white rounded-2xl p-5 shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center flex-shrink-0">
+                  <span className="text-3xl font-bold text-black">C</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg mb-1">{t("pages_profile_安装chutea应用")}</h3>
+                  <p className="text-sm text-white/80 mb-3">
+                    {t("pages_profile_添加到主屏幕享受更流畅的原生体验")}
+                  </p>
+                  <InstallPWA />
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-bold text-gray-900">{user?.coupons || 0}</div>
-            <div className="text-xs text-gray-500">{t("profile.coupons")}</div>
-          </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-bold text-gray-900">{user?.points || 0}</div>
-            <div className="text-xs text-gray-500">{t("profile.points")}</div>
+        )}
+
+        {/* Menu List */}
+        <div className="px-4 py-4">
+          <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+            {menuItems.map((item, index) => (
+              <Link key={item.path} href={item.path}>
+                <div className={`flex items-center justify-between p-4 hover:bg-gray-50 transition-colors cursor-pointer group ${
+                  index !== menuItems.length - 1 ? "border-b border-gray-100" : ""
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-primary/10 transition-all">
+                      <item.icon size={20} className="text-gray-600 group-hover:text-primary transition-colors" />
+                    </div>
+                    <span className="font-medium">{item.title}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {item.badge && (
+                      <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                        item.badge === t("pages_profile_新") 
+                          ? "bg-red-500 text-white" 
+                          : "bg-gray-100 text-gray-600"
+                      }`}>
+                        {item.badge}
+                      </span>
+                    )}
+                    <ChevronRight size={20} className="text-gray-300" />
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
-      </div>
 
-      {/* Membership Card */}
-      <div className="px-4 -mt-4 relative z-10">
-        <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-6 text-white shadow-lg">
-          <div className="flex justify-between items-start mb-8">
-            <div>
-              <div className="text-sm text-gray-300 mb-1">{t("profile.current_level")}</div>
-              <div className="text-2xl font-bold italic">CHU CLUB</div>
-            </div>
-            <ShieldCheck className="w-8 h-8 text-yellow-500" />
-          </div>
-          <div className="flex justify-between items-end">
-            <div className="text-xs text-gray-400">
-              {t("profile.upgrade_tip")}
-            </div>
-            <div className="w-12 h-1 bg-gray-700 rounded-full overflow-hidden">
-              <div className="w-3/4 h-full bg-yellow-500 rounded-full" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Menu List */}
-      <div className="px-4 mt-6 space-y-4">
-        <Card className="border-none shadow-sm">
-          <CardContent className="p-0 divide-y divide-gray-100">
-            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <MapPin className="w-5 h-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">{t("profile.my_addresses")}</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-gray-300" />
-            </button>
-            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <Ticket className="w-5 h-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">{t("profile.my_coupons")}</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-gray-300" />
-            </button>
-            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <Wallet className="w-5 h-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">{t("profile.payment_methods")}</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-gray-300" />
-            </button>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-sm">
-          <CardContent className="p-0 divide-y divide-gray-100">
-            <button 
-              onClick={toggleLanguage}
-              className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <Globe className="w-5 h-5 text-blue-500" />
-                <span className="text-sm font-medium text-gray-700">{t("profile.language")}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-blue-600 font-medium">{getLangLabel()}</span>
-                <ChevronRight className="w-4 h-4 text-gray-300" />
-              </div>
-            </button>
-            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <User className="w-5 h-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">{t("profile.kol_center")}</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-gray-300" />
-            </button>
-            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <Bell className="w-5 h-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">{t("profile.notifications")}</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-gray-300" />
-            </button>
-            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <HelpCircle className="w-5 h-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">{t("profile.help_support")}</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-gray-300" />
-            </button>
-          </CardContent>
-        </Card>
-        
-        <div className="text-center text-xs text-gray-300 py-4">
-          v1.0.0 • Powered by Manus
+        {/* Version */}
+        <div className="text-center py-8">
+          <p className="text-xs text-gray-400">VERSION 1.2.0</p>
         </div>
       </div>
-    </div>
+    </MobileLayout>
   );
 }

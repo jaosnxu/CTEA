@@ -1,138 +1,213 @@
-import { useTranslation } from "react-i18next";
-import { Card } from "@/components/ui/card";
-import { Clock, ShoppingBag } from "lucide-react";
-import { trpc } from "@/lib/trpc";
-
-interface OrderItem {
-  productId: number;
-  productName: string;
-  variant: string;
-  quantity: number;
-  price: number;
-}
-
-interface Order {
-  id: string;
-  prefix: "T" | "P" | "K" | "M";
-  items: OrderItem[];
-  total: number;
-  status: "PENDING" | "PAID" | "COMPLETED" | "CANCELLED" | "VOIDED";
-  createdAt: string;
-}
+import { useState } from "react";
+import { ChevronRight } from "lucide-react";
+import { Link } from "wouter";
+import { cn } from "@/lib/utils";
+import { useApp } from "@/contexts/AppContext";
+import MobileLayout from "@/components/layout/MobileLayout";
+import { formatCurrency } from "@/lib/i18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Orders() {
-  const { t, i18n } = useTranslation();
+  const { orders } = useApp();
+  const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState("all");
+  const [orderType, setOrderType] = useState<"all" | "drink" | "mall">("all");
   
-  // tRPC Query with auto-revalidation
-  const { data: orders = [], isLoading: loading } = trpc.orders.list.useQuery();
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "PENDING": return i18n.language === "ru" ? "Ожидание" : "Pending";
-      case "PAID": return i18n.language === "ru" ? "Оплачено" : "Paid";
-      case "COMPLETED": return i18n.language === "ru" ? "Завершен" : "Completed";
-      case "CANCELLED": return i18n.language === "ru" ? "Отменено" : "Cancelled";
-      case "VOIDED": return i18n.language === "ru" ? "Возврат" : "Voided";
-      default: return status;
+  const mockOrders = orders.length > 0 ? orders : [
+    {
+      id: "1",
+      items: [
+        {
+          id: "1",
+          name: t("product_芝芝草莓"),
+          price: 28,
+          image: "/images/products/drink_01.png",
+          category: "drink",
+          desc: t("product_desc_芝芝草莓"),
+          energy: 320,
+          sugar: 22,
+          likes: 1200,
+          reviews: 856,
+          quantity: 1,
+          specs: t("spec_中杯_冰_标准糖"),
+          toppings: [{ name: t("topping_珍珠"), price: 3 }]
+        }
+      ],
+      total: 31,
+      status: "completed" as const,
+      date: "2026-01-09 14:30",
+      createdAt: Date.now() - 86400000,
+      type: "pickup" as const,
+      source: "drink" as const,
+      pickupCode: "T1234"
+    },
+    {
+      id: "2",
+      items: [
+        {
+          id: "mall_1",
+          name: t("product_mall_air_force_1"),
+          price: 12999,
+          image: "/images/mall/shoe_01.png",
+          category: "mall",
+          desc: "CHUTEA x NIKE",
+          energy: 0,
+          sugar: 0,
+          likes: 2400,
+          reviews: 1250,
+          quantity: 1,
+          specs: t("spec_白色_40码")
+        }
+      ],
+      total: 12999,
+      status: "preparing" as const,
+      date: "2026-01-10 10:15",
+      createdAt: Date.now() - 3600000,
+      type: "delivery" as const,
+      source: "mall" as const,
+      pickupCode: "T5678"
+    },
+    {
+      id: "3",
+      items: [
+        {
+          id: "2",
+          name: t("product_满杯红柚"),
+          price: 22,
+          image: "/images/products/drink_02.png",
+          category: "drink",
+          desc: t("product_desc_满杯红柚"),
+          energy: 280,
+          sugar: 18,
+          likes: 980,
+          reviews: 654,
+          quantity: 2,
+          specs: t("spec_大杯_冰_少糖")
+        }
+      ],
+      total: 44,
+      status: "completed" as const,
+      date: "2026-01-08 16:45",
+      createdAt: Date.now() - 172800000,
+      type: "pickup" as const,
+      source: "drink" as const,
+      pickupCode: "T9012"
     }
+  ];
+  
+  const filteredOrders = orderType === "all" 
+    ? mockOrders 
+    : mockOrders.filter(order => order.source === orderType);
+  
+  const tabs = ["all", "drink", "mall"];
+  const tabLabels = {
+    all: t("pages_orders_全部"),
+    drink: t("pages_orders_饮品订单"),
+    mall: t("pages_orders_严选好物")
   };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "PENDING": return "text-orange-500 bg-orange-50";
-      case "PAID": return "text-blue-500 bg-blue-50";
-      case "COMPLETED": return "text-gray-500 bg-gray-100";
-      case "CANCELLED": return "text-red-500 bg-red-50";
-      case "VOIDED": return "text-red-500 bg-red-50";
-      default: return "text-gray-500 bg-gray-50";
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString(i18n.language === "ru" ? "ru-RU" : "en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
-  };
-
-  if (loading) {
-    return <div className="min-h-screen bg-[#F8F8F8] p-4 flex items-center justify-center">Loading...</div>;
-  }
 
   return (
-    <div className="min-h-screen bg-[#F8F8F8] pb-24">
-      <div className="bg-white px-4 py-4 sticky top-0 z-10 shadow-sm">
-        <h1 className="text-lg font-bold text-center">{t("nav.orders")}</h1>
-      </div>
+    <MobileLayout>
+      <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="bg-white px-4 py-3 flex items-center gap-3 sticky top-0 z-10 shadow-sm">
+          <h1 className="font-bold text-lg">{t("pages_orders_我的订单")}</h1>
+        </div>
 
-      <div className="p-4 space-y-4">
-        {orders.map((order) => (
-          <Card key={order.id} className="border-none shadow-sm rounded-[20px] overflow-hidden">
-            <div className="p-4 bg-white">
-              {/* Header */}
-              <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-50">
-                <div className="flex items-center gap-2">
-                  <span className="bg-black text-white text-xs font-bold px-1.5 py-0.5 rounded">
-                    {order.prefix}
-                  </span>
-                  <span className="text-sm font-bold text-gray-900">
-                    {order.prefix === "M" ? t("home.pickup") : t("home.delivery")}
-                  </span>
-                  <span className="text-xs text-gray-400 flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {formatDate(order.createdAt)}
+        <div className="bg-white px-4 border-b border-gray-100">
+          <div className="flex">
+            {tabs.map((tab) => (
+              <div 
+                key={tab}
+                onClick={() => setOrderType(tab as "all" | "drink" | "mall")}
+                className={cn(
+                  "flex-1 text-center py-3 text-sm font-medium relative cursor-pointer",
+                  orderType === tab ? "text-teal-600" : "text-gray-500"
+                )}
+              >
+                {tabLabels[tab as keyof typeof tabLabels]}
+                {orderType === tab && (
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-teal-600 rounded-full" />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-4 space-y-4">
+          {filteredOrders.length === 0 ? (
+            <div className="bg-white rounded-xl p-6 text-center py-12">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
+                🥤
+              </div>
+              <h3 className="font-bold text-lg mb-2">{t("pages_orders_暂无订单")}</h3>
+              <p className="text-sm text-muted-foreground mb-6">{t("pages_orders_快去点一杯喜欢的饮品吧")}</p>
+              <Link href="/order">
+                <button className="bg-primary text-white px-8 py-2 rounded-full font-bold text-sm">
+                  {t("pages_orders_去点单")}
+                </button>
+              </Link>
+            </div>
+          ) : (
+            filteredOrders.map((order) => (
+              <Link key={order.id} href={`/orders/${order.id}`}>
+                <div className="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-center mb-3 pb-3 border-b border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm">
+                      {order.source === "mall" ? t("pages_orders_严选好物") : t("pages_orders_莫斯科go店")}
+                    </span>
+                    <span className={cn(
+                      "text-xs px-2 py-0.5 rounded-full",
+                      order.source === "mall" ? "bg-purple-100 text-purple-600" : "bg-teal-100 text-teal-600"
+                    )}>
+                      {order.source === "mall" ? t("pages_orders_商城") : t("pages_orders_饮品")}
+                    </span>
+                    <ChevronRight size={14} className="text-muted-foreground" />
+                  </div>
+                  <span className={cn(
+                    "text-xs font-medium",
+                    order.status === "completed" ? "text-muted-foreground" : "text-primary"
+                  )}>
+                    {order.status === "preparing" ? t("pages_orders_制作中") : t("pages_orders_已完成")}
                   </span>
                 </div>
-                <span className={`text-xs font-medium px-2 py-1 rounded-full ${getStatusColor(order.status)}`}>
-                  {getStatusText(order.status)}
-                </span>
-              </div>
-
-              {/* Items */}
-              <div className="space-y-3 mb-4">
+                
                 {order.items.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-start">
-                    <div className="flex gap-3">
-                      <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center">
-                        <ShoppingBag className="w-6 h-6 text-gray-300" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{item.productName}</div>
-                        <div className="text-xs text-gray-500">{item.variant} x{item.quantity}</div>
-                      </div>
+                  <div key={idx} className="flex gap-3 mb-3">
+                    <div className="w-14 h-14 bg-gray-100 rounded-md overflow-hidden">
+                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     </div>
-                    <div className="text-sm font-medium">₽{item.price}</div>
+                    <div className="flex-1">
+                      <div className="flex justify-between">
+                        <span className="font-medium text-sm">{item.name}</span>
+                        <span className="font-bold text-sm">{formatCurrency(item.price)}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{item.specs} x{item.quantity}</p>
+                    </div>
                   </div>
                 ))}
-              </div>
 
-              {/* Footer */}
-              <div className="flex justify-between items-center pt-2">
-                <div className="text-xs text-gray-500">
-                  Order ID: {order.id}
-                </div>
-                <div className="text-right">
-                  <span className="text-xs text-gray-500 mr-2">{t("order.total")}</span>
-                  <span className="text-lg font-bold">₽{order.total}</span>
+                {/* Pickup Code */}
+                {order.pickupCode && (
+                  <div className="flex flex-col items-center justify-center gap-1 py-3 border-t border-gray-100 mt-2">
+                    <span className="text-xs text-muted-foreground">{t("pages_orders_取单码")}</span>
+                    <span className="text-2xl font-bold text-primary tracking-wider">{order.pickupCode}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center pt-2 border-t border-gray-50 mt-2">
+                  <span className="text-xs text-muted-foreground">{order.date}</span>
+                  <div className="flex gap-2 items-center">
+                    <span className="text-sm font-bold mr-2">{t("pages_orders_合计")} {formatCurrency(order.total)}</span>
+                    <button className="px-3 py-1.5 border border-primary text-primary rounded-full text-xs font-medium">{t("pages_orders_再来一单")}</button>
+                  </div>
                 </div>
               </div>
-              
-              {/* Actions */}
-              <div className="mt-4 flex justify-end gap-2">
-                <button className="px-4 py-1.5 border border-gray-200 rounded-full text-xs font-medium text-gray-600 hover:bg-gray-50">
-                  Invoice
-                </button>
-                <button className="px-4 py-1.5 bg-black text-white rounded-full text-xs font-medium hover:bg-gray-800">
-                  Reorder
-                </button>
-              </div>
-            </div>
-          </Card>
-        ))}
+              </Link>
+            ))
+          )}
+        </div>
       </div>
-    </div>
+    </MobileLayout>
   );
 }

@@ -21,23 +21,21 @@ export function ThemeProvider({
   defaultTheme = "light",
   switchable = false,
 }: ThemeProviderProps) {
-  // Simplify useState initialization to avoid potential hook call issues
-  const [theme, setTheme] = useState<Theme>(defaultTheme);
-
-  // Handle initial load from localStorage in useEffect
-  useEffect(() => {
+  const [theme, setTheme] = useState<Theme>(() => {
     if (switchable) {
       const stored = localStorage.getItem("theme");
-      if (stored === "light" || stored === "dark") {
-        setTheme(stored);
-      }
+      return (stored as Theme) || defaultTheme;
     }
-  }, [switchable]);
+    return defaultTheme;
+  });
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove("light", "dark");
-    root.classList.add(theme);
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
 
     if (switchable) {
       localStorage.setItem("theme", theme);
@@ -46,7 +44,7 @@ export function ThemeProvider({
 
   const toggleTheme = switchable
     ? () => {
-        setTheme((prev) => (prev === "light" ? "dark" : "light"));
+        setTheme(prev => (prev === "light" ? "dark" : "light"));
       }
     : undefined;
 

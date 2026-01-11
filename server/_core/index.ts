@@ -8,6 +8,16 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 
+// 业务 API 路由
+import withdrawalsRouter from "../src/routes/withdrawals";
+import telegramRouter from "../src/routes/telegram";
+import systemSettingsRouter from "../src/routes/system-settings";
+import financeRouter from "../src/routes/finance";
+import sduiRouter from "../src/routes/sdui";
+import operationsRouter from "../src/routes/operations";
+import brainRouter from "../src/routes/brain";
+import tenantRouter from "../src/routes/tenant";
+
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
     const server = net.createServer();
@@ -35,6 +45,17 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  
+  // 业务 API 路由
+  app.use('/api/withdrawals', withdrawalsRouter);
+  app.use('/api/telegram', telegramRouter);
+  app.use('/api/system-settings', systemSettingsRouter);
+  app.use('/api/finance', financeRouter);
+  app.use('/api/sdui', sduiRouter);
+  app.use('/api/operations', operationsRouter);
+  app.use('/api/brain', brainRouter);
+  app.use('/api/tenant', tenantRouter);
+  
   // tRPC API
   app.use(
     "/api/trpc",
