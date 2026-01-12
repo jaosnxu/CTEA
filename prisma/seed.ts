@@ -18,11 +18,15 @@ async function main() {
     throw new Error("DATABASE_URL environment variable is not set");
   }
 
+  console.log("🌱 Starting CHUTEA production seed...");
+  console.log("📡 Connecting to database...");
+
   const pool = new Pool({ connectionString });
   const adapter = new PrismaPg(pool);
   const prisma = new PrismaClient({ adapter });
 
-  console.log("🌱 Starting CHUTEA production seed...");
+  await prisma.$connect();
+  console.log("✅ Database connected successfully");
 
   try {
     // 1. Create default organization
