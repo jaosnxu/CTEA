@@ -1,8 +1,8 @@
 /**
  * Call Screen - 叫号屏页面
- * 
+ *
  * 用途：门店电视大屏显示，实时显示待取货订单
- * 
+ *
  * 功能：
  * 1. 通过 WebSocket 实时接收Статус заказа变更
  * 2. 显示最新的待取货订单（提货码）
@@ -10,15 +10,15 @@
  * 4. 支持语音播报（可选）
  */
 
-import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Volume2 } from 'lucide-react';
-import { useWebSocket, OrderReadyEvent } from '@/hooks/useWebSocket';
+import { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Volume2 } from "lucide-react";
+import { useWebSocket, OrderReadyEvent } from "@/hooks/useWebSocket";
 
 interface ReadyOrder {
   pickupCode: string;
-  pickupCodeSeries: 'T' | 'X';  // 提货码系列（T 系列：Для зала，X 系列：На вынос）
+  pickupCodeSeries: "T" | "X"; // 提货码系列（T 系列：Для зала，X 系列：На вынос）
   storeName: string;
   items: string[];
   readyAt: Date;
@@ -27,7 +27,7 @@ interface ReadyOrder {
 export default function CallScreen() {
   const [readyOrders, setReadyOrders] = useState<ReadyOrder[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [storeName, setStoreName] = useState('Красная площадь, Москва');
+  const [storeName, setStoreName] = useState("Красная площадь, Москва");
 
   // WebSocket 连接
   const ws = useWebSocket({ autoConnect: true });
@@ -36,9 +36,9 @@ export default function CallScreen() {
   useEffect(() => {
     if (ws.isConnected) {
       // TODO: 从 URL 参数或配置获取 storeId
-      const storeId = 'store-001';
+      const storeId = "store-001";
       ws.joinStore(storeId);
-      console.log('[CallScreen] 已加入门店房间:', storeId);
+      console.log("[CallScreen] 已加入门店房间:", storeId);
     }
   }, [ws.isConnected]);
 
@@ -47,10 +47,10 @@ export default function CallScreen() {
     if (!ws.isConnected) return;
 
     const unsubscribe = ws.onOrderReady((event: OrderReadyEvent) => {
-      console.log('[CallScreen] 收到新订单:', event);
+      console.log("[CallScreen] 收到新订单:", event);
       addReadyOrder({
         pickupCode: event.pickupCode,
-        pickupCodeSeries: event.pickupCode.startsWith('T') ? 'T' : 'X',
+        pickupCodeSeries: event.pickupCode.startsWith("T") ? "T" : "X",
         storeName: event.storeName,
         items: event.items,
         readyAt: new Date(event.readyAt),
@@ -66,24 +66,24 @@ export default function CallScreen() {
   useEffect(() => {
     setReadyOrders([
       {
-        pickupCode: 'T1230',
-        pickupCodeSeries: 'T',
-        storeName: 'Красная площадь, Москва',
-        items: ['Классический чай x2', 'Манго боба x1'],
+        pickupCode: "T1230",
+        pickupCodeSeries: "T",
+        storeName: "Красная площадь, Москва",
+        items: ["Классический чай x2", "Манго боба x1"],
         readyAt: new Date(Date.now() - 2 * 60 * 1000),
       },
       {
-        pickupCode: 'X5678',
-        pickupCodeSeries: 'X',
-        storeName: 'Красная площадь, Москва',
-        items: ['Матча латте x1', 'Клубничный шейк x2'],
+        pickupCode: "X5678",
+        pickupCodeSeries: "X",
+        storeName: "Красная площадь, Москва",
+        items: ["Матча латте x1", "Клубничный шейк x2"],
         readyAt: new Date(Date.now() - 1 * 60 * 1000),
       },
       {
-        pickupCode: 'T1231',
-        pickupCodeSeries: 'T',
-        storeName: 'Красная площадь, Москва',
-        items: ['Тапиока чай x1'],
+        pickupCode: "T1231",
+        pickupCodeSeries: "T",
+        storeName: "Красная площадь, Москва",
+        items: ["Тапиока чай x1"],
         readyAt: new Date(Date.now() - 30 * 1000),
       },
     ]);
@@ -112,26 +112,30 @@ export default function CallScreen() {
 
   // 语音播报
   const speakPickupCode = (pickupCode: string) => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(`Заказ ${pickupCode} готов. Пожалуйста, заберите ваш заказ.`);
-      utterance.lang = 'zh-CN';
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(
+        `Заказ ${pickupCode} готов. Пожалуйста, заберите ваш заказ.`
+      );
+      utterance.lang = "zh-CN";
       window.speechSynthesis.speak(utterance);
     }
   };
 
   // 格式化时间
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('zh-CN', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      second: '2-digit'
+    return date.toLocaleTimeString("zh-CN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
   };
 
   // 计算等待时间
   const getWaitingTime = (readyAt: Date) => {
-    const diff = Math.floor((new Date().getTime() - readyAt.getTime()) / 1000 / 60);
-    if (diff < 1) return 'Только что';
+    const diff = Math.floor(
+      (new Date().getTime() - readyAt.getTime()) / 1000 / 60
+    );
+    if (diff < 1) return "Только что";
     return `${diff} мин назад`;
   };
 
@@ -149,11 +153,11 @@ export default function CallScreen() {
               {formatTime(currentTime)}
             </div>
             <div className="text-sm text-gray-500 mt-1">
-              {currentTime.toLocaleDateString('zh-CN', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                weekday: 'long'
+              {currentTime.toLocaleDateString("zh-CN", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                weekday: "long",
               })}
             </div>
           </div>
@@ -170,29 +174,41 @@ export default function CallScreen() {
         ) : (
           <div className="grid gap-6">
             {/* 最新订单（大卡片） */}
-            <Card className={`p-12 text-white shadow-2xl animate-pulse-slow ${
-              readyOrders[0].pickupCodeSeries === 'T'
-                ? 'bg-gradient-to-r from-primary to-primary/80'
-                : 'bg-gradient-to-r from-orange-500 to-orange-600'
-            }`}>
+            <Card
+              className={`p-12 text-white shadow-2xl animate-pulse-slow ${
+                readyOrders[0].pickupCodeSeries === "T"
+                  ? "bg-gradient-to-r from-primary to-primary/80"
+                  : "bg-gradient-to-r from-orange-500 to-orange-600"
+              }`}
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-2xl font-semibold mb-4 flex items-center gap-3">
                     <Volume2 className="w-8 h-8" />
-                    {readyOrders[0].pickupCodeSeries === 'T' ? 'Для зала - заберите заказ' : 'На вынос - заберите заказ'}
+                    {readyOrders[0].pickupCodeSeries === "T"
+                      ? "Для зала - заберите заказ"
+                      : "На вынос - заберите заказ"}
                   </div>
                   <div className="text-8xl font-bold tracking-wider mb-4">
                     {readyOrders[0].pickupCode}
                   </div>
                   <div className="text-xl opacity-90">
-                    {readyOrders[0].items.join(' · ')}
+                    {readyOrders[0].items.join(" · ")}
                   </div>
                 </div>
                 <div className="text-right">
-                  <Badge className="bg-white text-lg px-6 py-2 mb-4" style={{
-                    color: readyOrders[0].pickupCodeSeries === 'T' ? '#8b5cf6' : '#f97316'
-                  }}>
-                    {readyOrders[0].pickupCodeSeries === 'T' ? 'Серия T · Для зала' : 'Серия X · На вынос'}
+                  <Badge
+                    className="bg-white text-lg px-6 py-2 mb-4"
+                    style={{
+                      color:
+                        readyOrders[0].pickupCodeSeries === "T"
+                          ? "#8b5cf6"
+                          : "#f97316",
+                    }}
+                  >
+                    {readyOrders[0].pickupCodeSeries === "T"
+                      ? "Серия T · Для зала"
+                      : "Серия X · На вынос"}
                   </Badge>
                   <div className="text-xl opacity-90">
                     {getWaitingTime(readyOrders[0].readyAt)}
@@ -205,21 +221,44 @@ export default function CallScreen() {
             {readyOrders.length > 1 && (
               <div className="grid grid-cols-2 gap-6">
                 {readyOrders.slice(1, 5).map((order, index) => (
-                  <Card key={index} className="p-8 hover:shadow-lg transition-shadow border-l-4" style={{
-                    borderLeftColor: order.pickupCodeSeries === 'T' ? '#8b5cf6' : '#f97316'
-                  }}>
+                  <Card
+                    key={index}
+                    className="p-8 hover:shadow-lg transition-shadow border-l-4"
+                    style={{
+                      borderLeftColor:
+                        order.pickupCodeSeries === "T" ? "#8b5cf6" : "#f97316",
+                    }}
+                  >
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="text-5xl font-bold tracking-wider" style={{
-                          color: order.pickupCodeSeries === 'T' ? '#8b5cf6' : '#f97316'
-                        }}>
+                        <div
+                          className="text-5xl font-bold tracking-wider"
+                          style={{
+                            color:
+                              order.pickupCodeSeries === "T"
+                                ? "#8b5cf6"
+                                : "#f97316",
+                          }}
+                        >
                           {order.pickupCode}
                         </div>
-                        <Badge variant="outline" className="text-xs" style={{
-                          borderColor: order.pickupCodeSeries === 'T' ? '#8b5cf6' : '#f97316',
-                          color: order.pickupCodeSeries === 'T' ? '#8b5cf6' : '#f97316'
-                        }}>
-                          {order.pickupCodeSeries === 'T' ? 'Для зала' : 'На вынос'}
+                        <Badge
+                          variant="outline"
+                          className="text-xs"
+                          style={{
+                            borderColor:
+                              order.pickupCodeSeries === "T"
+                                ? "#8b5cf6"
+                                : "#f97316",
+                            color:
+                              order.pickupCodeSeries === "T"
+                                ? "#8b5cf6"
+                                : "#f97316",
+                          }}
+                        >
+                          {order.pickupCodeSeries === "T"
+                            ? "Для зала"
+                            : "На вынос"}
                         </Badge>
                       </div>
                       <div className="text-right">
@@ -229,7 +268,7 @@ export default function CallScreen() {
                       </div>
                     </div>
                     <div className="text-sm text-gray-600">
-                      {order.items.join(' · ')}
+                      {order.items.join(" · ")}
                     </div>
                   </Card>
                 ))}
@@ -244,7 +283,10 @@ export default function CallScreen() {
                 </div>
                 <div className="grid grid-cols-5 gap-4">
                   {readyOrders.slice(5, 10).map((order, index) => (
-                    <div key={index} className="text-center p-4 bg-gray-50 rounded-lg">
+                    <div
+                      key={index}
+                      className="text-center p-4 bg-gray-50 rounded-lg"
+                    >
                       <div className="text-2xl font-bold text-primary">
                         {order.pickupCode}
                       </div>
@@ -265,7 +307,8 @@ export default function CallScreen() {
         <Card className="p-6 bg-blue-50 border-blue-200">
           <div className="flex items-center justify-between text-blue-800">
             <div>
-              <strong>温馨提示：</strong> 请凭Код получения到柜台取餐，超过 10 мин未取将自动Отмена订单
+              <strong>温馨提示：</strong> 请凭Код получения到柜台取餐，超过 10
+              мин未取将自动Отмена订单
             </div>
             <div className="text-sm opacity-75">
               WebSocket 实时连接 · 内测版

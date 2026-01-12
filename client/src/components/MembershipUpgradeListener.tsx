@@ -8,15 +8,17 @@ export default function MembershipUpgradeListener() {
   const [upgradedLevel, setUpgradedLevel] = useState<MembershipLevel>("Normal");
 
   useEffect(() => {
-    const handleUpgrade = (event: CustomEvent<{ newLevel: MembershipLevel }>) => {
+    const handleUpgrade = (
+      event: CustomEvent<{ newLevel: MembershipLevel }>
+    ) => {
       setUpgradedLevel(event.detail.newLevel);
       setShowUpgradeModal(true);
     };
 
-    window.addEventListener('membershipUpgrade' as any, handleUpgrade);
+    window.addEventListener("membershipUpgrade" as any, handleUpgrade);
 
     return () => {
-      window.removeEventListener('membershipUpgrade' as any, handleUpgrade);
+      window.removeEventListener("membershipUpgrade" as any, handleUpgrade);
     };
   }, []);
 

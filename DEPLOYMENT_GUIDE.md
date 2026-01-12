@@ -14,22 +14,22 @@ Before starting the deployment, ensure you have the following:
 
 ### 1. Tencent Cloud Resources
 
-| Resource | Specification | Purpose |
-|----------|---------------|---------|
-| **CVM Instance** | 2 vCPU, 4GB RAM minimum | Application server |
-| **Public IP** | Static IP address | External access |
-| **Security Group** | Ports 80, 443, 22 open | HTTP/HTTPS/SSH |
-| **Domain Name** | Registered and DNS configured | Production URL |
-| **SSL Certificate** | Let's Encrypt or purchased | HTTPS encryption |
+| Resource            | Specification                 | Purpose            |
+| ------------------- | ----------------------------- | ------------------ |
+| **CVM Instance**    | 2 vCPU, 4GB RAM minimum       | Application server |
+| **Public IP**       | Static IP address             | External access    |
+| **Security Group**  | Ports 80, 443, 22 open        | HTTP/HTTPS/SSH     |
+| **Domain Name**     | Registered and DNS configured | Production URL     |
+| **SSL Certificate** | Let's Encrypt or purchased    | HTTPS encryption   |
 
 ### 2. Third-Party Services
 
-| Service | Status | Required For |
-|---------|--------|--------------|
-| **GitHub Account** | ✅ Ready | Code repository (jaosnxu/CTEA) |
-| **Tinkoff/YooKassa** | ⏳ Pending | Payment processing |
-| **IIKO POS** | ⏳ Pending | Order synchronization |
-| **Telegram Bot** | ⏳ Optional | Telegram Mini App |
+| Service              | Status      | Required For                   |
+| -------------------- | ----------- | ------------------------------ |
+| **GitHub Account**   | ✅ Ready    | Code repository (jaosnxu/CTEA) |
+| **Tinkoff/YooKassa** | ⏳ Pending  | Payment processing             |
+| **IIKO POS**         | ⏳ Pending  | Order synchronization          |
+| **Telegram Bot**     | ⏳ Optional | Telegram Mini App              |
 
 ### 3. Local Tools
 
@@ -67,6 +67,7 @@ ls -la
 ```
 
 **Expected Output:**
+
 ```
 client/
 server/
@@ -230,12 +231,12 @@ pm2 logs chutea-backend --lines 50
 
 Log in to Tencent Cloud Console and configure the following inbound rules:
 
-| Protocol | Port | Source | Purpose |
-|----------|------|--------|---------|
-| TCP | 22 | Your IP only | SSH access |
-| TCP | 80 | 0.0.0.0/0 | HTTP (redirect to HTTPS) |
-| TCP | 443 | 0.0.0.0/0 | HTTPS |
-| TCP | 5432 | 127.0.0.1 | PostgreSQL (localhost only) |
+| Protocol | Port | Source       | Purpose                     |
+| -------- | ---- | ------------ | --------------------------- |
+| TCP      | 22   | Your IP only | SSH access                  |
+| TCP      | 80   | 0.0.0.0/0    | HTTP (redirect to HTTPS)    |
+| TCP      | 443  | 0.0.0.0/0    | HTTPS                       |
+| TCP      | 5432 | 127.0.0.1    | PostgreSQL (localhost only) |
 
 **Important:** Do NOT expose port 3000 (Node.js) directly. All traffic should go through Nginx.
 
@@ -247,13 +248,13 @@ After deployment, verify each component is working correctly:
 
 ### ✅ Phase 1: Infrastructure Validation
 
-| Test | Command | Expected Result | Status |
-|------|---------|-----------------|--------|
-| **Nginx Running** | `systemctl status nginx` | Active (running) | ⬜ |
-| **PostgreSQL Running** | `systemctl status postgresql` | Active (running) | ⬜ |
-| **PM2 Running** | `pm2 status` | 2 instances online | ⬜ |
-| **SSL Certificate** | `curl -I https://your-domain.com` | HTTP/2 200 | ⬜ |
-| **HTTP Redirect** | `curl -I http://your-domain.com` | 301 → HTTPS | ⬜ |
+| Test                   | Command                           | Expected Result    | Status |
+| ---------------------- | --------------------------------- | ------------------ | ------ |
+| **Nginx Running**      | `systemctl status nginx`          | Active (running)   | ⬜     |
+| **PostgreSQL Running** | `systemctl status postgresql`     | Active (running)   | ⬜     |
+| **PM2 Running**        | `pm2 status`                      | 2 instances online | ⬜     |
+| **SSL Certificate**    | `curl -I https://your-domain.com` | HTTP/2 200         | ⬜     |
+| **HTTP Redirect**      | `curl -I http://your-domain.com`  | 301 → HTTPS        | ⬜     |
 
 ### ✅ Phase 2: Database Validation
 
@@ -282,13 +283,13 @@ SELECT COUNT(*) FROM products;
 
 Open your browser and test the following URLs:
 
-| URL | Expected Result | Status |
-|-----|-----------------|--------|
-| `https://your-domain.com` | Homepage loads with CHU TEA branding | ⬜ |
-| `https://your-domain.com/order` | Product catalog displays 10 items | ⬜ |
-| `https://your-domain.com/mall` | Merchandise page loads | ⬜ |
-| `https://your-domain.com/orders` | Order history page loads | ⬜ |
-| `https://your-domain.com/admin/products` | Admin panel loads | ⬜ |
+| URL                                      | Expected Result                      | Status |
+| ---------------------------------------- | ------------------------------------ | ------ |
+| `https://your-domain.com`                | Homepage loads with CHU TEA branding | ⬜     |
+| `https://your-domain.com/order`          | Product catalog displays 10 items    | ⬜     |
+| `https://your-domain.com/mall`           | Merchandise page loads               | ⬜     |
+| `https://your-domain.com/orders`         | Order history page loads             | ⬜     |
+| `https://your-domain.com/admin/products` | Admin panel loads                    | ⬜     |
 
 **Browser Console:** Should show no JavaScript errors (press F12 to check)
 
@@ -306,6 +307,7 @@ curl -X POST https://your-domain.com/trpc/products.list \
 ```
 
 **Browser DevTools:**
+
 1. Open `https://your-domain.com/order`
 2. Press F12 → Network tab
 3. Filter by "trpc"
@@ -338,11 +340,11 @@ This is the critical test to verify your requirement: **"后台改价，前端�
 
 **Expected Behavior:**
 
-| Time | Window A (Admin) | Window B (Order Page) |
-|------|------------------|-----------------------|
-| T+0s | Click "Save" | Price: ₽500 |
-| T+0.5s | Success message | Price updating... |
-| T+1s | Price: ₽550, Manual badge | **Price: ₽550** ✅ |
+| Time   | Window A (Admin)          | Window B (Order Page) |
+| ------ | ------------------------- | --------------------- |
+| T+0s   | Click "Save"              | Price: ₽500           |
+| T+0.5s | Success message           | Price updating...     |
+| T+1s   | Price: ₽550, Manual badge | **Price: ₽550** ✅    |
 
 **If Update Does NOT Occur:**
 

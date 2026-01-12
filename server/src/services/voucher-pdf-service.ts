@@ -1,17 +1,17 @@
 /**
  * CHUTEA 财务凭证 PDF 生成服务
- * 
+ *
  * 功能：
  * 1. 生成俄语财务凭证 HTML
  * 2. 上传到 S3 存储
  * 3. 返回可访问的 URL
  */
 
-import { storagePut } from '../../storage';
+import { storagePut } from "../../storage";
 
 interface VoucherData {
   voucherNo: string;
-  type: 'WITHDRAWAL' | 'REFUND' | 'SETTLEMENT';
+  type: "WITHDRAWAL" | "REFUND" | "SETTLEMENT";
   amount: number;
   currency: string;
   recipientName: string;
@@ -31,32 +31,39 @@ interface VoucherData {
  */
 function generateVoucherHtml(data: VoucherData): string {
   const statusMap: Record<string, { ru: string; color: string }> = {
-    'PENDING': { ru: 'ОЖИДАНИЕ', color: '#f59e0b' },
-    'PROCESSING': { ru: 'В ОБРАБОТКЕ', color: '#3b82f6' },
-    'COMPLETED': { ru: 'ЗАВЕРШЕНО', color: '#22c55e' },
-    'REJECTED': { ru: 'ОТКЛОНЕНО', color: '#ef4444' },
+    PENDING: { ru: "ОЖИДАНИЕ", color: "#f59e0b" },
+    PROCESSING: { ru: "В ОБРАБОТКЕ", color: "#3b82f6" },
+    COMPLETED: { ru: "ЗАВЕРШЕНО", color: "#22c55e" },
+    REJECTED: { ru: "ОТКЛОНЕНО", color: "#ef4444" },
   };
 
   const typeMap: Record<string, string> = {
-    'WITHDRAWAL': 'Вывод средств (Withdrawal)',
-    'REFUND': 'Возврат (Refund)',
-    'SETTLEMENT': 'Расчет (Settlement)',
+    WITHDRAWAL: "Вывод средств (Withdrawal)",
+    REFUND: "Возврат (Refund)",
+    SETTLEMENT: "Расчет (Settlement)",
   };
 
-  const statusInfo = statusMap[data.status] || statusMap['PROCESSING'];
-  const formattedDate = data.createdAt.toLocaleString('ru-RU', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
+  const statusInfo = statusMap[data.status] || statusMap["PROCESSING"];
+  const formattedDate = data.createdAt.toLocaleString("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   });
 
-  const statusIcon = data.status === 'COMPLETED' ? '✅' : data.status === 'REJECTED' ? '❌' : '⏳';
-  const amountFormatted = data.amount.toLocaleString('ru-RU', { minimumFractionDigits: 2 });
-  const generatedAt = new Date().toLocaleString('ru-RU');
-  const descriptionEn = data.description.en || 'Withdrawal transaction';
+  const statusIcon =
+    data.status === "COMPLETED"
+      ? "✅"
+      : data.status === "REJECTED"
+        ? "❌"
+        : "⏳";
+  const amountFormatted = data.amount.toLocaleString("ru-RU", {
+    minimumFractionDigits: 2,
+  });
+  const generatedAt = new Date().toLocaleString("ru-RU");
+  const descriptionEn = data.description.en || "Withdrawal transaction";
 
   return `<!DOCTYPE html>
 <html lang="ru">
@@ -283,22 +290,28 @@ function generateVoucherHtml(data: VoucherData): string {
 /**
  * 生成财务凭证并上传到 S3
  */
-export async function generateAndUploadVoucherPdf(data: VoucherData): Promise<{ url: string; key: string }> {
+export async function generateAndUploadVoucherPdf(
+  data: VoucherData
+): Promise<{ url: string; key: string }> {
   try {
     // 生成 HTML 内容
     const htmlContent = generateVoucherHtml(data);
-    
+
     // 生成文件名
     const fileName = `vouchers/${data.voucherNo}.html`;
-    
+
     // 上传到 S3
-    const result = await storagePut(fileName, Buffer.from(htmlContent, 'utf-8'), 'text/html');
-    
+    const result = await storagePut(
+      fileName,
+      Buffer.from(htmlContent, "utf-8"),
+      "text/html"
+    );
+
     console.log(`[VoucherService] Voucher uploaded: ${result.url}`);
-    
+
     return result;
   } catch (error) {
-    console.error('[VoucherService] Failed to generate voucher:', error);
+    console.error("[VoucherService] Failed to generate voucher:", error);
     throw error;
   }
 }
@@ -306,13 +319,16 @@ export async function generateAndUploadVoucherPdf(data: VoucherData): Promise<{ 
 /**
  * 获取凭证状态文本
  */
-export function getStatusText(status: string, lang: 'ru' | 'zh' | 'en' = 'ru'): string {
+export function getStatusText(
+  status: string,
+  lang: "ru" | "zh" | "en" = "ru"
+): string {
   const statusTexts: Record<string, Record<string, string>> = {
-    'PENDING': { ru: 'Ожидание', zh: '待处理', en: 'Pending' },
-    'PROCESSING': { ru: 'В обработке', zh: '处理中', en: 'Processing' },
-    'COMPLETED': { ru: 'Завершено', zh: '已完成', en: 'Completed' },
-    'REJECTED': { ru: 'Отклонено', zh: '已拒绝', en: 'Rejected' },
+    PENDING: { ru: "Ожидание", zh: "待处理", en: "Pending" },
+    PROCESSING: { ru: "В обработке", zh: "处理中", en: "Processing" },
+    COMPLETED: { ru: "Завершено", zh: "已完成", en: "Completed" },
+    REJECTED: { ru: "Отклонено", zh: "已拒绝", en: "Rejected" },
   };
-  
+
   return statusTexts[status]?.[lang] || status;
 }

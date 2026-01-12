@@ -1,21 +1,26 @@
 /**
  * CHUTEA tRPC Router - Member Management
- * 
+ *
  * 用户与组织管理模块
  * - 用户管理
  * - 组织管理
  * - 用户角色分配
  */
 
-import { z } from 'zod';
-import { router, publicProcedure, protectedProcedure, createPermissionProcedure } from '../trpc';
-import { TRPCError } from '@trpc/server';
-import { getAuditService } from '../../services/audit-service';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import { mapRoleToOperatorType } from '../../utils/role-mapper';
+import { z } from "zod";
+import {
+  router,
+  publicProcedure,
+  protectedProcedure,
+  createPermissionProcedure,
+} from "../trpc";
+import { TRPCError } from "@trpc/server";
+import { getAuditService } from "../../services/audit-service";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { mapRoleToOperatorType } from "../../utils/role-mapper";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'chutea-secret-key-2024';
+const JWT_SECRET = process.env.JWT_SECRET || "chutea-secret-key-2024";
 
 /**
  * Member Router
@@ -57,8 +62,8 @@ export const memberRouter = router({
 
       if (!user) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'Invalid username or password',
+          code: "UNAUTHORIZED",
+          message: "Invalid username or password",
         });
       }
 
@@ -66,16 +71,16 @@ export const memberRouter = router({
       const passwordValid = await bcrypt.compare(password, user.passwordHash);
       if (!passwordValid) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'Invalid username or password',
+          code: "UNAUTHORIZED",
+          message: "Invalid username or password",
         });
       }
 
       // 检查用户状态
-      if (user.status !== 'ACTIVE') {
+      if (user.status !== "ACTIVE") {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'User account is not active',
+          code: "FORBIDDEN",
+          message: "User account is not active",
         });
       }
 
@@ -90,15 +95,15 @@ export const memberRouter = router({
           permissions: [], // TODO: 从权限规则中获取
         },
         JWT_SECRET,
-        { expiresIn: '24h' }
+        { expiresIn: "24h" }
       );
 
       // 记录审计日志
       const auditService = getAuditService();
       await auditService.logAction({
-        tableName: 'admin_users',
+        tableName: "admin_users",
         recordId: user.id,
-        action: 'UPDATE',
+        action: "UPDATE",
         changes: { lastLogin: new Date() },
         operatorId: user.id,
         operatorType: mapRoleToOperatorType(user.role),
@@ -145,8 +150,8 @@ export const memberRouter = router({
 
     if (!user) {
       throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'User not found',
+        code: "NOT_FOUND",
+        message: "User not found",
       });
     }
 
@@ -164,13 +169,13 @@ export const memberRouter = router({
   /**
    * 获取用户列表
    */
-  listUsers: createPermissionProcedure(['user:view'])
+  listUsers: createPermissionProcedure(["user:view"])
     .input(
       z.object({
         orgId: z.string().optional(),
         storeId: z.string().optional(),
         role: z.string().optional(),
-        status: z.enum(['active', 'inactive']).optional(),
+        status: z.enum(["active", "inactive"]).optional(),
         page: z.number().min(1).default(1),
         pageSize: z.number().min(1).max(100).default(20),
       })
@@ -186,7 +191,7 @@ export const memberRouter = router({
       if (status) where.status = status;
 
       // RBAC 权限检查
-      if (ctx.userSession?.role !== 'super_admin' && ctx.userSession?.orgId) {
+      if (ctx.userSession?.role !== "super_admin" && ctx.userSession?.orgId) {
         where.orgId = ctx.userSession.orgId;
       }
 
@@ -196,7 +201,7 @@ export const memberRouter = router({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           include: {
             organization: {
               select: {
@@ -239,13 +244,20 @@ export const memberRouter = router({
   /**
    * 创建用户
    */
-  createUser: createPermissionProcedure(['user:create'])
+  createUser: createPermissionProcedure(["user:create"])
     .input(
       z.object({
         username: z.string().min(3).max(50),
         email: z.string().email(),
         password: z.string().min(6),
-        role: z.enum(['super_admin', 'org_admin', 'region_admin', 'store_admin', 'store_staff', 'user']),
+        role: z.enum([
+          "super_admin",
+          "org_admin",
+          "region_admin",
+          "store_admin",
+          "store_staff",
+          "user",
+        ]),
         orgId: z.string().optional(),
         storeId: z.string().optional(),
       })
@@ -262,16 +274,17 @@ export const memberRouter = router({
 
       if (existingUser) {
         throw new TRPCError({
-          code: 'CONFLICT',
-          message: 'Username or email already exists',
+          code: "CONFLICT",
+          message: "Username or email already exists",
         });
       }
 
       // RBAC 权限检查
       if (orgId && !ctx.rbacScope.canAccessOrg(orgId)) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have permission to create users in this organization',
+          code: "FORBIDDEN",
+          message:
+            "You do not have permission to create users in this organization",
         });
       }
 
@@ -279,7 +292,7 @@ export const memberRouter = router({
       const passwordHash = await bcrypt.hash(password, 10);
 
       // 创建用户（事务）
-      const user = await ctx.prisma.$transaction(async (tx) => {
+      const user = await ctx.prisma.$transaction(async tx => {
         // 创建用户
         const newUser = await tx.adminUser.create({
           data: {
@@ -289,7 +302,7 @@ export const memberRouter = router({
             role,
             orgId: orgId || null,
             storeId: storeId || null,
-            status: 'active',
+            status: "active",
             createdAt: new Date(),
             createdBy: ctx.userSession!.userId,
             updatedAt: new Date(),
@@ -300,9 +313,9 @@ export const memberRouter = router({
         // 记录审计日志
         const auditService = getAuditService();
         await auditService.logAction({
-          tableName: 'admin_users',
+          tableName: "admin_users",
           recordId: newUser.id,
-          action: 'INSERT',
+          action: "INSERT",
           changes: { username, email, role, orgId, storeId },
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
@@ -329,13 +342,22 @@ export const memberRouter = router({
   /**
    * 更新用户
    */
-  updateUser: createPermissionProcedure(['user:update'])
+  updateUser: createPermissionProcedure(["user:update"])
     .input(
       z.object({
         id: z.string(),
         email: z.string().email().optional(),
-        role: z.enum(['super_admin', 'org_admin', 'region_admin', 'store_admin', 'store_staff', 'user']).optional(),
-        status: z.enum(['active', 'inactive']).optional(),
+        role: z
+          .enum([
+            "super_admin",
+            "org_admin",
+            "region_admin",
+            "store_admin",
+            "store_staff",
+            "user",
+          ])
+          .optional(),
+        status: z.enum(["active", "inactive"]).optional(),
         orgId: z.string().optional(),
         storeId: z.string().optional(),
       })
@@ -350,21 +372,24 @@ export const memberRouter = router({
 
       if (!user) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'User not found',
+          code: "NOT_FOUND",
+          message: "User not found",
         });
       }
 
       // RBAC 权限检查
-      if (ctx.userSession?.role !== 'super_admin' && user.orgId !== ctx.userSession?.orgId) {
+      if (
+        ctx.userSession?.role !== "super_admin" &&
+        user.orgId !== ctx.userSession?.orgId
+      ) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have permission to update this user',
+          code: "FORBIDDEN",
+          message: "You do not have permission to update this user",
         });
       }
 
       // 更新用户（事务）
-      const updatedUser = await ctx.prisma.$transaction(async (tx) => {
+      const updatedUser = await ctx.prisma.$transaction(async tx => {
         // 更新用户
         const updated = await tx.adminUser.update({
           where: { id },
@@ -378,9 +403,9 @@ export const memberRouter = router({
         // 记录审计日志
         const auditService = getAuditService();
         await auditService.logAction({
-          tableName: 'admin_users',
+          tableName: "admin_users",
           recordId: id,
-          action: 'UPDATE',
+          action: "UPDATE",
           changes: data,
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
@@ -408,7 +433,7 @@ export const memberRouter = router({
   /**
    * 删除用户（软删除）
    */
-  deleteUser: createPermissionProcedure(['user:delete'])
+  deleteUser: createPermissionProcedure(["user:delete"])
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { id } = input;
@@ -420,26 +445,29 @@ export const memberRouter = router({
 
       if (!user) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'User not found',
+          code: "NOT_FOUND",
+          message: "User not found",
         });
       }
 
       // RBAC 权限检查
-      if (ctx.userSession?.role !== 'super_admin' && user.orgId !== ctx.userSession?.orgId) {
+      if (
+        ctx.userSession?.role !== "super_admin" &&
+        user.orgId !== ctx.userSession?.orgId
+      ) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have permission to delete this user',
+          code: "FORBIDDEN",
+          message: "You do not have permission to delete this user",
         });
       }
 
       // 软删除用户（事务）
-      await ctx.prisma.$transaction(async (tx) => {
+      await ctx.prisma.$transaction(async tx => {
         // 更新状态为 inactive
         await tx.adminUser.update({
           where: { id },
           data: {
-            status: 'inactive',
+            status: "inactive",
             updatedAt: new Date(),
             updatedBy: ctx.userSession!.userId,
           },
@@ -448,10 +476,10 @@ export const memberRouter = router({
         // 记录审计日志
         const auditService = getAuditService();
         await auditService.logAction({
-          tableName: 'admin_users',
+          tableName: "admin_users",
           recordId: id,
-          action: 'DELETE',
-          changes: { status: 'inactive' },
+          action: "DELETE",
+          changes: { status: "inactive" },
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
           operatorName: null,
@@ -483,7 +511,7 @@ export const memberRouter = router({
       const where: any = {};
 
       // RBAC 权限检查
-      if (ctx.userSession?.role !== 'super_admin' && ctx.userSession?.orgId) {
+      if (ctx.userSession?.role !== "super_admin" && ctx.userSession?.orgId) {
         where.id = ctx.userSession.orgId;
       }
 
@@ -493,7 +521,7 @@ export const memberRouter = router({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
         }),
         ctx.prisma.organization.count({ where }),
       ]);
@@ -512,7 +540,7 @@ export const memberRouter = router({
   /**
    * 创建组织
    */
-  createOrganization: createPermissionProcedure(['org:create'])
+  createOrganization: createPermissionProcedure(["org:create"])
     .input(
       z.object({
         name: z.string().min(1).max(200),
@@ -521,7 +549,7 @@ export const memberRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       // 创建组织（事务）
-      const organization = await ctx.prisma.$transaction(async (tx) => {
+      const organization = await ctx.prisma.$transaction(async tx => {
         // 创建组织
         const newOrg = await tx.organization.create({
           data: {
@@ -536,9 +564,9 @@ export const memberRouter = router({
         // 记录审计日志
         const auditService = getAuditService();
         await auditService.logAction({
-          tableName: 'organizations',
+          tableName: "organizations",
           recordId: newOrg.id,
-          action: 'INSERT',
+          action: "INSERT",
           changes: input,
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),

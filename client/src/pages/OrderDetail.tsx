@@ -1,6 +1,17 @@
 import { useState } from "react";
-import { ArrowLeft, MapPin, Phone, MessageCircle, Clock, CheckCircle, Package, Truck, Star, Share2 } from "lucide-react";
-import { QRCodeSVG } from 'qrcode.react';
+import {
+  ArrowLeft,
+  MapPin,
+  Phone,
+  MessageCircle,
+  Clock,
+  CheckCircle,
+  Package,
+  Truck,
+  Star,
+  Share2,
+} from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation, useRoute } from "wouter";
 import { useApp, OrderReview } from "@/contexts/AppContext";
@@ -17,9 +28,11 @@ export default function OrderDetail() {
   const { orders, cancelOrder, reviews } = useApp();
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  
+
   const order = orders.find(o => o.id === params?.id);
-  const orderReview = reviews.find((r: OrderReview) => r.orderId === params?.id);
+  const orderReview = reviews.find(
+    (r: OrderReview) => r.orderId === params?.id
+  );
 
   if (!order) {
     return (
@@ -37,8 +50,12 @@ export default function OrderDetail() {
   const statusSteps = [
     { key: "pending", label: "Заказ оформлен", icon: CheckCircle },
     { key: "preparing", label: "В процессе", icon: Package },
-    { key: "delivering", label: order.type === "pickup" ? "Готов к выдаче" : "Доставляется", icon: Truck },
-    { key: "completed", label: "Завершён", icon: CheckCircle }
+    {
+      key: "delivering",
+      label: order.type === "pickup" ? "Готов к выдаче" : "Доставляется",
+      icon: Truck,
+    },
+    { key: "completed", label: "Завершён", icon: CheckCircle },
   ];
 
   const currentStepIndex = statusSteps.findIndex(s => s.key === order.status);
@@ -70,7 +87,9 @@ export default function OrderDetail() {
           <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-200 -z-10">
             <div
               className="h-full bg-primary transition-all duration-500"
-              style={{ width: `${(currentStepIndex / (statusSteps.length - 1)) * 100}%` }}
+              style={{
+                width: `${(currentStepIndex / (statusSteps.length - 1)) * 100}%`,
+              }}
             />
           </div>
 
@@ -92,7 +111,9 @@ export default function OrderDetail() {
                 </div>
                 <span
                   className={`text-xs text-center ${
-                    isActive ? "text-primary font-bold" : "text-muted-foreground"
+                    isActive
+                      ? "text-primary font-bold"
+                      : "text-muted-foreground"
                   }`}
                 >
                   {step.label}
@@ -108,18 +129,22 @@ export default function OrderDetail() {
         <div className="flex flex-col items-center justify-center gap-4">
           {/* 二维码 */}
           <div className="bg-white p-4 rounded-lg border-2 border-primary/20">
-            <QRCodeSVG 
+            <QRCodeSVG
               value={`CHUTEA-ORDER-${order.id}-${order.pickupCode}`}
               size={160}
               level="H"
               includeMargin={false}
             />
           </div>
-          
+
           {/* 提货码 */}
           <div className="text-center">
-            <span className="text-sm text-muted-foreground block mb-1">Код получения</span>
-            <span className="text-4xl font-bold text-primary tracking-wider">{order.pickupCode}</span>
+            <span className="text-sm text-muted-foreground block mb-1">
+              Код получения
+            </span>
+            <span className="text-4xl font-bold text-primary tracking-wider">
+              {order.pickupCode}
+            </span>
             <p className="text-xs text-muted-foreground mt-2">
               请向店员出示此二维码或Код получения
             </p>
@@ -173,11 +198,17 @@ export default function OrderDetail() {
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-sm mb-1 truncate">{item.name}</h3>
                 {item.specs && (
-                  <p className="text-xs text-muted-foreground mb-1">{item.specs}</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {item.specs}
+                  </p>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="text-primary font-bold text-sm">{formatCurrency(item.price)}</span>
-                  <span className="text-sm text-muted-foreground">x {item.quantity}</span>
+                  <span className="text-primary font-bold text-sm">
+                    {formatCurrency(item.price)}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    x {item.quantity}
+                  </span>
                 </div>
               </div>
             </div>
@@ -203,7 +234,9 @@ export default function OrderDetail() {
           </div>
           <div className="flex justify-between pt-2 border-t border-gray-200">
             <span className="font-bold">К оплате</span>
-            <span className="text-primary font-bold text-lg">{formatCurrency(order.total.toFixed(2))}</span>
+            <span className="text-primary font-bold text-lg">
+              {formatCurrency(order.total.toFixed(2))}
+            </span>
           </div>
         </div>
       </div>
@@ -256,7 +289,7 @@ export default function OrderDetail() {
         onClose={() => setIsReviewModalOpen(false)}
         orderId={order.id}
       />
-      
+
       {/* 分享弹窗 */}
       <ShareModal
         open={showShareModal}
@@ -276,7 +309,11 @@ export default function OrderDetail() {
                 <Star
                   key={star}
                   size={20}
-                  className={star <= orderReview.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
+                  className={
+                    star <= orderReview.rating
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-gray-300"
+                  }
                 />
               ))}
               <span className="ml-2 text-sm text-muted-foreground">

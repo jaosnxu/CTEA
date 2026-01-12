@@ -11,16 +11,20 @@ export default function InstallPWA() {
 
   const handleInstall = async () => {
     const result = await install();
-    
+
     if (result.success) {
       toast.success(t("components_installpwa_应用安装成功"), {
-        description: t("components_installpwa_您现在可以从桌面主屏幕打开_CHUTEA_应用了")
+        description: t(
+          "components_installpwa_您现在可以从桌面主屏幕打开_CHUTEA_应用了"
+        ),
       });
-    } else if (result.error === 'dismissed') {
+    } else if (result.error === "dismissed") {
       toast.info(t("components_installpwa_已取消安装"));
-    } else if (result.error === 'no-prompt') {
+    } else if (result.error === "no-prompt") {
       toast.error(t("components_installpwa_当前浏览器不支持安装"), {
-        description: t("components_installpwa_请使用_ChromeEdge_或_Safari_浏览器")
+        description: t(
+          "components_installpwa_请使用_ChromeEdge_或_Safari_浏览器"
+        ),
       });
     } else {
       toast.error(t("components_installpwa_安装失败请重试"));
@@ -40,10 +44,10 @@ export default function InstallPWA() {
   // 如果可以安装，显示安装按钮
   if (canInstall) {
     return (
-      <Button 
+      <Button
         onClick={handleInstall}
-        variant="outline" 
-        size="sm" 
+        variant="outline"
+        size="sm"
         className="gap-2 border-primary text-primary hover:bg-primary/5 font-bold"
       >
         <Download size={16} />

@@ -6,26 +6,31 @@
 ## Test Execution
 
 ### Step 1: Initial State
+
 - **Product:** #3 Виноградный Чиз (Grape Cheezo)
 - **Initial Price:** ₽290
 - **Override Status:** IIKO (not manually modified)
 
 ### Step 2: Admin Price Change
+
 - **Action:** Changed price from ₽290 → ₽399
 - **Timestamp:** 03:03:51
 - **Method:** Admin Panel → Edit Price → Save
 
 ### Step 3: Backend Response
+
 - **Price Updated:** ✅ ₽399
 - **Override Flag Set:** ✅ `is_manual_override: true` (changed from IIKO to "Manual")
 - **Database Update:** Successful
 
 ### Step 4: Frontend Observation
+
 **Expected Behavior:** Order page should display ₽399 without manual browser refresh
 
 **Status:** ✅ **VERIFIED - Real-time sync successful!**
 
 **Actual Result:**
+
 - Виноградный Чиз now displays **₽399** (updated from ₽290)
 - No manual page refresh required
 - Update propagated within <1 second
@@ -34,12 +39,14 @@
 ## Technical Details
 
 **tRPC Subscription Mechanism:**
+
 - Admin Panel uses `trpc.admin.products.update.useMutation()`
 - Order Page uses `trpc.products.list.useQuery()` with auto-refetch
 - When mutation succeeds, tRPC invalidates query cache
 - Frontend automatically re-fetches updated data
 
 **Data Flow:**
+
 ```
 Admin Panel (Save) → tRPC Mutation → Server Update → Database
                                           ↓

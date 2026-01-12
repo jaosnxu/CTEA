@@ -1,8 +1,22 @@
 import { useState } from "react";
-import { ArrowLeft, Plus, MapPin, Phone, Edit, Trash2, Check } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  MapPin,
+  Phone,
+  Edit,
+  Trash2,
+  Check,
+} from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -24,7 +38,7 @@ export default function Addresses() {
       phone: "+7 (999) ***-**-88",
       address: "Тверская улица 12, Москва",
       detail: "Корпус А, офис 1001",
-      isDefault: true
+      isDefault: true,
     },
     {
       id: "2",
@@ -32,8 +46,8 @@ export default function Addresses() {
       phone: "+7 (999) ***-**-99",
       address: "Красная площадь 5, Москва",
       detail: "Корпус Б, офис 2002",
-      isDefault: false
-    }
+      isDefault: false,
+    },
   ]);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -43,14 +57,16 @@ export default function Addresses() {
     phone: "",
     address: "",
     detail: "",
-    isDefault: false
+    isDefault: false,
   });
 
   const handleSetDefault = (id: string) => {
-    setAddresses(addresses.map(addr => ({
-      ...addr,
-      isDefault: addr.id === id
-    })));
+    setAddresses(
+      addresses.map(addr => ({
+        ...addr,
+        isDefault: addr.id === id,
+      }))
+    );
     toast.success(t("pages_addresses_已设为默认"));
   };
 
@@ -66,7 +82,7 @@ export default function Addresses() {
       phone: address.phone,
       address: address.address,
       detail: address.detail,
-      isDefault: address.isDefault
+      isDefault: address.isDefault,
     });
     setIsDialogOpen(true);
   };
@@ -78,7 +94,7 @@ export default function Addresses() {
       phone: "",
       address: "",
       detail: "",
-      isDefault: false
+      isDefault: false,
     });
     setIsDialogOpen(true);
   };
@@ -90,16 +106,16 @@ export default function Addresses() {
     }
 
     if (editingAddress) {
-      setAddresses(addresses.map(addr =>
-        addr.id === editingAddress.id
-          ? { ...addr, ...formData }
-          : addr
-      ));
+      setAddresses(
+        addresses.map(addr =>
+          addr.id === editingAddress.id ? { ...addr, ...formData } : addr
+        )
+      );
       toast.success(t("pages_addresses_地址已更新"));
     } else {
       const newAddress: Address = {
         id: Date.now().toString(),
-        ...formData
+        ...formData,
       };
       setAddresses([...addresses, newAddress]);
       toast.success(t("pages_addresses_地址已添加"));
@@ -118,7 +134,7 @@ export default function Addresses() {
       </div>
 
       <div className="p-4 space-y-3">
-        {addresses.map((address) => (
+        {addresses.map(address => (
           <div
             key={address.id}
             className="bg-white rounded-xl p-4 shadow-sm relative"
@@ -133,11 +149,15 @@ export default function Addresses() {
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <span className="font-bold text-base">{address.name}</span>
-                  <span className="text-sm text-muted-foreground">{address.phone}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {address.phone}
+                  </span>
                 </div>
                 <div className="flex items-start gap-2 text-sm text-muted-foreground">
                   <MapPin size={16} className="mt-0.5 flex-shrink-0" />
-                  <span>{address.address} {address.detail}</span>
+                  <span>
+                    {address.address} {address.detail}
+                  </span>
                 </div>
               </div>
             </div>
@@ -190,44 +210,64 @@ export default function Addresses() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingAddress ? t("pages_addresses_编辑地址") : t("pages_addresses_添加新地址")}</DialogTitle>
+            <DialogTitle>
+              {editingAddress
+                ? t("pages_addresses_编辑地址")
+                : t("pages_addresses_添加新地址")}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <label className="text-sm font-medium mb-1 block">{t("pages_addresses_收货人")}</label>
+              <label className="text-sm font-medium mb-1 block">
+                {t("pages_addresses_收货人")}
+              </label>
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={e =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 placeholder={t("pages_addresses_请输入姓名")}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">{t("pages_addresses_手机号码")}</label>
+              <label className="text-sm font-medium mb-1 block">
+                {t("pages_addresses_手机号码")}
+              </label>
               <input
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={e =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
                 placeholder={t("pages_addresses_请输入手机号")}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">{t("pages_addresses_所在地区")}</label>
+              <label className="text-sm font-medium mb-1 block">
+                {t("pages_addresses_所在地区")}
+              </label>
               <input
                 type="text"
                 value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                onChange={e =>
+                  setFormData({ ...formData, address: e.target.value })
+                }
                 placeholder={t("pages_addresses_城市街道")}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">{t("pages_addresses_详细地址")}</label>
+              <label className="text-sm font-medium mb-1 block">
+                {t("pages_addresses_详细地址")}
+              </label>
               <textarea
                 value={formData.detail}
-                onChange={(e) => setFormData({ ...formData, detail: e.target.value })}
+                onChange={e =>
+                  setFormData({ ...formData, detail: e.target.value })
+                }
                 placeholder={t("pages_addresses_楼栋号门牌号")}
                 rows={3}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none"
@@ -238,10 +278,14 @@ export default function Addresses() {
                 type="checkbox"
                 id="isDefault"
                 checked={formData.isDefault}
-                onChange={(e) => setFormData({ ...formData, isDefault: e.target.checked })}
+                onChange={e =>
+                  setFormData({ ...formData, isDefault: e.target.checked })
+                }
                 className="w-4 h-4 rounded border-gray-300"
               />
-              <label htmlFor="isDefault" className="text-sm">{t("pages_addresses_设为默认地址")}</label>
+              <label htmlFor="isDefault" className="text-sm">
+                {t("pages_addresses_设为默认地址")}
+              </label>
             </div>
           </div>
           <div className="flex gap-2">

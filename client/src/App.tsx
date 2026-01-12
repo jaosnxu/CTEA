@@ -63,7 +63,10 @@ function Router() {
       <Route path={"/mall"} component={Mall} />
       <Route path={"/profile"} component={Profile} />
       <Route path={"/influencer"} component={InfluencerHub} />
-      <Route path={"/influencer/leaderboard"} component={InfluencerLeaderboard} />
+      <Route
+        path={"/influencer/leaderboard"}
+        component={InfluencerLeaderboard}
+      />
       <Route path={"/influencer/cases"} component={InfluencerCases} />
       <Route path={"/orders/:id"} component={OrderDetail} />
       <Route path={"/orders"} component={Orders} />
@@ -83,16 +86,16 @@ function Router() {
       <Route path={"/commission"} component={Commission} />
       <Route path={"/commission/withdraw"} component={CommissionWithdraw} />
       <Route path={"/admin/pos-simulator"} component={POSSimulator} />
-        <Route path="/call-screen" component={CallScreen} />
-        <Route path="/admin/data-overview" component={DataOverview} />
-        <Route path="/admin/settings" component={SystemSettings} />
-        <Route path="/admin/dashboard" component={Dashboard} />
-        <Route path="/admin/withdrawals" component={Withdrawals} />
-        <Route path="/admin/sdui" component={SDUIConfig} />
-        <Route path="/admin/skus" component={SKUManagement} />
-        <Route path="/admin/brain" component={BrainDashboard} />
-        <Route path="/admin/tenants" component={TenantManagement} />
-        <Route path="/admin" component={Dashboard} />
+      <Route path="/call-screen" component={CallScreen} />
+      <Route path="/admin/data-overview" component={DataOverview} />
+      <Route path="/admin/settings" component={SystemSettings} />
+      <Route path="/admin/dashboard" component={Dashboard} />
+      <Route path="/admin/withdrawals" component={Withdrawals} />
+      <Route path="/admin/sdui" component={SDUIConfig} />
+      <Route path="/admin/skus" component={SKUManagement} />
+      <Route path="/admin/brain" component={BrainDashboard} />
+      <Route path="/admin/tenants" component={TenantManagement} />
+      <Route path="/admin" component={Dashboard} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
@@ -109,14 +112,14 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
         <AuthProvider>
-        <AppProvider>
-          <TooltipProvider>
-            <Toaster />
-            <PWAInstallPrompt />
-            <MembershipUpgradeListener />
-            <Router />
-          </TooltipProvider>
-        </AppProvider>
+          <AppProvider>
+            <TooltipProvider>
+              <Toaster />
+              <PWAInstallPrompt />
+              <MembershipUpgradeListener />
+              <Router />
+            </TooltipProvider>
+          </AppProvider>
         </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>

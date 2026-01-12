@@ -1,5 +1,16 @@
 import { useState } from "react";
-import { ArrowLeft, Gift, Trophy, Users, Calendar, Star, Heart, MessageCircle, UserPlus, Zap } from "lucide-react";
+import {
+  ArrowLeft,
+  Gift,
+  Trophy,
+  Users,
+  Calendar,
+  Star,
+  Heart,
+  MessageCircle,
+  UserPlus,
+  Zap,
+} from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -75,34 +86,37 @@ export default function ActivityCenter() {
       title: t("pages_activity_一月限定抽奖"),
       period: t("pages_activity_2026年1月"),
       prize: "iPhone 15 Pro Max",
-      prizeImage: "https://images.unsplash.com/photo-1695048064867-1c48f9c7d3f1?w=400",
+      prizeImage:
+        "https://images.unsplash.com/photo-1695048064867-1c48f9c7d3f1?w=400",
       startDate: "2026-01-01",
       endDate: "2026-01-31",
       status: "ongoing",
-      participants: 1250
+      participants: 1250,
     },
     {
       id: "2",
       title: t("pages_activity_十二月圣诞特惠"),
       period: t("pages_activity_2025年12月"),
       prize: "AirPods Pro 2",
-      prizeImage: "https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=400",
+      prizeImage:
+        "https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=400",
       startDate: "2025-12-01",
       endDate: "2025-12-31",
       status: "ended",
-      participants: 980
+      participants: 980,
     },
     {
       id: "3",
       title: t("pages_activity_十一月感恩回馈"),
       period: t("pages_activity_2025年11月"),
       prize: "iPad Air",
-      prizeImage: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400",
+      prizeImage:
+        "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400",
       startDate: "2025-11-01",
       endDate: "2025-11-30",
       status: "ended",
-      participants: 856
-    }
+      participants: 856,
+    },
   ];
 
   const WINNERS: Winner[] = [
@@ -116,9 +130,9 @@ export default function ActivityCenter() {
       comment: t("pages_activity_winner_comment_1"),
       images: [
         "https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=400",
-        "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=400"
+        "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=400",
       ],
-      likes: 128
+      likes: 128,
     },
     {
       id: "2",
@@ -128,8 +142,10 @@ export default function ActivityCenter() {
       prize: "AirPods Pro 2",
       date: "2025-12-30",
       comment: t("pages_activity_winner_comment_2"),
-      images: ["https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=400"],
-      likes: 95
+      images: [
+        "https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=400",
+      ],
+      likes: 95,
     },
     {
       id: "3",
@@ -142,16 +158,16 @@ export default function ActivityCenter() {
       images: [
         "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400",
         "https://images.unsplash.com/photo-1585790050230-5dd28404f1a1?w=400",
-        "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=400"
+        "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=400",
       ],
-      likes: 203
-    }
+      likes: 203,
+    },
   ];
-  
+
   const userStats = {
     participated: 15,
     won: 2,
-    totalActivities: ACTIVITIES.length
+    totalActivities: ACTIVITIES.length,
   };
 
   return (
@@ -168,34 +184,58 @@ export default function ActivityCenter() {
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-white/20 backdrop-blur rounded-xl p-3 text-center">
-            <div className="text-2xl font-bold mb-1">{userStats.participated}</div>
-            <div className="text-xs opacity-90">{t("pages_activity_参加次数")}</div>
+            <div className="text-2xl font-bold mb-1">
+              {userStats.participated}
+            </div>
+            <div className="text-xs opacity-90">
+              {t("pages_activity_参加次数")}
+            </div>
           </div>
           <div className="bg-white/20 backdrop-blur rounded-xl p-3 text-center">
             <div className="text-2xl font-bold mb-1">{userStats.won}</div>
-            <div className="text-xs opacity-90">{t("pages_activity_中奖次数")}</div>
+            <div className="text-xs opacity-90">
+              {t("pages_activity_中奖次数")}
+            </div>
           </div>
           <div className="bg-white/20 backdrop-blur rounded-xl p-3 text-center">
-            <div className="text-2xl font-bold mb-1">{((userStats.won / userStats.participated) * 100).toFixed(0)}%</div>
-            <div className="text-xs opacity-90">{t("pages_activity_中奖率")}</div>
+            <div className="text-2xl font-bold mb-1">
+              {((userStats.won / userStats.participated) * 100).toFixed(0)}%
+            </div>
+            <div className="text-xs opacity-90">
+              {t("pages_activity_中奖率")}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="px-4 py-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="px-4 py-4"
+      >
         <TabsList className="grid w-full grid-cols-3 mb-4">
-          <TabsTrigger value="marketing">{t("pages_activity_营销活动")}</TabsTrigger>
-          <TabsTrigger value="activities">{t("pages_activity_抽奖活动")}</TabsTrigger>
-          <TabsTrigger value="winners">{t("pages_activity_中奖名单")}</TabsTrigger>
+          <TabsTrigger value="marketing">
+            {t("pages_activity_营销活动")}
+          </TabsTrigger>
+          <TabsTrigger value="activities">
+            {t("pages_activity_抽奖活动")}
+          </TabsTrigger>
+          <TabsTrigger value="winners">
+            {t("pages_activity_中奖名单")}
+          </TabsTrigger>
         </TabsList>
 
         {/* Marketing Activities Tab */}
         <TabsContent value="marketing" className="space-y-3">
-          {MARKETING_ACTIVITIES.map((activity) => {
-            const IconComponent = activity.icon === "UserPlus" ? UserPlus : 
-                                 activity.icon === "Zap" ? Zap : Calendar;
-            
+          {MARKETING_ACTIVITIES.map(activity => {
+            const IconComponent =
+              activity.icon === "UserPlus"
+                ? UserPlus
+                : activity.icon === "Zap"
+                  ? Zap
+                  : Calendar;
+
             return (
               <Link key={activity.id} href={activity.path || "#"}>
                 <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
@@ -206,7 +246,9 @@ export default function ActivityCenter() {
                       </div>
                       <div>
                         <h3 className="font-bold text-lg">{activity.title}</h3>
-                        <p className="text-sm text-muted-foreground">{activity.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {activity.description}
+                        </p>
                       </div>
                     </div>
                     {activity.badge && (
@@ -223,25 +265,32 @@ export default function ActivityCenter() {
 
         {/* Activities Tab */}
         <TabsContent value="activities" className="space-y-3">
-          {ACTIVITIES.map((activity) => (
-            <div key={activity.id} className="bg-white rounded-xl overflow-hidden shadow-sm">
+          {ACTIVITIES.map(activity => (
+            <div
+              key={activity.id}
+              className="bg-white rounded-xl overflow-hidden shadow-sm"
+            >
               <div className="relative">
-                <img 
-                  src={activity.prizeImage} 
-                  alt={activity.prize} 
+                <img
+                  src={activity.prizeImage}
+                  alt={activity.prize}
                   className="w-full h-48 object-cover"
                 />
                 <div className="absolute top-3 right-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    activity.status === "ongoing" 
-                      ? "bg-green-500 text-white" 
-                      : "bg-gray-500 text-white"
-                  }`}>
-                    {activity.status === "ongoing" ? t("pages_activity_进行中") : t("pages_activity_已结束")}
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      activity.status === "ongoing"
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-500 text-white"
+                    }`}
+                  >
+                    {activity.status === "ongoing"
+                      ? t("pages_activity_进行中")
+                      : t("pages_activity_已结束")}
                   </span>
                 </div>
               </div>
-              
+
               <div className="p-4">
                 <h3 className="font-bold text-lg mb-2">{activity.title}</h3>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
@@ -249,20 +298,24 @@ export default function ActivityCenter() {
                   <span>{activity.period}</span>
                   <span>·</span>
                   <Users size={14} />
-                  <span>{activity.participants} {t("pages_activity_人参与")}</span>
+                  <span>
+                    {activity.participants} {t("pages_activity_人参与")}
+                  </span>
                 </div>
-                
+
                 <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                   <div className="flex items-center gap-2">
                     <Gift size={16} className="text-primary" />
                     <span className="text-sm font-bold">{activity.prize}</span>
                   </div>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     disabled={activity.status === "ended"}
                     className={activity.status === "ended" ? "opacity-50" : ""}
                   >
-                    {activity.status === "ongoing" ? t("pages_activity_立即参与") : t("pages_activity_已结束")}
+                    {activity.status === "ongoing"
+                      ? t("pages_activity_立即参与")
+                      : t("pages_activity_已结束")}
                   </Button>
                 </div>
               </div>
@@ -272,18 +325,20 @@ export default function ActivityCenter() {
 
         {/* Winners Tab */}
         <TabsContent value="winners" className="space-y-4">
-          {WINNERS.map((winner) => (
+          {WINNERS.map(winner => (
             <div key={winner.id} className="bg-white rounded-xl p-4 shadow-sm">
               {/* Winner Header */}
               <div className="flex items-center gap-3 mb-3">
-                <img 
-                  src={winner.avatar} 
-                  alt={winner.userName} 
+                <img
+                  src={winner.avatar}
+                  alt={winner.userName}
                   className="w-12 h-12 rounded-full bg-gray-100"
                 />
                 <div className="flex-1">
                   <div className="font-bold">{winner.userName}</div>
-                  <div className="text-xs text-muted-foreground">{winner.date}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {winner.date}
+                  </div>
                 </div>
                 <div className="flex items-center gap-1 bg-yellow-50 text-yellow-700 px-2 py-1 rounded-full text-xs font-bold">
                   <Trophy size={12} />
@@ -301,21 +356,27 @@ export default function ActivityCenter() {
 
               {/* Comment */}
               {winner.comment && (
-                <p className="text-sm text-muted-foreground mb-3">{winner.comment}</p>
+                <p className="text-sm text-muted-foreground mb-3">
+                  {winner.comment}
+                </p>
               )}
 
               {/* Images */}
               {winner.images && winner.images.length > 0 && (
-                <div className={`grid gap-2 mb-3 ${
-                  winner.images.length === 1 ? "grid-cols-1" : 
-                  winner.images.length === 2 ? "grid-cols-2" : 
-                  "grid-cols-3"
-                }`}>
+                <div
+                  className={`grid gap-2 mb-3 ${
+                    winner.images.length === 1
+                      ? "grid-cols-1"
+                      : winner.images.length === 2
+                        ? "grid-cols-2"
+                        : "grid-cols-3"
+                  }`}
+                >
                   {winner.images.map((img, idx) => (
-                    <img 
+                    <img
                       key={idx}
-                      src={img} 
-                      alt={`${t("pages_activity_晒单")} ${idx + 1}`} 
+                      src={img}
+                      alt={`${t("pages_activity_晒单")} ${idx + 1}`}
                       className="w-full h-24 object-cover rounded-lg"
                     />
                   ))}

@@ -1,6 +1,6 @@
 /**
  * CHUTEA 智慧中台 - SDUI (Server-Driven UI) 配置 API
- * 
+ *
  * 功能：
  * 1. App 首页广告位配置
  * 2. 会员等级权益配置
@@ -9,10 +9,10 @@
  * 5. 实时配置下发
  */
 
-import { Router, Request, Response } from 'express';
-import { getDb } from '../../db';
-import { systemConfigs, auditLogs } from '../../../drizzle/schema';
-import { eq, and, isNull } from 'drizzle-orm';
+import { Router, Request, Response } from "express";
+import { getDb } from "../../db";
+import { systemConfigs, auditLogs } from "../../../drizzle/schema";
+import { eq, and, isNull } from "drizzle-orm";
 
 const router = Router();
 
@@ -31,8 +31,13 @@ interface BannerConfig {
 
 interface AdSlotConfig {
   id: string;
-  position: 'home_top' | 'home_middle' | 'home_bottom' | 'product_detail' | 'checkout';
-  type: 'banner' | 'card' | 'popup';
+  position:
+    | "home_top"
+    | "home_middle"
+    | "home_bottom"
+    | "product_detail"
+    | "checkout";
+  type: "banner" | "card" | "popup";
   content: {
     imageUrl?: string;
     title?: { ru: string; zh: string };
@@ -67,8 +72,8 @@ interface ThemeConfig {
   accentColor: string;
   backgroundColor: string;
   textColor: string;
-  headerStyle: 'light' | 'dark' | 'gradient';
-  buttonStyle: 'rounded' | 'square' | 'pill';
+  headerStyle: "light" | "dark" | "gradient";
+  buttonStyle: "rounded" | "square" | "pill";
 }
 
 interface SDUIConfig {
@@ -93,7 +98,7 @@ interface SDUIConfig {
 const defaultMembershipTiers: MembershipTier[] = [
   {
     level: 1,
-    name: { ru: 'Бронза', zh: '青铜' },
+    name: { ru: "Бронза", zh: "青铜" },
     minSpend: 0,
     benefits: {
       pointsMultiplier: 1,
@@ -104,12 +109,12 @@ const defaultMembershipTiers: MembershipTier[] = [
       exclusiveProducts: false,
       earlyAccess: false,
     },
-    icon: '🥉',
-    color: '#CD7F32',
+    icon: "🥉",
+    color: "#CD7F32",
   },
   {
     level: 2,
-    name: { ru: 'Серебро', zh: '白银' },
+    name: { ru: "Серебро", zh: "白银" },
     minSpend: 2000,
     benefits: {
       pointsMultiplier: 1.5,
@@ -120,12 +125,12 @@ const defaultMembershipTiers: MembershipTier[] = [
       exclusiveProducts: false,
       earlyAccess: false,
     },
-    icon: '🥈',
-    color: '#C0C0C0',
+    icon: "🥈",
+    color: "#C0C0C0",
   },
   {
     level: 3,
-    name: { ru: 'Золото', zh: '黄金' },
+    name: { ru: "Золото", zh: "黄金" },
     minSpend: 8000,
     benefits: {
       pointsMultiplier: 2,
@@ -136,12 +141,12 @@ const defaultMembershipTiers: MembershipTier[] = [
       exclusiveProducts: true,
       earlyAccess: false,
     },
-    icon: '🥇',
-    color: '#FFD700',
+    icon: "🥇",
+    color: "#FFD700",
   },
   {
     level: 4,
-    name: { ru: 'Платина', zh: '铂金' },
+    name: { ru: "Платина", zh: "铂金" },
     minSpend: 20000,
     benefits: {
       pointsMultiplier: 3,
@@ -152,26 +157,26 @@ const defaultMembershipTiers: MembershipTier[] = [
       exclusiveProducts: true,
       earlyAccess: true,
     },
-    icon: '💎',
-    color: '#E5E4E2',
+    icon: "💎",
+    color: "#E5E4E2",
   },
 ];
 
 const defaultTheme: ThemeConfig = {
-  primaryColor: '#F97316',
-  secondaryColor: '#10B981',
-  accentColor: '#8B5CF6',
-  backgroundColor: '#FFFFFF',
-  textColor: '#1F2937',
-  headerStyle: 'light',
-  buttonStyle: 'rounded',
+  primaryColor: "#F97316",
+  secondaryColor: "#10B981",
+  accentColor: "#8B5CF6",
+  backgroundColor: "#FFFFFF",
+  textColor: "#1F2937",
+  headerStyle: "light",
+  buttonStyle: "rounded",
 };
 
 const defaultBanners: BannerConfig[] = [
   {
-    id: 'banner-1',
-    imageUrl: '/images/banner-1.jpg',
-    title: { ru: 'Новинки сезона', zh: '当季新品' },
+    id: "banner-1",
+    imageUrl: "/images/banner-1.jpg",
+    title: { ru: "Новинки сезона", zh: "当季新品" },
     enabled: true,
     order: 1,
   },
@@ -200,25 +205,32 @@ async function getConfigValue(db: any, key: string): Promise<any> {
   const result = await db
     .select()
     .from(systemConfigs)
-    .where(and(
-      eq(systemConfigs.configKey, key),
-      isNull(systemConfigs.orgId),
-      isNull(systemConfigs.storeId)
-    ))
+    .where(
+      and(
+        eq(systemConfigs.configKey, key),
+        isNull(systemConfigs.orgId),
+        isNull(systemConfigs.storeId)
+      )
+    )
     .limit(1);
-  
+
   return result[0]?.configValue || null;
 }
 
-async function setConfigValue(db: any, key: string, value: any, description: any): Promise<void> {
+async function setConfigValue(
+  db: any,
+  key: string,
+  value: any,
+  description: any
+): Promise<void> {
   const now = new Date();
-  
+
   await db
     .insert(systemConfigs)
     .values({
       configKey: key,
       configValue: value,
-      valueType: 'JSON',
+      valueType: "JSON",
       description,
       updatedAt: now,
     })
@@ -229,250 +241,268 @@ async function setConfigValue(db: any, key: string, value: any, description: any
 
 // ==================== 获取完整配置 ====================
 
-router.get('/config', async (req: Request, res: Response) => {
+router.get("/config", async (req: Request, res: Response) => {
   try {
     const db = await getDb();
     if (!db) {
       return res.json({ success: true, data: defaultConfig });
     }
-    
+
     const config: SDUIConfig = { ...defaultConfig };
-    
-    const membershipTiers = await getConfigValue(db, 'sdui_membership_tiers');
+
+    const membershipTiers = await getConfigValue(db, "sdui_membership_tiers");
     if (membershipTiers) config.membershipTiers = membershipTiers;
-    
-    const theme = await getConfigValue(db, 'sdui_theme');
+
+    const theme = await getConfigValue(db, "sdui_theme");
     if (theme) config.theme = theme;
-    
-    const banners = await getConfigValue(db, 'sdui_banners');
+
+    const banners = await getConfigValue(db, "sdui_banners");
     if (banners) config.banners = banners;
-    
-    const features = await getConfigValue(db, 'sdui_features');
+
+    const features = await getConfigValue(db, "sdui_features");
     if (features) config.features = features;
-    
-    const version = await getConfigValue(db, 'sdui_version');
+
+    const version = await getConfigValue(db, "sdui_version");
     if (version) config.version = version;
-    
+
     res.json({ success: true, data: config });
   } catch (error: any) {
-    console.error('[SDUI] Get config error:', error);
+    console.error("[SDUI] Get config error:", error);
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Failed to get config' },
+      error: { message: error.message || "Failed to get config" },
     });
   }
 });
 
 // ==================== 获取会员等级配置 ====================
 
-router.get('/membership-tiers', async (req: Request, res: Response) => {
+router.get("/membership-tiers", async (req: Request, res: Response) => {
   try {
     const db = await getDb();
     if (!db) {
       return res.json({ success: true, data: defaultMembershipTiers });
     }
-    
-    const tiers = await getConfigValue(db, 'sdui_membership_tiers');
+
+    const tiers = await getConfigValue(db, "sdui_membership_tiers");
     res.json({ success: true, data: tiers || defaultMembershipTiers });
   } catch (error: any) {
-    console.error('[SDUI] Get membership tiers error:', error);
+    console.error("[SDUI] Get membership tiers error:", error);
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Failed to get membership tiers' },
+      error: { message: error.message || "Failed to get membership tiers" },
     });
   }
 });
 
 // ==================== 更新会员等级配置 ====================
 
-router.put('/membership-tiers', async (req: Request, res: Response) => {
+router.put("/membership-tiers", async (req: Request, res: Response) => {
   try {
     const db = await getDb();
     if (!db) {
       return res.status(503).json({
         success: false,
-        error: { message: 'Database not available' },
+        error: { message: "Database not available" },
       });
     }
-    
+
     const { tiers, adminId, adminName } = req.body;
-    
+
     if (!Array.isArray(tiers) || tiers.length !== 4) {
       return res.status(400).json({
         success: false,
-        error: { message: 'Invalid membership tiers data' },
+        error: { message: "Invalid membership tiers data" },
       });
     }
-    
-    await setConfigValue(db, 'sdui_membership_tiers', tiers, { ru: 'Уровни членства', zh: '会员等级配置' });
-    
+
+    await setConfigValue(db, "sdui_membership_tiers", tiers, {
+      ru: "Уровни членства",
+      zh: "会员等级配置",
+    });
+
     // 更新版本号
-    const currentVersion = await getConfigValue(db, 'sdui_version') || 0;
+    const currentVersion = (await getConfigValue(db, "sdui_version")) || 0;
     const newVersion = currentVersion + 1;
-    await setConfigValue(db, 'sdui_version', newVersion, { ru: 'Версия', zh: '版本号' });
-    
+    await setConfigValue(db, "sdui_version", newVersion, {
+      ru: "Версия",
+      zh: "版本号",
+    });
+
     // 记录审计日志
     await db.insert(auditLogs).values({
-      tableName: 'system_configs',
+      tableName: "system_configs",
       recordId: 0,
-      action: 'UPDATE',
+      action: "UPDATE",
       diffBefore: {},
       diffAfter: { membershipTiers: tiers },
       operatorId: adminId || 1,
-      operatorType: 'ADMIN',
-      operatorName: adminName || 'Admin',
-      reason: 'Updated membership tiers',
+      operatorType: "ADMIN",
+      operatorName: adminName || "Admin",
+      reason: "Updated membership tiers",
     });
-    
+
     res.json({
       success: true,
       data: {
         tiers,
         version: newVersion,
-        message: { ru: 'Уровни членства обновлены', zh: '会员等级已更新' },
+        message: { ru: "Уровни членства обновлены", zh: "会员等级已更新" },
       },
     });
   } catch (error: any) {
-    console.error('[SDUI] Update membership tiers error:', error);
+    console.error("[SDUI] Update membership tiers error:", error);
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Failed to update membership tiers' },
+      error: { message: error.message || "Failed to update membership tiers" },
     });
   }
 });
 
 // ==================== 获取主题配置 ====================
 
-router.get('/theme', async (req: Request, res: Response) => {
+router.get("/theme", async (req: Request, res: Response) => {
   try {
     const db = await getDb();
     if (!db) {
       return res.json({ success: true, data: defaultTheme });
     }
-    
-    const theme = await getConfigValue(db, 'sdui_theme');
+
+    const theme = await getConfigValue(db, "sdui_theme");
     res.json({ success: true, data: theme || defaultTheme });
   } catch (error: any) {
-    console.error('[SDUI] Get theme error:', error);
+    console.error("[SDUI] Get theme error:", error);
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Failed to get theme' },
+      error: { message: error.message || "Failed to get theme" },
     });
   }
 });
 
 // ==================== 更新主题配置 ====================
 
-router.put('/theme', async (req: Request, res: Response) => {
+router.put("/theme", async (req: Request, res: Response) => {
   try {
     const db = await getDb();
     if (!db) {
       return res.status(503).json({
         success: false,
-        error: { message: 'Database not available' },
+        error: { message: "Database not available" },
       });
     }
-    
+
     const { theme, adminId, adminName } = req.body;
-    
-    await setConfigValue(db, 'sdui_theme', theme, { ru: 'Тема приложения', zh: '应用主题配置' });
-    
+
+    await setConfigValue(db, "sdui_theme", theme, {
+      ru: "Тема приложения",
+      zh: "应用主题配置",
+    });
+
     // 更新版本号
-    const currentVersion = await getConfigValue(db, 'sdui_version') || 0;
+    const currentVersion = (await getConfigValue(db, "sdui_version")) || 0;
     const newVersion = currentVersion + 1;
-    await setConfigValue(db, 'sdui_version', newVersion, { ru: 'Версия', zh: '版本号' });
-    
+    await setConfigValue(db, "sdui_version", newVersion, {
+      ru: "Версия",
+      zh: "版本号",
+    });
+
     res.json({
       success: true,
       data: {
         theme,
         version: newVersion,
-        message: { ru: 'Тема обновлена', zh: '主题已更新' },
+        message: { ru: "Тема обновлена", zh: "主题已更新" },
       },
     });
   } catch (error: any) {
-    console.error('[SDUI] Update theme error:', error);
+    console.error("[SDUI] Update theme error:", error);
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Failed to update theme' },
+      error: { message: error.message || "Failed to update theme" },
     });
   }
 });
 
 // ==================== 获取 Banner 配置 ====================
 
-router.get('/banners', async (req: Request, res: Response) => {
+router.get("/banners", async (req: Request, res: Response) => {
   try {
     const db = await getDb();
     if (!db) {
       return res.json({ success: true, data: defaultBanners });
     }
-    
-    const banners = await getConfigValue(db, 'sdui_banners');
+
+    const banners = await getConfigValue(db, "sdui_banners");
     res.json({ success: true, data: banners || defaultBanners });
   } catch (error: any) {
-    console.error('[SDUI] Get banners error:', error);
+    console.error("[SDUI] Get banners error:", error);
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Failed to get banners' },
+      error: { message: error.message || "Failed to get banners" },
     });
   }
 });
 
 // ==================== 更新 Banner 配置 ====================
 
-router.put('/banners', async (req: Request, res: Response) => {
+router.put("/banners", async (req: Request, res: Response) => {
   try {
     const db = await getDb();
     if (!db) {
       return res.status(503).json({
         success: false,
-        error: { message: 'Database not available' },
+        error: { message: "Database not available" },
       });
     }
-    
+
     const { banners, adminId, adminName } = req.body;
-    
-    await setConfigValue(db, 'sdui_banners', banners, { ru: 'Баннеры', zh: 'Banner 配置' });
-    
+
+    await setConfigValue(db, "sdui_banners", banners, {
+      ru: "Баннеры",
+      zh: "Banner 配置",
+    });
+
     // 更新版本号
-    const currentVersion = await getConfigValue(db, 'sdui_version') || 0;
+    const currentVersion = (await getConfigValue(db, "sdui_version")) || 0;
     const newVersion = currentVersion + 1;
-    await setConfigValue(db, 'sdui_version', newVersion, { ru: 'Версия', zh: '版本号' });
-    
+    await setConfigValue(db, "sdui_version", newVersion, {
+      ru: "Версия",
+      zh: "版本号",
+    });
+
     res.json({
       success: true,
       data: {
         banners,
         version: newVersion,
-        message: { ru: 'Баннеры обновлены', zh: 'Banner 已更新' },
+        message: { ru: "Баннеры обновлены", zh: "Banner 已更新" },
       },
     });
   } catch (error: any) {
-    console.error('[SDUI] Update banners error:', error);
+    console.error("[SDUI] Update banners error:", error);
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Failed to update banners' },
+      error: { message: error.message || "Failed to update banners" },
     });
   }
 });
 
 // ==================== 获取配置版本 ====================
 
-router.get('/version', async (req: Request, res: Response) => {
+router.get("/version", async (req: Request, res: Response) => {
   try {
     const db = await getDb();
     if (!db) {
       return res.json({ success: true, data: { version: 1 } });
     }
-    
-    const version = await getConfigValue(db, 'sdui_version');
+
+    const version = await getConfigValue(db, "sdui_version");
     res.json({ success: true, data: { version: version || 1 } });
   } catch (error: any) {
-    console.error('[SDUI] Get version error:', error);
+    console.error("[SDUI] Get version error:", error);
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Failed to get version' },
+      error: { message: error.message || "Failed to get version" },
     });
   }
 });

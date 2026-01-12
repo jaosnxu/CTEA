@@ -18,13 +18,13 @@ CHU TEA implements three architectural breakthroughs that eliminate common pain 
 
 ## 💼 Business Value
 
-| Metric | Traditional Approach | CHU TEA Platform |
-|--------|---------------------|------------------|
-| **Price Update Speed** | 24-48 hours (requires IT) | <1 second (self-service) |
-| **Payment Dispute Rate** | 3-5% (manual refunds) | <0.1% (auto-void) |
-| **Multi-Language Support** | Single language only | ZH/EN/RU at database level |
-| **Order Channel Tracking** | Manual reconciliation | Automatic prefix system (P/T/K/M) |
-| **Marketing Agility** | Dependent on POS vendor | Independent enrichment layer |
+| Metric                     | Traditional Approach      | CHU TEA Platform                  |
+| -------------------------- | ------------------------- | --------------------------------- |
+| **Price Update Speed**     | 24-48 hours (requires IT) | <1 second (self-service)          |
+| **Payment Dispute Rate**   | 3-5% (manual refunds)     | <0.1% (auto-void)                 |
+| **Multi-Language Support** | Single language only      | ZH/EN/RU at database level        |
+| **Order Channel Tracking** | Manual reconciliation     | Automatic prefix system (P/T/K/M) |
+| **Marketing Agility**      | Dependent on POS vendor   | Independent enrichment layer      |
 
 **ROI Impact:** Reducing payment disputes from 5% to 0.1% saves approximately **₽150,000 per month** for a chain processing ₽3M monthly revenue.
 
@@ -35,6 +35,7 @@ CHU TEA implements three architectural breakthroughs that eliminate common pain 
 The platform separates **operational data** (IIKO POS) from **marketing content** (local database), enabling business teams to customize the customer experience without being constrained by POS system limitations.
 
 **Data Flow:**
+
 ```
 IIKO POS → Sync Adapter → Shadow DB → Frontend (PWA/Telegram)
              ↓                ↓
@@ -43,6 +44,7 @@ IIKO POS → Sync Adapter → Shadow DB → Frontend (PWA/Telegram)
 ```
 
 **Payment State Machine:**
+
 ```
 1. HOLD    → Reserve funds (Tinkoff/Yookassa)
 2. PUSH    → Submit order to IIKO
@@ -59,6 +61,7 @@ IIKO POS → Sync Adapter → Shadow DB → Frontend (PWA/Telegram)
 The interface combines **Apple's minimalist aesthetics** with **Meituan's operational logic**, creating a premium feel while maintaining familiar interaction patterns for Russian users.
 
 **Key Design Principles:**
+
 - **Generous Whitespace:** 24-32px padding creates breathing room
 - **Subtle Depth:** Soft shadows (0 2px 8px rgba(0,0,0,0.08)) instead of harsh borders
 - **Consistent Radius:** 20px rounded corners across all components
@@ -71,16 +74,19 @@ The interface combines **Apple's minimalist aesthetics** with **Meituan's operat
 ## 📊 Demonstration Results
 
 **Test 1: Manual Override Protection**
+
 - Admin changed Product #1 price: ₽350 → ₽500
 - IIKO sync attempted to push ₽300
 - **Result:** Manual price preserved, conflict logged for review
 
 **Test 2: Payment Fail-Safe**
+
 - Order placed: 2x Strawberry Cheezo (₽1000)
 - IIKO timeout simulated
 - **Result:** Order status → VOIDED, funds never charged
 
 **Test 3: Real-Time Sync**
+
 - Admin updated price in backend
 - Frontend reflected change in <1 second
 - **Result:** Zero page refresh required
@@ -89,17 +95,18 @@ The interface combines **Apple's minimalist aesthetics** with **Meituan's operat
 
 ## 🚀 Production Readiness
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| **Product Catalog** | ✅ Complete | 10 products with high-quality images |
-| **Shopping Cart** | ✅ Complete | Persistent across sessions |
-| **Order Placement** | ✅ Complete | Prefix system implemented |
+| Component               | Status        | Notes                                |
+| ----------------------- | ------------- | ------------------------------------ |
+| **Product Catalog**     | ✅ Complete   | 10 products with high-quality images |
+| **Shopping Cart**       | ✅ Complete   | Persistent across sessions           |
+| **Order Placement**     | ✅ Complete   | Prefix system implemented            |
 | **Payment Integration** | 🟡 Mock Ready | Interface ready for Tinkoff/Yookassa |
-| **Admin Panel** | ✅ Complete | RBAC protection enabled |
-| **IIKO Sync** | 🟡 Simulator | Production API interface ready |
-| **Multi-Language** | ✅ Complete | ZH/EN/RU supported |
+| **Admin Panel**         | ✅ Complete   | RBAC protection enabled              |
+| **IIKO Sync**           | 🟡 Simulator  | Production API interface ready       |
+| **Multi-Language**      | ✅ Complete   | ZH/EN/RU supported                   |
 
 **Next Steps:**
+
 1. **Week 1-2:** Integrate Tinkoff/Yookassa payment gateway
 2. **Week 3-4:** Connect IIKO production API
 3. **Month 2:** Pilot launch in 1-2 Moscow flagship stores
@@ -144,13 +151,13 @@ Unlike generic e-commerce platforms, CHU TEA is purpose-built for **multi-tenant
 
 ## 💼 Бизнес-ценность
 
-| Метрика | Традиционный подход | Платформа CHU TEA |
-|---------|---------------------|-------------------|
-| **Скорость обновления цен** | 24-48 часов (требуется IT) | <1 секунды (самообслуживание) |
-| **Уровень платежных споров** | 3-5% (ручные возвраты) | <0.1% (авто-отмена) |
-| **Многоязычная поддержка** | Только один язык | ZH/EN/RU на уровне БД |
-| **Отслеживание каналов заказов** | Ручная сверка | Автоматическая система префиксов (P/T/K/M) |
-| **Маркетинговая гибкость** | Зависимость от POS-вендора | Независимый слой обогащения |
+| Метрика                          | Традиционный подход        | Платформа CHU TEA                          |
+| -------------------------------- | -------------------------- | ------------------------------------------ |
+| **Скорость обновления цен**      | 24-48 часов (требуется IT) | <1 секунды (самообслуживание)              |
+| **Уровень платежных споров**     | 3-5% (ручные возвраты)     | <0.1% (авто-отмена)                        |
+| **Многоязычная поддержка**       | Только один язык           | ZH/EN/RU на уровне БД                      |
+| **Отслеживание каналов заказов** | Ручная сверка              | Автоматическая система префиксов (P/T/K/M) |
+| **Маркетинговая гибкость**       | Зависимость от POS-вендора | Независимый слой обогащения                |
 
 **Влияние на ROI:** Снижение платежных споров с 5% до 0.1% экономит примерно **₽150,000 в месяц** для сети с ежемесячной выручкой ₽3M.
 
@@ -161,6 +168,7 @@ Unlike generic e-commerce platforms, CHU TEA is purpose-built for **multi-tenant
 Платформа разделяет **операционные данные** (IIKO POS) и **маркетинговый контент** (локальная БД), позволяя бизнес-командам настраивать клиентский опыт без ограничений POS-системы.
 
 **Поток данных:**
+
 ```
 IIKO POS → Адаптер синхронизации → Теневая БД → Фронтенд (PWA/Telegram)
              ↓                          ↓
@@ -169,6 +177,7 @@ IIKO POS → Адаптер синхронизации → Теневая БД �
 ```
 
 **Конечный автомат платежей:**
+
 ```
 1. HOLD    → Резервирование средств (Тинькофф/ЮKassa)
 2. PUSH    → Отправка заказа в IIKO
@@ -185,6 +194,7 @@ IIKO POS → Адаптер синхронизации → Теневая БД �
 Интерфейс сочетает **минималистичную эстетику Apple** с **операционной логикой Meituan**, создавая премиальное ощущение при сохранении привычных паттернов взаимодействия для российских пользователей.
 
 **Ключевые принципы дизайна:**
+
 - **Щедрые отступы:** 24-32px создают пространство для дыхания
 - **Тонкая глубина:** Мягкие тени (0 2px 8px rgba(0,0,0,0.08)) вместо резких границ
 - **Единый радиус:** 20px скругленные углы во всех компонентах
@@ -197,16 +207,19 @@ IIKO POS → Адаптер синхронизации → Теневая БД �
 ## 📊 Результаты демонстрации
 
 **Тест 1: Защита ручных изменений**
+
 - Администратор изменил цену Продукта #1: ₽350 → ₽500
 - Синхронизация IIKO попыталась установить ₽300
 - **Результат:** Ручная цена сохранена, конфликт зарегистрирован для проверки
 
 **Тест 2: Защита от сбоев платежей**
+
 - Размещен заказ: 2x Клубничный Чиз (₽1000)
 - Симулирован таймаут IIKO
 - **Результат:** Статус заказа → VOIDED, средства не списаны
 
 **Тест 3: Синхронизация в реальном времени**
+
 - Администратор обновил цену в бэкенде
 - Фронтенд отобразил изменение за <1 секунду
 - **Результат:** Обновление страницы не требуется
@@ -215,17 +228,18 @@ IIKO POS → Адаптер синхронизации → Теневая БД �
 
 ## 🚀 Готовность к производству
 
-| Компонент | Статус | Примечания |
-|-----------|--------|------------|
-| **Каталог продуктов** | ✅ Готово | 10 продуктов с качественными изображениями |
-| **Корзина покупок** | ✅ Готово | Сохраняется между сеансами |
-| **Размещение заказов** | ✅ Готово | Система префиксов реализована |
-| **Интеграция платежей** | 🟡 Мок готов | Интерфейс готов для Тинькофф/ЮKassa |
-| **Панель администратора** | ✅ Готово | Защита RBAC включена |
-| **Синхронизация IIKO** | 🟡 Симулятор | Интерфейс производственного API готов |
-| **Многоязычность** | ✅ Готово | Поддержка ZH/EN/RU |
+| Компонент                 | Статус       | Примечания                                 |
+| ------------------------- | ------------ | ------------------------------------------ |
+| **Каталог продуктов**     | ✅ Готово    | 10 продуктов с качественными изображениями |
+| **Корзина покупок**       | ✅ Готово    | Сохраняется между сеансами                 |
+| **Размещение заказов**    | ✅ Готово    | Система префиксов реализована              |
+| **Интеграция платежей**   | 🟡 Мок готов | Интерфейс готов для Тинькофф/ЮKassa        |
+| **Панель администратора** | ✅ Готово    | Защита RBAC включена                       |
+| **Синхронизация IIKO**    | 🟡 Симулятор | Интерфейс производственного API готов      |
+| **Многоязычность**        | ✅ Готово    | Поддержка ZH/EN/RU                         |
 
 **Следующие шаги:**
+
 1. **Неделя 1-2:** Интеграция платежного шлюза Тинькофф/ЮKassa
 2. **Неделя 3-4:** Подключение производственного API IIKO
 3. **Месяц 2:** Пилотный запуск в 1-2 флагманских магазинах Москвы

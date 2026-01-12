@@ -1,6 +1,6 @@
 /**
  * CHUTEA 智慧中台 - 9模块全景看板首页
- * 
+ *
  * 四大支柱：
  * 1. Финансы (财务) - 财务模块
  * 2. Маркетинг (营销) - 营销模块、达人中心
@@ -8,11 +8,11 @@
  * 4. Интеллект (大脑) - AI超级中心、AI客服、系统模块
  */
 
-import { useState, useEffect } from 'react';
-import { useLocation } from 'wouter';
-import AdminLayout from '@/components/admin/AdminLayout';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import AdminLayout from "@/components/admin/AdminLayout";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Wallet,
   TrendingUp,
@@ -36,16 +36,16 @@ import {
   MessageSquare,
   Gift,
   CreditCard,
-  FileText
-} from 'lucide-react';
+  FileText,
+} from "lucide-react";
 
 // ==================== 类型定义 ====================
 
-type Language = 'ru' | 'zh';
+type Language = "ru" | "zh";
 
 interface ModuleCard {
   id: string;
-  pillar: 'finance' | 'marketing' | 'operations' | 'intelligence';
+  pillar: "finance" | "marketing" | "operations" | "intelligence";
   title: { ru: string; zh: string };
   description: { ru: string; zh: string };
   icon: React.ReactNode;
@@ -54,7 +54,7 @@ interface ModuleCard {
   stats: {
     label: { ru: string; zh: string };
     value: string;
-    trend?: 'up' | 'down' | 'neutral';
+    trend?: "up" | "down" | "neutral";
     trendValue?: string;
   }[];
   alerts?: number;
@@ -66,178 +66,253 @@ interface ModuleCard {
 const moduleCards: ModuleCard[] = [
   // 财务模块
   {
-    id: 'finance',
-    pillar: 'finance',
-    title: { ru: 'Финансовый модуль', zh: '财务模块' },
-    description: { ru: 'Управление средствами, расчёты, депозиты', zh: '资金管理、跨店清算、保证金' },
+    id: "finance",
+    pillar: "finance",
+    title: { ru: "Финансовый модуль", zh: "财务模块" },
+    description: {
+      ru: "Управление средствами, расчёты, депозиты",
+      zh: "资金管理、跨店清算、保证金",
+    },
     icon: <Wallet className="w-6 h-6" />,
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-100',
+    color: "text-emerald-600",
+    bgColor: "bg-emerald-100",
     stats: [
-      { label: { ru: 'Общий баланс', zh: '总资金池' }, value: '₽ 2,450,000', trend: 'up', trendValue: '+12%' },
-      { label: { ru: 'Ожидает вывода', zh: '待提现' }, value: '₽ 85,000' },
-      { label: { ru: 'Заявки на вывод', zh: '提现申请' }, value: '23' },
+      {
+        label: { ru: "Общий баланс", zh: "总资金池" },
+        value: "₽ 2,450,000",
+        trend: "up",
+        trendValue: "+12%",
+      },
+      { label: { ru: "Ожидает вывода", zh: "待提现" }, value: "₽ 85,000" },
+      { label: { ru: "Заявки на вывод", zh: "提现申请" }, value: "23" },
     ],
     alerts: 3,
-    href: '/admin/finance/withdrawals',
+    href: "/admin/finance/withdrawals",
   },
   // 营销模块
   {
-    id: 'marketing',
-    pillar: 'marketing',
-    title: { ru: 'Маркетинговый модуль', zh: '营销模块' },
-    description: { ru: 'Акции, купоны, автоматизация', zh: '活动、优惠券、自动化触发器' },
+    id: "marketing",
+    pillar: "marketing",
+    title: { ru: "Маркетинговый модуль", zh: "营销模块" },
+    description: {
+      ru: "Акции, купоны, автоматизация",
+      zh: "活动、优惠券、自动化触发器",
+    },
     icon: <Target className="w-6 h-6" />,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100',
+    color: "text-purple-600",
+    bgColor: "bg-purple-100",
     stats: [
-      { label: { ru: 'Активные акции', zh: '活动进行中' }, value: '12', trend: 'up', trendValue: '+3' },
-      { label: { ru: 'Выдано купонов', zh: '已发券' }, value: '4,580' },
-      { label: { ru: 'Конверсия', zh: '转化率' }, value: '23.5%', trend: 'up', trendValue: '+2.1%' },
+      {
+        label: { ru: "Активные акции", zh: "活动进行中" },
+        value: "12",
+        trend: "up",
+        trendValue: "+3",
+      },
+      { label: { ru: "Выдано купонов", zh: "已发券" }, value: "4,580" },
+      {
+        label: { ru: "Конверсия", zh: "转化率" },
+        value: "23.5%",
+        trend: "up",
+        trendValue: "+2.1%",
+      },
     ],
-    href: '/admin/marketing/coupons',
+    href: "/admin/marketing/coupons",
   },
   // 商品模块
   {
-    id: 'products',
-    pillar: 'operations',
-    title: { ru: 'Товарный модуль', zh: '商品模块' },
-    description: { ru: 'SKU, цены, запасы', zh: 'SKU管理、价格中心、库存预警' },
+    id: "products",
+    pillar: "operations",
+    title: { ru: "Товарный модуль", zh: "商品模块" },
+    description: { ru: "SKU, цены, запасы", zh: "SKU管理、价格中心、库存预警" },
     icon: <Package className="w-6 h-6" />,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
+    color: "text-blue-600",
+    bgColor: "bg-blue-100",
     stats: [
-      { label: { ru: 'Всего SKU', zh: '总SKU' }, value: '156' },
-      { label: { ru: 'Нет в наличии', zh: '缺货' }, value: '8', trend: 'down', trendValue: '-3' },
-      { label: { ru: 'Обновлено цен', zh: '价格更新' }, value: '24' },
+      { label: { ru: "Всего SKU", zh: "总SKU" }, value: "156" },
+      {
+        label: { ru: "Нет в наличии", zh: "缺货" },
+        value: "8",
+        trend: "down",
+        trendValue: "-3",
+      },
+      { label: { ru: "Обновлено цен", zh: "价格更新" }, value: "24" },
     ],
     alerts: 8,
-    href: '/admin/ops/products',
+    href: "/admin/ops/products",
   },
   // AI超级中心
   {
-    id: 'ai-hub',
-    pillar: 'intelligence',
-    title: { ru: 'AI Суперцентр', zh: 'AI超级中心' },
-    description: { ru: 'Прогнозы, автоматизация, отчёты', zh: '智能决策、自动复盘、预测' },
+    id: "ai-hub",
+    pillar: "intelligence",
+    title: { ru: "AI Суперцентр", zh: "AI超级中心" },
+    description: {
+      ru: "Прогнозы, автоматизация, отчёты",
+      zh: "智能决策、自动复盘、预测",
+    },
     icon: <Brain className="w-6 h-6" />,
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-100',
+    color: "text-amber-600",
+    bgColor: "bg-amber-100",
     stats: [
-      { label: { ru: 'AI рекомендаций', zh: 'AI建议' }, value: '47' },
-      { label: { ru: 'Точность прогноза', zh: '预测准确率' }, value: '89%', trend: 'up', trendValue: '+5%' },
-      { label: { ru: 'Автоматизировано', zh: '自动化任务' }, value: '156' },
+      { label: { ru: "AI рекомендаций", zh: "AI建议" }, value: "47" },
+      {
+        label: { ru: "Точность прогноза", zh: "预测准确率" },
+        value: "89%",
+        trend: "up",
+        trendValue: "+5%",
+      },
+      { label: { ru: "Автоматизировано", zh: "自动化任务" }, value: "156" },
     ],
-    href: '/admin/ai/cockpit',
+    href: "/admin/ai/cockpit",
   },
   // 运营模块
   {
-    id: 'operations',
-    pillar: 'operations',
-    title: { ru: 'Операционный модуль', zh: '运营模块' },
-    description: { ru: 'Магазины, заказы, TV контроль', zh: '门店管理、订单监控、TV云控' },
+    id: "operations",
+    pillar: "operations",
+    title: { ru: "Операционный модуль", zh: "运营模块" },
+    description: {
+      ru: "Магазины, заказы, TV контроль",
+      zh: "门店管理、订单监控、TV云控",
+    },
     icon: <Store className="w-6 h-6" />,
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-100',
+    color: "text-orange-600",
+    bgColor: "bg-orange-100",
     stats: [
-      { label: { ru: 'Активных магазинов', zh: '营业门店' }, value: '187/200' },
-      { label: { ru: 'Заказов сегодня', zh: '今日订单' }, value: '2,340', trend: 'up', trendValue: '+18%' },
-      { label: { ru: 'TV онлайн', zh: 'TV在线' }, value: '195' },
+      { label: { ru: "Активных магазинов", zh: "营业门店" }, value: "187/200" },
+      {
+        label: { ru: "Заказов сегодня", zh: "今日订单" },
+        value: "2,340",
+        trend: "up",
+        trendValue: "+18%",
+      },
+      { label: { ru: "TV онлайн", zh: "TV在线" }, value: "195" },
     ],
-    href: '/admin/ops/stores',
+    href: "/admin/ops/stores",
   },
   // 系统模块
   {
-    id: 'system',
-    pillar: 'intelligence',
-    title: { ru: 'Системный модуль', zh: '系统模块' },
-    description: { ru: 'Права, аудит, настройки', zh: '权限管理、审计日志、配置' },
+    id: "system",
+    pillar: "intelligence",
+    title: { ru: "Системный модуль", zh: "系统模块" },
+    description: {
+      ru: "Права, аудит, настройки",
+      zh: "权限管理、审计日志、配置",
+    },
     icon: <Settings className="w-6 h-6" />,
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-100',
+    color: "text-gray-600",
+    bgColor: "bg-gray-100",
     stats: [
-      { label: { ru: 'Пользователей', zh: '用户数' }, value: '342' },
-      { label: { ru: 'Ролей', zh: '角色数' }, value: '8' },
-      { label: { ru: 'Логов сегодня', zh: '今日日志' }, value: '1,247' },
+      { label: { ru: "Пользователей", zh: "用户数" }, value: "342" },
+      { label: { ru: "Ролей", zh: "角色数" }, value: "8" },
+      { label: { ru: "Логов сегодня", zh: "今日日志" }, value: "1,247" },
     ],
-    href: '/admin/settings',
+    href: "/admin/settings",
   },
   // 达人中心
   {
-    id: 'influencers',
-    pillar: 'marketing',
-    title: { ru: 'Центр инфлюенсеров', zh: '达人中心' },
-    description: { ru: 'Задания, комиссии, ROI', zh: '任务分发、分佣核算、ROI' },
+    id: "influencers",
+    pillar: "marketing",
+    title: { ru: "Центр инфлюенсеров", zh: "达人中心" },
+    description: {
+      ru: "Задания, комиссии, ROI",
+      zh: "任务分发、分佣核算、ROI",
+    },
     icon: <Users className="w-6 h-6" />,
-    color: 'text-pink-600',
-    bgColor: 'bg-pink-100',
+    color: "text-pink-600",
+    bgColor: "bg-pink-100",
     stats: [
-      { label: { ru: 'Активных блогеров', zh: '活跃达人' }, value: '89' },
-      { label: { ru: 'Выплачено', zh: '已发佣金' }, value: '₽ 156,000' },
-      { label: { ru: 'Средний ROI', zh: '平均ROI' }, value: '340%', trend: 'up', trendValue: '+45%' },
+      { label: { ru: "Активных блогеров", zh: "活跃达人" }, value: "89" },
+      { label: { ru: "Выплачено", zh: "已发佣金" }, value: "₽ 156,000" },
+      {
+        label: { ru: "Средний ROI", zh: "平均ROI" },
+        value: "340%",
+        trend: "up",
+        trendValue: "+45%",
+      },
     ],
-    href: '/admin/marketing/influencers',
+    href: "/admin/marketing/influencers",
   },
   // 购物中心
   {
-    id: 'mall',
-    pillar: 'operations',
-    title: { ru: 'Торговый центр', zh: '购物中心' },
-    description: { ru: 'Электронная коммерция, доставка', zh: '电商订单、物流追踪、评价' },
+    id: "mall",
+    pillar: "operations",
+    title: { ru: "Торговый центр", zh: "购物中心" },
+    description: {
+      ru: "Электронная коммерция, доставка",
+      zh: "电商订单、物流追踪、评价",
+    },
     icon: <ShoppingBag className="w-6 h-6" />,
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-100',
+    color: "text-indigo-600",
+    bgColor: "bg-indigo-100",
     stats: [
-      { label: { ru: 'Заказов', zh: '订单数' }, value: '567' },
-      { label: { ru: 'В доставке', zh: '配送中' }, value: '45' },
-      { label: { ru: 'Оценка', zh: '好评率' }, value: '4.8★' },
+      { label: { ru: "Заказов", zh: "订单数" }, value: "567" },
+      { label: { ru: "В доставке", zh: "配送中" }, value: "45" },
+      { label: { ru: "Оценка", zh: "好评率" }, value: "4.8★" },
     ],
-    href: '/admin/ops/mall',
+    href: "/admin/ops/mall",
   },
   // AI客服
   {
-    id: 'ai-support',
-    pillar: 'intelligence',
-    title: { ru: 'AI Поддержка', zh: 'AI客服中心' },
-    description: { ru: 'Чат-бот, FAQ, эскалация', zh: '智能问答、多渠道、人工接管' },
+    id: "ai-support",
+    pillar: "intelligence",
+    title: { ru: "AI Поддержка", zh: "AI客服中心" },
+    description: {
+      ru: "Чат-бот, FAQ, эскалация",
+      zh: "智能问答、多渠道、人工接管",
+    },
     icon: <Bot className="w-6 h-6" />,
-    color: 'text-cyan-600',
-    bgColor: 'bg-cyan-100',
+    color: "text-cyan-600",
+    bgColor: "bg-cyan-100",
     stats: [
-      { label: { ru: 'Обработано', zh: '已处理' }, value: '1,234' },
-      { label: { ru: 'Автоответ', zh: '自动回复率' }, value: '87%' },
-      { label: { ru: 'Ожидает', zh: '待人工' }, value: '12' },
+      { label: { ru: "Обработано", zh: "已处理" }, value: "1,234" },
+      { label: { ru: "Автоответ", zh: "自动回复率" }, value: "87%" },
+      { label: { ru: "Ожидает", zh: "待人工" }, value: "12" },
     ],
     alerts: 12,
-    href: '/admin/ai/customer-service',
+    href: "/admin/ai/customer-service",
   },
 ];
 
 // ==================== 支柱配置 ====================
 
 const pillars = [
-  { id: 'finance', label: { ru: 'Финансы', zh: '财务' }, color: 'from-emerald-500 to-green-600' },
-  { id: 'marketing', label: { ru: 'Маркетинг', zh: '营销' }, color: 'from-purple-500 to-pink-600' },
-  { id: 'operations', label: { ru: 'Операции', zh: '运营' }, color: 'from-blue-500 to-indigo-600' },
-  { id: 'intelligence', label: { ru: 'Интеллект', zh: '大脑' }, color: 'from-amber-500 to-orange-600' },
+  {
+    id: "finance",
+    label: { ru: "Финансы", zh: "财务" },
+    color: "from-emerald-500 to-green-600",
+  },
+  {
+    id: "marketing",
+    label: { ru: "Маркетинг", zh: "营销" },
+    color: "from-purple-500 to-pink-600",
+  },
+  {
+    id: "operations",
+    label: { ru: "Операции", zh: "运营" },
+    color: "from-blue-500 to-indigo-600",
+  },
+  {
+    id: "intelligence",
+    label: { ru: "Интеллект", zh: "大脑" },
+    color: "from-amber-500 to-orange-600",
+  },
 ];
 
 // ==================== 主组件 ====================
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
-  const [lang, setLang] = useState<Language>('ru');
+  const [lang, setLang] = useState<Language>("ru");
   const [loading, setLoading] = useState(false);
   const [selectedPillar, setSelectedPillar] = useState<string | null>(null);
-  
+
   // 过滤模块
-  const filteredModules = selectedPillar 
+  const filteredModules = selectedPillar
     ? moduleCards.filter(m => m.pillar === selectedPillar)
     : moduleCards;
-  
+
   // 计算总警报数
   const totalAlerts = moduleCards.reduce((sum, m) => sum + (m.alerts || 0), 0);
-  
+
   return (
     <AdminLayout>
       {/* 页面标题 */}
@@ -245,84 +320,99 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              {lang === 'ru' ? 'Панель управления' : '控制面板'}
+              {lang === "ru" ? "Панель управления" : "控制面板"}
             </h1>
             <p className="text-gray-500 mt-1">
-              {lang === 'ru' 
-                ? '9 модулей • 4 столпа • Единая платформа' 
-                : '9大模块 • 4大支柱 • 统一平台'
-              }
+              {lang === "ru"
+                ? "9 модулей • 4 столпа • Единая платформа"
+                : "9大模块 • 4大支柱 • 统一平台"}
             </p>
           </div>
-          
+
           <div className="flex items-center gap-4">
             {/* 语言切换 */}
             <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2 border border-gray-200">
               <button
-                onClick={() => setLang('ru')}
+                onClick={() => setLang("ru")}
                 className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
-                  lang === 'ru' ? 'bg-amber-100 text-amber-700' : 'text-gray-500'
+                  lang === "ru"
+                    ? "bg-amber-100 text-amber-700"
+                    : "text-gray-500"
                 }`}
               >
                 🇷🇺 RU
               </button>
               <button
-                onClick={() => setLang('zh')}
+                onClick={() => setLang("zh")}
                 className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
-                  lang === 'zh' ? 'bg-amber-100 text-amber-700' : 'text-gray-500'
+                  lang === "zh"
+                    ? "bg-amber-100 text-amber-700"
+                    : "text-gray-500"
                 }`}
               >
                 🇨🇳 中文
               </button>
             </div>
-            
+
             {/* 刷新按钮 */}
-            <button 
+            <button
               onClick={() => setLoading(true)}
               className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
             >
-              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-5 h-5 ${loading ? "animate-spin" : ""}`}
+              />
             </button>
           </div>
         </div>
       </div>
-      
+
       {/* 四大支柱概览 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {pillars.map(pillar => {
           const pillarModules = moduleCards.filter(m => m.pillar === pillar.id);
-          const pillarAlerts = pillarModules.reduce((sum, m) => sum + (m.alerts || 0), 0);
+          const pillarAlerts = pillarModules.reduce(
+            (sum, m) => sum + (m.alerts || 0),
+            0
+          );
           const isSelected = selectedPillar === pillar.id;
-          
+
           return (
             <button
               key={pillar.id}
               onClick={() => setSelectedPillar(isSelected ? null : pillar.id)}
               className={`
                 relative p-6 rounded-2xl transition-all
-                ${isSelected 
-                  ? `bg-gradient-to-br ${pillar.color} text-white shadow-xl scale-105` 
-                  : 'bg-white hover:shadow-lg border border-gray-200'
+                ${
+                  isSelected
+                    ? `bg-gradient-to-br ${pillar.color} text-white shadow-xl scale-105`
+                    : "bg-white hover:shadow-lg border border-gray-200"
                 }
               `}
             >
               <div className="flex items-center justify-between mb-2">
-                <span className={`text-lg font-bold ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+                <span
+                  className={`text-lg font-bold ${isSelected ? "text-white" : "text-gray-900"}`}
+                >
                   {pillar.label[lang]}
                 </span>
                 {pillarAlerts > 0 && (
-                  <span className={`
+                  <span
+                    className={`
                     px-2 py-0.5 rounded-full text-xs font-bold
-                    ${isSelected ? 'bg-white/20 text-white' : 'bg-red-100 text-red-600'}
-                  `}>
+                    ${isSelected ? "bg-white/20 text-white" : "bg-red-100 text-red-600"}
+                  `}
+                  >
                     {pillarAlerts}
                   </span>
                 )}
               </div>
-              <p className={`text-sm ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
-                {pillarModules.length} {lang === 'ru' ? 'модулей' : '个模块'}
+              <p
+                className={`text-sm ${isSelected ? "text-white/80" : "text-gray-500"}`}
+              >
+                {pillarModules.length} {lang === "ru" ? "модулей" : "个模块"}
               </p>
-              
+
               {isSelected && (
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 rounded-sm" />
               )}
@@ -330,7 +420,7 @@ export default function Dashboard() {
           );
         })}
       </div>
-      
+
       {/* 警报横幅 */}
       {totalAlerts > 0 && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-4">
@@ -339,28 +429,26 @@ export default function Dashboard() {
           </div>
           <div className="flex-1">
             <h3 className="font-bold text-red-800">
-              {lang === 'ru' 
-                ? `${totalAlerts} предупреждений требуют внимания` 
-                : `${totalAlerts} 个警报需要处理`
-              }
+              {lang === "ru"
+                ? `${totalAlerts} предупреждений требуют внимания`
+                : `${totalAlerts} 个警报需要处理`}
             </h3>
             <p className="text-sm text-red-600">
-              {lang === 'ru' 
-                ? 'Проверьте модули с красными индикаторами' 
-                : '请检查带有红色标记的模块'
-              }
+              {lang === "ru"
+                ? "Проверьте модули с красными индикаторами"
+                : "请检查带有红色标记的模块"}
             </p>
           </div>
           <button className="px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-all">
-            {lang === 'ru' ? 'Просмотреть' : '查看详情'}
+            {lang === "ru" ? "Просмотреть" : "查看详情"}
           </button>
         </div>
       )}
-      
+
       {/* 9模块卡片网格 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredModules.map(module => (
-          <Card 
+          <Card
             key={module.id}
             className="p-6 hover:shadow-xl transition-all cursor-pointer group border-2 border-transparent hover:border-amber-200"
             onClick={() => setLocation(module.href)}
@@ -368,7 +456,9 @@ export default function Dashboard() {
             {/* 头部 */}
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 ${module.bgColor} rounded-xl flex items-center justify-center ${module.color}`}>
+                <div
+                  className={`w-12 h-12 ${module.bgColor} rounded-xl flex items-center justify-center ${module.color}`}
+                >
                   {module.icon}
                 </div>
                 <div>
@@ -380,30 +470,35 @@ export default function Dashboard() {
                   </p>
                 </div>
               </div>
-              
+
               {module.alerts && module.alerts > 0 && (
-                <Badge className="bg-red-500 text-white">
-                  {module.alerts}
-                </Badge>
+                <Badge className="bg-red-500 text-white">{module.alerts}</Badge>
               )}
             </div>
-            
+
             {/* 统计数据 */}
             <div className="space-y-3">
               {module.stats.map((stat, idx) => (
                 <div key={idx} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">{stat.label[lang]}</span>
+                  <span className="text-sm text-gray-500">
+                    {stat.label[lang]}
+                  </span>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-gray-900">{stat.value}</span>
+                    <span className="font-bold text-gray-900">
+                      {stat.value}
+                    </span>
                     {stat.trend && (
-                      <span className={`
+                      <span
+                        className={`
                         flex items-center text-xs font-medium
-                        ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}
-                      `}>
-                        {stat.trend === 'up' 
-                          ? <ArrowUpRight className="w-3 h-3" />
-                          : <ArrowDownRight className="w-3 h-3" />
-                        }
+                        ${stat.trend === "up" ? "text-green-600" : "text-red-600"}
+                      `}
+                      >
+                        {stat.trend === "up" ? (
+                          <ArrowUpRight className="w-3 h-3" />
+                        ) : (
+                          <ArrowDownRight className="w-3 h-3" />
+                        )}
                         {stat.trendValue}
                       </span>
                     )}
@@ -411,18 +506,18 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            
+
             {/* 底部链接 */}
             <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
               <span className="text-sm text-amber-600 font-medium group-hover:text-amber-700">
-                {lang === 'ru' ? 'Открыть модуль' : '进入模块'}
+                {lang === "ru" ? "Открыть модуль" : "进入模块"}
               </span>
               <ChevronRight className="w-5 h-5 text-amber-600 group-hover:translate-x-1 transition-transform" />
             </div>
           </Card>
         ))}
       </div>
-      
+
       {/* AI 每日简报 */}
       <div className="mt-8 p-6 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl text-white">
         <div className="flex items-start gap-4">
@@ -431,28 +526,43 @@ export default function Dashboard() {
           </div>
           <div className="flex-1">
             <h3 className="text-xl font-bold mb-2">
-              {lang === 'ru' ? '🤖 AI Ежедневный отчёт' : '🤖 AI 每日简报'}
+              {lang === "ru" ? "🤖 AI Ежедневный отчёт" : "🤖 AI 每日简报"}
             </h3>
             <p className="text-white/90 leading-relaxed">
-              {lang === 'ru' 
+              {lang === "ru"
                 ? 'Вчера сеть из 200 магазинов показала рост выручки на 12%. Лучший результат у магазина в Владивостоке (+34%). Рекомендация: запустить акцию "Тёплые напитки" в северных регионах из-за похолодания.'
-                : '昨日全网200家门店营收增长12%。海参崴门店表现最佳(+34%)。建议：因北方降温，在北部地区启动"暖饮促销"活动。'
-              }
+                : '昨日全网200家门店营收增长12%。海参崴门店表现最佳(+34%)。建议：因北方降温，在北部地区启动"暖饮促销"活动。'}
             </p>
           </div>
           <button className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-medium transition-all">
-            {lang === 'ru' ? 'Подробнее' : '查看详情'}
+            {lang === "ru" ? "Подробнее" : "查看详情"}
           </button>
         </div>
       </div>
-      
+
       {/* 快捷操作 */}
       <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { icon: <CreditCard className="w-5 h-5" />, label: { ru: 'Одобрить вывод', zh: '审批提现' }, href: '/admin/finance/withdrawals' },
-          { icon: <Gift className="w-5 h-5" />, label: { ru: 'Создать купон', zh: '创建优惠券' }, href: '/admin/marketing/coupons' },
-          { icon: <MessageSquare className="w-5 h-5" />, label: { ru: 'TG уведомления', zh: 'TG通知' }, href: '/admin/ops/telegram' },
-          { icon: <FileText className="w-5 h-5" />, label: { ru: 'Экспорт отчёта', zh: '导出报表' }, href: '/admin/finance/reports' },
+          {
+            icon: <CreditCard className="w-5 h-5" />,
+            label: { ru: "Одобрить вывод", zh: "审批提现" },
+            href: "/admin/finance/withdrawals",
+          },
+          {
+            icon: <Gift className="w-5 h-5" />,
+            label: { ru: "Создать купон", zh: "创建优惠券" },
+            href: "/admin/marketing/coupons",
+          },
+          {
+            icon: <MessageSquare className="w-5 h-5" />,
+            label: { ru: "TG уведомления", zh: "TG通知" },
+            href: "/admin/ops/telegram",
+          },
+          {
+            icon: <FileText className="w-5 h-5" />,
+            label: { ru: "Экспорт отчёта", zh: "导出报表" },
+            href: "/admin/finance/reports",
+          },
         ].map((action, idx) => (
           <button
             key={idx}
@@ -462,7 +572,9 @@ export default function Dashboard() {
             <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600">
               {action.icon}
             </div>
-            <span className="font-medium text-gray-700">{action.label[lang]}</span>
+            <span className="font-medium text-gray-700">
+              {action.label[lang]}
+            </span>
           </button>
         ))}
       </div>

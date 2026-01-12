@@ -24,11 +24,11 @@ The platform implements a **dual-layer data architecture** that separates operat
 
 **Key Components:**
 
-| Component | Purpose | Technology |
-|-----------|---------|------------|
-| **IIKO Adapter** | Syncs base product data from POS | Mock API (production-ready interface) |
-| **Local Enrichment Layer** | Stores marketing content (RU/EN/ZH) | PostgreSQL with JSONB |
-| **Manual Override Flag** | Protects admin changes from sync overwrites | Boolean flag + conflict detection |
+| Component                  | Purpose                                     | Technology                            |
+| -------------------------- | ------------------------------------------- | ------------------------------------- |
+| **IIKO Adapter**           | Syncs base product data from POS            | Mock API (production-ready interface) |
+| **Local Enrichment Layer** | Stores marketing content (RU/EN/ZH)         | PostgreSQL with JSONB                 |
+| **Manual Override Flag**   | Protects admin changes from sync overwrites | Boolean flag + conflict detection     |
 
 **Validation Result:** The manual override mechanism was tested by changing Product #1 price from ₽350 to ₽500. When IIKO attempted to sync ₽300, the system correctly blocked the update and logged a conflict report. The admin's ₽500 price was preserved while other products updated successfully.
 
@@ -49,12 +49,12 @@ Phase 3: CAPTURE  → Charge customer (if IIKO confirms)
 
 Orders are assigned unique prefixes to identify their source channel:
 
-| Prefix | Channel | Format Example |
-|--------|---------|----------------|
-| **P** | PWA Web App | P20260106001 |
-| **T** | Telegram Mini App | T20260106001 |
-| **K** | Delivery (Доставка) | K20260106001 |
-| **M** | Pickup (Самовывоз) | M20260106001 |
+| Prefix | Channel             | Format Example |
+| ------ | ------------------- | -------------- |
+| **P**  | PWA Web App         | P20260106001   |
+| **T**  | Telegram Mini App   | T20260106001   |
+| **K**  | Delivery (Доставка) | K20260106001   |
+| **M**  | Pickup (Самовывоз)  | M20260106001   |
 
 These prefixes are synchronized to IIKO order comments for unified reporting across all sales channels.
 
@@ -67,13 +67,15 @@ These prefixes are synchronized to IIKO order comments for unified reporting acr
 The platform migrated from REST API to **tRPC** for type-safe, real-time data flow:
 
 **Before (REST API):**
+
 ```typescript
 // Manual fetch calls, no type safety
-const response = await fetch('/api/products');
+const response = await fetch("/api/products");
 const data = await response.json(); // Type unknown
 ```
 
 **After (tRPC):**
+
 ```typescript
 // Automatic type inference and real-time revalidation
 const { data: products } = trpc.products.list.useQuery();
@@ -86,11 +88,11 @@ const { data: products } = trpc.products.list.useQuery();
 
 Admin routes are protected using a **three-tier security model**:
 
-| Procedure Type | Access Level | Use Case |
-|----------------|--------------|----------|
-| `publicProcedure` | All users | Product browsing, order placement |
+| Procedure Type       | Access Level        | Use Case                          |
+| -------------------- | ------------------- | --------------------------------- |
+| `publicProcedure`    | All users           | Product browsing, order placement |
 | `protectedProcedure` | Authenticated users | Order history, profile management |
-| `adminProcedure` | Admin role only | Price editing, IIKO sync control |
+| `adminProcedure`     | Admin role only     | Price editing, IIKO sync control  |
 
 **Implementation:** The `/admin/products` route is wrapped with an `AdminRoute` component that checks user authentication status. Unauthorized access attempts redirect to the home page with an "Access Denied" message.
 
@@ -123,6 +125,7 @@ The frontend automatically selects the appropriate language field based on user 
 The interface follows **Apple's design language** with specific adaptations for the Russian market:
 
 **Visual Principles:**
+
 - **Whitespace:** Generous padding (24px-32px) creates breathing room
 - **Typography:** SF Pro Display for headings, Inter for body text
 - **Shadows:** Subtle elevation (0 2px 8px rgba(0,0,0,0.08))
@@ -130,6 +133,7 @@ The interface follows **Apple's design language** with specific adaptations for 
 - **Colors:** Neutral gray palette (#F5F5F5 background) with accent colors for CTAs
 
 **Russian Localization Considerations:**
+
 - Cyrillic text requires 15-20% more horizontal space than Latin characters
 - Button labels use concise Russian terms: "Выбрать" (Select), "Оформить" (Checkout)
 - Currency symbol (₽) is placed after the amount per Russian convention
@@ -138,13 +142,13 @@ The interface follows **Apple's design language** with specific adaptations for 
 
 The bottom navigation bar uses **icon + label** format optimized for one-handed mobile use:
 
-| Tab | Icon | Russian Label | Function |
-|-----|------|---------------|----------|
-| Home | 🏠 | Главная | Brand hero + promotions |
-| Order | 📋 | Меню | Product catalog with categories |
-| Mall | 🛍️ | Маркет | Merchandise & gift cards |
-| Orders | 📦 | Заказы | Order history & tracking |
-| Profile | 👤 | Профиль | Account settings & loyalty |
+| Tab     | Icon | Russian Label | Function                        |
+| ------- | ---- | ------------- | ------------------------------- |
+| Home    | 🏠   | Главная       | Brand hero + promotions         |
+| Order   | 📋   | Меню          | Product catalog with categories |
+| Mall    | 🛍️   | Маркет        | Merchandise & gift cards        |
+| Orders  | 📦   | Заказы        | Order history & tracking        |
+| Profile | 👤   | Профиль       | Account settings & loyalty      |
 
 **Interaction Pattern:** Tapping a category in the left sidebar smoothly scrolls the product list to the corresponding section, mimicking Meituan's proven UX pattern.
 
@@ -157,12 +161,14 @@ The bottom navigation bar uses **icon + label** format optimized for one-handed 
 **Test Scenario:** Modify Product #1 (Клубничный Чиз) price from ₽350 to ₽500
 
 **Steps Executed:**
+
 1. Navigate to `/admin/products`
 2. Click "Edit Price" for Product #1
 3. Change value to 500
 4. Click "Save"
 
 **Observed Results:**
+
 - ✅ Price updated to ₽500 in database
 - ✅ Override status changed from "IIKO" to "Manual"
 - ✅ `is_manual_override` flag set to `true`
@@ -175,6 +181,7 @@ The bottom navigation bar uses **icon + label** format optimized for one-handed 
 **Test Scenario:** Simulate IIKO attempting to overwrite manual price changes
 
 **IIKO Sync Payload (Simulated):**
+
 ```json
 [
   { "id": 1, "name_ru": "Клубничный Чиз (IIKO)", "price": 300 },
@@ -185,18 +192,20 @@ The bottom navigation bar uses **icon + label** format optimized for one-handed 
 
 **System Response:**
 
-| Product | Local Price | IIKO Price | Action Taken | Final Price |
-|---------|-------------|------------|--------------|-------------|
-| #1 Клубничный Чиз | ₽500 (Manual) | ₽300 | **BLOCKED** | ₽500 |
-| #2 Манго Чиз | ₽360 (IIKO) | ₽310 | Updated | ₽310 |
-| #3 Виноградный Чиз | ₽340 (IIKO) | ₽290 | Updated | ₽290 |
+| Product            | Local Price   | IIKO Price | Action Taken | Final Price |
+| ------------------ | ------------- | ---------- | ------------ | ----------- |
+| #1 Клубничный Чиз  | ₽500 (Manual) | ₽300       | **BLOCKED**  | ₽500        |
+| #2 Манго Чиз       | ₽360 (IIKO)   | ₽310       | Updated      | ₽310        |
+| #3 Виноградный Чиз | ₽340 (IIKO)   | ₽290       | Updated      | ₽290        |
 
 **Sync Summary:**
+
 - ✅ **Updated:** 2 products
 - 🛡️ **Protected:** 1 product (manual override active)
 - ⚠️ **Conflicts:** 1 conflict logged for admin review
 
 **Console Output:**
+
 ```
 ========================================
 🔄 [IIKO SYNC] Starting product sync...
@@ -231,17 +240,20 @@ The bottom navigation bar uses **icon + label** format optimized for one-handed 
 **Test Scenario:** Simulate IIKO timeout during order submission
 
 **Order Details:**
+
 - Product: Клубничный Чиз (₽500) × 2
 - Total: ₽1000
 - Payment Method: Tinkoff (simulated)
 
 **System Behavior:**
+
 1. **Phase 1 (HOLD):** Funds reserved successfully
 2. **Phase 2 (PUSH):** IIKO API timeout (simulated by `DEMO_FAIL_MODE = true`)
 3. **Phase 3 (VOID):** System automatically released funds
 4. **Order Status:** Transitioned to "VOIDED (Возврат)"
 
 **Order History Display:**
+
 ```
 Order #P20260106001
 Status: Возврат (Refund)
@@ -258,36 +270,36 @@ Payment: Released (not charged)
 
 ### 5.1 Core Features
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Product Catalog (RU/EN/ZH) | ✅ Complete | Multi-language support active |
-| Shopping Cart | ✅ Complete | Persistent across sessions |
-| Order Placement | ✅ Complete | Prefix system implemented |
-| Payment Integration | 🟡 Mock | Ready for Tinkoff/Yookassa API |
-| Order History | ✅ Complete | Real-time sync with backend |
-| Admin Panel | ✅ Complete | RBAC protection enabled |
-| IIKO Sync | 🟡 Simulator | Interface ready for production API |
-| Manual Override Protection | ✅ Complete | Conflict detection validated |
+| Feature                    | Status       | Notes                              |
+| -------------------------- | ------------ | ---------------------------------- |
+| Product Catalog (RU/EN/ZH) | ✅ Complete  | Multi-language support active      |
+| Shopping Cart              | ✅ Complete  | Persistent across sessions         |
+| Order Placement            | ✅ Complete  | Prefix system implemented          |
+| Payment Integration        | 🟡 Mock      | Ready for Tinkoff/Yookassa API     |
+| Order History              | ✅ Complete  | Real-time sync with backend        |
+| Admin Panel                | ✅ Complete  | RBAC protection enabled            |
+| IIKO Sync                  | 🟡 Simulator | Interface ready for production API |
+| Manual Override Protection | ✅ Complete  | Conflict detection validated       |
 
 ### 5.2 Security & Compliance
 
-| Requirement | Implementation | Status |
-|-------------|----------------|--------|
-| HTTPS/TLS | Manus hosting (built-in) | ✅ Ready |
-| RBAC for Admin Routes | `adminProcedure` + `AdminRoute` | ✅ Complete |
-| Payment PCI Compliance | Delegated to Tinkoff/Yookassa | ✅ Compliant |
-| GDPR Data Privacy | User consent + data export API | 🟡 Pending |
+| Requirement                        | Implementation                   | Status                |
+| ---------------------------------- | -------------------------------- | --------------------- |
+| HTTPS/TLS                          | Manus hosting (built-in)         | ✅ Ready              |
+| RBAC for Admin Routes              | `adminProcedure` + `AdminRoute`  | ✅ Complete           |
+| Payment PCI Compliance             | Delegated to Tinkoff/Yookassa    | ✅ Compliant          |
+| GDPR Data Privacy                  | User consent + data export API   | 🟡 Pending            |
 | Russian Data Localization (ФЗ-152) | Database hosted in Russia region | 🟡 Pending deployment |
 
 ### 5.3 Performance & Scalability
 
-| Metric | Current | Target | Status |
-|--------|---------|--------|--------|
-| Page Load Time | <2s | <3s | ✅ Pass |
-| API Response Time | <200ms | <500ms | ✅ Pass |
-| Concurrent Users | 100+ | 1000+ | 🟡 Load testing needed |
-| Database Queries | Optimized indexes | N+1 prevention | ✅ Complete |
-| CDN Coverage | Manus global CDN | Russia/CIS edge nodes | ✅ Active |
+| Metric            | Current           | Target                | Status                 |
+| ----------------- | ----------------- | --------------------- | ---------------------- |
+| Page Load Time    | <2s               | <3s                   | ✅ Pass                |
+| API Response Time | <200ms            | <500ms                | ✅ Pass                |
+| Concurrent Users  | 100+              | 1000+                 | 🟡 Load testing needed |
+| Database Queries  | Optimized indexes | N+1 prevention        | ✅ Complete            |
+| CDN Coverage      | Manus global CDN  | Russia/CIS edge nodes | ✅ Active              |
 
 ---
 
@@ -296,16 +308,19 @@ Payment: Released (not charged)
 ### 6.1 Immediate Actions (Week 1-2)
 
 **1. Payment Gateway Integration**
+
 - Obtain Tinkoff Merchant credentials
 - Configure Yookassa API keys
 - Test Pre-Auth flow with real transactions (₽1 test charges)
 
 **2. IIKO API Connection**
+
 - Replace mock adapter with production IIKO REST API
 - Configure webhook endpoints for real-time order updates
 - Test sync frequency (recommended: every 5 minutes)
 
 **3. User Authentication**
+
 - Enable OAuth login (Google, VK, Telegram)
 - Configure SMS verification for phone-based registration
 - Test admin role assignment workflow
@@ -313,16 +328,19 @@ Payment: Released (not charged)
 ### 6.2 Pilot Launch (Week 3-4)
 
 **1. Soft Launch (Moscow Only)**
+
 - Deploy to 1-2 flagship stores
 - Limit to 50 beta users per store
 - Monitor order flow and payment success rate
 
 **2. Feedback Collection**
+
 - In-app survey after first order
 - Track conversion funnel: Browse → Cart → Checkout → Payment
 - Identify UX friction points
 
 **3. Performance Monitoring**
+
 - Set up Sentry for error tracking
 - Configure Grafana dashboards for API metrics
 - Alert on payment failure rate >5%
@@ -330,16 +348,19 @@ Payment: Released (not charged)
 ### 6.3 Full Rollout (Month 2)
 
 **1. Multi-Store Expansion**
+
 - Onboard 10+ Moscow locations
 - Train store managers on admin panel
 - Distribute QR codes for in-store ordering
 
 **2. Telegram Mini App Launch**
+
 - Implement Telegram Bot API integration
 - Add "T" prefix order support
 - Enable Telegram Payments
 
 **3. Marketing Campaign**
+
 - Launch loyalty program (VIP1/VIP2 tiers)
 - Promote first-order discount (20% off)
 - Integrate with Russian social media (VK, Odnoklassniki)
@@ -350,21 +371,21 @@ Payment: Released (not charged)
 
 ### 7.1 Technical Risks
 
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| IIKO API downtime | Medium | High | Implement 3-retry logic + fallback queue |
-| Payment gateway timeout | Low | Critical | Pre-Auth + Auto-Void prevents overcharging |
-| Database connection loss | Low | High | Connection pooling + read replicas |
-| CDN edge node failure | Very Low | Medium | Manus auto-failover to backup regions |
+| Risk                     | Probability | Impact   | Mitigation                                 |
+| ------------------------ | ----------- | -------- | ------------------------------------------ |
+| IIKO API downtime        | Medium      | High     | Implement 3-retry logic + fallback queue   |
+| Payment gateway timeout  | Low         | Critical | Pre-Auth + Auto-Void prevents overcharging |
+| Database connection loss | Low         | High     | Connection pooling + read replicas         |
+| CDN edge node failure    | Very Low    | Medium   | Manus auto-failover to backup regions      |
 
 ### 7.2 Business Risks
 
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| Low user adoption | Medium | High | Aggressive first-order discounts + QR codes |
-| Competitor price war | High | Medium | Focus on premium branding + loyalty rewards |
-| Regulatory changes (ФЗ-152) | Low | High | Partner with Russian hosting provider |
-| Currency fluctuation (₽) | Medium | Medium | Dynamic pricing engine (future phase) |
+| Risk                        | Probability | Impact | Mitigation                                  |
+| --------------------------- | ----------- | ------ | ------------------------------------------- |
+| Low user adoption           | Medium      | High   | Aggressive first-order discounts + QR codes |
+| Competitor price war        | High        | Medium | Focus on premium branding + loyalty rewards |
+| Regulatory changes (ФЗ-152) | Low         | High   | Partner with Russian hosting provider       |
+| Currency fluctuation (₽)    | Medium      | Medium | Dynamic pricing engine (future phase)       |
 
 ---
 
@@ -413,6 +434,7 @@ milktea-pwa/
 ### Appendix B: Key Dependencies
 
 **Frontend:**
+
 - React 19 (UI framework)
 - Tailwind CSS 4 (styling)
 - tRPC Client (type-safe API calls)
@@ -420,6 +442,7 @@ milktea-pwa/
 - Sonner (toast notifications)
 
 **Backend:**
+
 - tRPC Server (API framework)
 - Zod (schema validation)
 - SuperJSON (data serialization)

@@ -1,12 +1,12 @@
 /**
  * Audit Service
- * 
+ *
  * Provides standardized audit logging functionality with SHA-256 hash chain
  */
 
-import { getPrismaClient } from '../db/prisma';
-import { Prisma } from '@prisma/client';
-import crypto from 'crypto';
+import { getPrismaClient } from "../db/prisma";
+import { Prisma } from "@prisma/client";
+import crypto from "crypto";
 
 export type OperatorType = Prisma.OperatorType;
 export type AuditAction = Prisma.AuditAction;
@@ -66,14 +66,16 @@ class AuditService {
 
       // Get the last audit log to link the chain
       const lastLog = await this.prisma.auditLog.findFirst({
-        orderBy: { id: 'desc' },
+        orderBy: { id: "desc" },
         select: { sha256Hash: true },
       });
 
       const previousHash = lastLog?.sha256Hash || null;
 
       // Generate event ID
-      const eventId = requestId || `EVT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const eventId =
+        requestId ||
+        `EVT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
       // Calculate SHA-256 hash
       const hashInput = JSON.stringify({
@@ -84,7 +86,10 @@ class AuditService {
         previousHash,
         timestamp: new Date().toISOString(),
       });
-      const sha256Hash = crypto.createHash('sha256').update(hashInput).digest('hex');
+      const sha256Hash = crypto
+        .createHash("sha256")
+        .update(hashInput)
+        .digest("hex");
 
       // Create audit log
       await this.prisma.auditLog.create({
@@ -108,7 +113,7 @@ class AuditService {
       });
     } catch (error) {
       // Log error but don't throw to avoid blocking the main operation
-      console.error('[AuditService] Failed to create audit log:', error);
+      console.error("[AuditService] Failed to create audit log:", error);
     }
   }
 
@@ -134,7 +139,10 @@ class AuditService {
   /**
    * Verify audit chain integrity
    */
-  async verifyChain(startDate?: Date, endDate?: Date): Promise<{
+  async verifyChain(
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<{
     valid: boolean;
     totalRecords: number;
     brokenLinks: Array<{ id: bigint; eventId: string; reason: string }>;
@@ -145,7 +153,7 @@ class AuditService {
 
     const logs = await this.prisma.auditLog.findMany({
       where,
-      orderBy: { id: 'asc' },
+      orderBy: { id: "asc" },
       select: {
         id: true,
         eventId: true,
@@ -158,7 +166,8 @@ class AuditService {
       },
     });
 
-    const brokenLinks: Array<{ id: bigint; eventId: string; reason: string }> = [];
+    const brokenLinks: Array<{ id: bigint; eventId: string; reason: string }> =
+      [];
     let previousHash: string | null = null;
 
     for (const log of logs) {
@@ -180,7 +189,10 @@ class AuditService {
         previousHash: log.previousHash,
         timestamp: log.createdAt.toISOString(),
       });
-      const expectedHash = crypto.createHash('sha256').update(hashInput).digest('hex');
+      const expectedHash = crypto
+        .createHash("sha256")
+        .update(hashInput)
+        .digest("hex");
 
       if (log.sha256Hash !== expectedHash) {
         brokenLinks.push({

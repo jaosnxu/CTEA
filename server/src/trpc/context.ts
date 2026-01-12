@@ -1,6 +1,6 @@
 /**
  * CHUTEA tRPC Context
- * 
+ *
  * 统一注入：
  * - request_id: 请求追踪ID
  * - user_session: 用户会话信息
@@ -8,16 +8,16 @@
  * - rbac_scope: RBAC 权限作用域
  */
 
-import { Request, Response } from 'express';
-import { getPrismaClient } from '../db/prisma';
-import { v4 as uuidv4 } from 'uuid';
-import jwt from 'jsonwebtoken';
+import { Request, Response } from "express";
+import { getPrismaClient } from "../db/prisma";
+import { v4 as uuidv4 } from "uuid";
+import jwt from "jsonwebtoken";
 
 // 获取全局 Prisma 客户端
 export const prisma = getPrismaClient();
 
 // JWT 密钥
-const JWT_SECRET = process.env.JWT_SECRET || 'chutea-secret-key-2024';
+const JWT_SECRET = process.env.JWT_SECRET || "chutea-secret-key-2024";
 
 /**
  * 用户会话信息
@@ -73,7 +73,7 @@ export interface Context {
 function extractUserSession(req: Request): UserSession | null {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return null;
     }
 
@@ -84,7 +84,7 @@ function extractUserSession(req: Request): UserSession | null {
       userId: decoded.userId || decoded.id,
       orgId: decoded.orgId || null,
       storeId: decoded.storeId || null,
-      role: decoded.role || 'user',
+      role: decoded.role || "user",
       permissions: decoded.permissions || [],
     };
   } catch (error) {
@@ -99,27 +99,31 @@ function createRBACScope(userSession: UserSession | null): RBACScope {
   return {
     canAccessOrg: (orgId: string) => {
       if (!userSession) return false;
-      if (userSession.role === 'super_admin') return true;
+      if (userSession.role === "super_admin") return true;
       return userSession.orgId === orgId;
     },
     canAccessStore: (storeId: string) => {
       if (!userSession) return false;
-      if (userSession.role === 'super_admin' || userSession.role === 'org_admin') return true;
+      if (
+        userSession.role === "super_admin" ||
+        userSession.role === "org_admin"
+      )
+        return true;
       return userSession.storeId === storeId;
     },
     hasPermission: (permission: string) => {
       if (!userSession) return false;
-      if (userSession.role === 'super_admin') return true;
+      if (userSession.role === "super_admin") return true;
       return userSession.permissions.includes(permission);
     },
     hasAnyPermission: (permissions: string[]) => {
       if (!userSession) return false;
-      if (userSession.role === 'super_admin') return true;
+      if (userSession.role === "super_admin") return true;
       return permissions.some(p => userSession.permissions.includes(p));
     },
     hasAllPermissions: (permissions: string[]) => {
       if (!userSession) return false;
-      if (userSession.role === 'super_admin') return true;
+      if (userSession.role === "super_admin") return true;
       return permissions.every(p => userSession.permissions.includes(p));
     },
   };
@@ -129,17 +133,23 @@ function createRBACScope(userSession: UserSession | null): RBACScope {
  * 获取客户端 IP
  */
 function getClientIp(req: Request): string {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string') {
-    return forwarded.split(',')[0].trim();
+  const forwarded = req.headers["x-forwarded-for"];
+  if (typeof forwarded === "string") {
+    return forwarded.split(",")[0].trim();
   }
-  return req.ip || req.socket.remoteAddress || '0.0.0.0';
+  return req.ip || req.socket.remoteAddress || "0.0.0.0";
 }
 
 /**
  * 创建 tRPC Context
  */
-export async function createContext({ req, res }: { req: Request; res: Response }): Promise<Context> {
+export async function createContext({
+  req,
+  res,
+}: {
+  req: Request;
+  res: Response;
+}): Promise<Context> {
   // 生成请求ID
   const requestId = `REQ-${Date.now()}-${uuidv4().substring(0, 8)}`;
 
@@ -153,7 +163,7 @@ export async function createContext({ req, res }: { req: Request; res: Response 
     userType: userSession?.role || null,
     userName: null, // 需要从数据库查询
     ipAddress: getClientIp(req),
-    userAgent: req.headers['user-agent'] || 'unknown',
+    userAgent: req.headers["user-agent"] || "unknown",
     timestamp: new Date(),
   };
 

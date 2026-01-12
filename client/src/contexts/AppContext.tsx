@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { formatCurrency } from "@/lib/i18n";
 
 // Types
@@ -67,10 +73,34 @@ export interface UserProfile {
 
 // 会员等级配置
 export const MEMBER_LEVELS = {
-  Normal: { name: "Обычный участник", threshold: 0, discount: 1.0, color: "#9CA3AF", benefits: ["Базовые баллы", "Скидка в день рождения"] },
-  Silver: { name: "Серебряный участник", threshold: 500, discount: 0.98, color: "#C0C0C0", benefits: ["Потратьте 500₽", "Скидка 2%", "Приоритетное бронирование"] },
-  Gold: { name: "Золотой участник", threshold: 2000, discount: 0.95, color: "#FFD700", benefits: ["Потратьте 2000₽", "Скидка 5%", "Персональный менеджер"] },
-  Platinum: { name: "Платиновый участник", threshold: 5000, discount: 0.90, color: "#1F2937", benefits: ["Потратьте 5000₽", "Скидка 10%", "Эксклюзивные привилегии"] }
+  Normal: {
+    name: "Обычный участник",
+    threshold: 0,
+    discount: 1.0,
+    color: "#9CA3AF",
+    benefits: ["Базовые баллы", "Скидка в день рождения"],
+  },
+  Silver: {
+    name: "Серебряный участник",
+    threshold: 500,
+    discount: 0.98,
+    color: "#C0C0C0",
+    benefits: ["Потратьте 500₽", "Скидка 2%", "Приоритетное бронирование"],
+  },
+  Gold: {
+    name: "Золотой участник",
+    threshold: 2000,
+    discount: 0.95,
+    color: "#FFD700",
+    benefits: ["Потратьте 2000₽", "Скидка 5%", "Персональный менеджер"],
+  },
+  Platinum: {
+    name: "Платиновый участник",
+    threshold: 5000,
+    discount: 0.9,
+    color: "#1F2937",
+    benefits: ["Потратьте 5000₽", "Скидка 10%", "Эксклюзивные привилегии"],
+  },
 };
 
 export interface Coupon {
@@ -130,21 +160,23 @@ interface AppContextType {
   city: string;
   favorites: FavoriteItem[];
   giftCards: GiftCard[]; // 礼品卡列表
-  
+
   // Actions
   setCity: (city: string) => void;
   addToDrinkCart: (item: Partial<CartItem> & { productId: string }) => void;
   updateDrinkCartQuantity: (productId: string, quantity: number) => void;
   removeFromDrinkCart: (productId: string) => void;
   clearDrinkCart: () => void;
-  
+
   addToMallCart: (item: Partial<CartItem> & { productId: string }) => void;
   updateMallCartQuantity: (productId: string, quantity: number) => void;
   removeFromMallCart: (productId: string) => void;
   clearMallCart: () => void;
 
   deductPoints: (amount: number) => void;
-  addOrder: (order: Omit<Order, "id" | "date" | "createdAt" | "pickupCode">) => Order;
+  addOrder: (
+    order: Omit<Order, "id" | "date" | "createdAt" | "pickupCode">
+  ) => Order;
   cancelOrder: (orderId: string) => void;
   withdrawFunds: () => void;
   selectCoupon: (couponId: string | null) => void;
@@ -154,15 +186,20 @@ interface AppContextType {
   addToFavorites: (item: FavoriteItem) => void;
   removeFromFavorites: (id: string) => void;
   isFavorite: (id: string) => boolean;
-  addReview: (orderId: string, rating: number, comment: string, images?: string[]) => void;
+  addReview: (
+    orderId: string,
+    rating: number,
+    comment: string,
+    images?: string[]
+  ) => void;
   reviews: OrderReview[]; // 评价列表
-  
+
   // 礼品卡方法
   purchaseGiftCard: (amount: number) => GiftCard;
   transferGiftCard: (cardId: string, to: string, message?: string) => void;
   useGiftCard: (cardId: string, amount: number, orderId: string) => boolean;
   getGiftCardBalance: (cardId: string) => number;
-  
+
   resetAllData: () => void;
 
   // Computed
@@ -182,11 +219,66 @@ export const CATEGORIES = [
 ];
 
 export const PRODUCTS: Product[] = [
-  { id: "1", name: "Виноградный фреш с желе", price: 29, image: "/images/products/drink_01.png", category: "season", desc: "Отборный сезонный виноград Кёхо, очищенная вручную мякоть, освежающая основа из зелёного чая и упругое желе.", energy: 280, sugar: 18, likes: 1240, reviews: 88 },
-  { id: "2", name: "Клубника с сыром", price: 28, image: "/images/products/drink_02.png", category: "top", desc: "Отборная клубника премиум-класса, основа из зелёного чая и насыщенная сырная пенка, кисло-сладкий вкус.", energy: 320, sugar: 22, likes: 3500, reviews: 210 },
-  { id: "3", name: "Молоко с тростниковым сахаром", price: 25, image: "/images/products/drink_03.png", category: "milk", desc: "Ежедневно свежесваренные шарики боба с тростниковым сахаром, классическое молоко, карамельный насыщенный вкус.", energy: 450, sugar: 35, likes: 5600, reviews: 450 },
-  { id: "4", name: "Грейпфрут", price: 22, image: "/images/products/drink_04.png", category: "fruit", desc: "Много мякоти грейпфрута, освежающая основа из жасминового чая, лёгкий освежающий вкус.", energy: 180, sugar: 15, likes: 980, reviews: 65 },
-  { id: "5", name: "Кокосовый латте", price: 26, image: "/images/products/drink_05.png", category: "coffee", desc: "Свежесваренный эспрессо с нежным кокосовым молоком, шелковистая текстура.", energy: 210, sugar: 8, likes: 1500, reviews: 120 },
+  {
+    id: "1",
+    name: "Виноградный фреш с желе",
+    price: 29,
+    image: "/images/products/drink_01.png",
+    category: "season",
+    desc: "Отборный сезонный виноград Кёхо, очищенная вручную мякоть, освежающая основа из зелёного чая и упругое желе.",
+    energy: 280,
+    sugar: 18,
+    likes: 1240,
+    reviews: 88,
+  },
+  {
+    id: "2",
+    name: "Клубника с сыром",
+    price: 28,
+    image: "/images/products/drink_02.png",
+    category: "top",
+    desc: "Отборная клубника премиум-класса, основа из зелёного чая и насыщенная сырная пенка, кисло-сладкий вкус.",
+    energy: 320,
+    sugar: 22,
+    likes: 3500,
+    reviews: 210,
+  },
+  {
+    id: "3",
+    name: "Молоко с тростниковым сахаром",
+    price: 25,
+    image: "/images/products/drink_03.png",
+    category: "milk",
+    desc: "Ежедневно свежесваренные шарики боба с тростниковым сахаром, классическое молоко, карамельный насыщенный вкус.",
+    energy: 450,
+    sugar: 35,
+    likes: 5600,
+    reviews: 450,
+  },
+  {
+    id: "4",
+    name: "Грейпфрут",
+    price: 22,
+    image: "/images/products/drink_04.png",
+    category: "fruit",
+    desc: "Много мякоти грейпфрута, освежающая основа из жасминового чая, лёгкий освежающий вкус.",
+    energy: 180,
+    sugar: 15,
+    likes: 980,
+    reviews: 65,
+  },
+  {
+    id: "5",
+    name: "Кокосовый латте",
+    price: 26,
+    image: "/images/products/drink_05.png",
+    category: "coffee",
+    desc: "Свежесваренный эспрессо с нежным кокосовым молоком, шелковистая текстура.",
+    energy: 210,
+    sugar: 8,
+    likes: 1500,
+    reviews: 120,
+  },
 ];
 
 const DEFAULT_INFLUENCER_DATA: InfluencerData = {
@@ -195,19 +287,91 @@ const DEFAULT_INFLUENCER_DATA: InfluencerData = {
   monthlyReferrals: 23,
   rank: 15,
   activities: [
-    { id: 1, type: "task", title: 'Задание выполнено: "Летняя акция"', time: "2 часа назад", amount: "+₽250.00" },
-    { id: 2, type: "referral", title: "Новый приглашённый: Anna_K", time: "3 часа назад", amount: "+₽50.00" },
-    { id: 3, type: "task", title: 'Задание выполнено: "Продвижение подарочных карт"', time: "5 часов назад", amount: "+₽180.00" },
-    { id: 4, type: "referral", title: "Новый приглашённый: Dmitry_V", time: "Вчера", amount: "+₽50.00" },
-    { id: 5, type: "task", title: 'Задание выполнено: "Акция повышения уровня"', time: "Вчера", amount: "+₽300.00" },
-    { id: 6, type: "referral", title: "Новый приглашённый: Maria_S", time: "2 дня назад", amount: "+₽50.00" },
-    { id: 7, type: "withdraw", title: "Вывод обработан", time: "5 января 2026", amount: "-₽800.00" },
-    { id: 8, type: "task", title: 'Задание выполнено: "Челлендж рейтинга"', time: "3 дня назад", amount: "+₽500.00" },
-    { id: 9, type: "referral", title: "Новый приглашённый: Ivan_P", time: "3 дня назад", amount: "+₽50.00" },
-    { id: 10, type: "task", title: 'Задание выполнено: "Репост в соцсетях"', time: "4 дня назад", amount: "+₽120.00" },
-    { id: 11, type: "referral", title: "Новый приглашённый: Elena_M", time: "5 дней назад", amount: "+₽50.00" },
-    { id: 12, type: "task", title: 'Задание выполнено: "Бонус за отзыв"', time: "1 неделю назад", amount: "+₽80.00" },
-  ]
+    {
+      id: 1,
+      type: "task",
+      title: 'Задание выполнено: "Летняя акция"',
+      time: "2 часа назад",
+      amount: "+₽250.00",
+    },
+    {
+      id: 2,
+      type: "referral",
+      title: "Новый приглашённый: Anna_K",
+      time: "3 часа назад",
+      amount: "+₽50.00",
+    },
+    {
+      id: 3,
+      type: "task",
+      title: 'Задание выполнено: "Продвижение подарочных карт"',
+      time: "5 часов назад",
+      amount: "+₽180.00",
+    },
+    {
+      id: 4,
+      type: "referral",
+      title: "Новый приглашённый: Dmitry_V",
+      time: "Вчера",
+      amount: "+₽50.00",
+    },
+    {
+      id: 5,
+      type: "task",
+      title: 'Задание выполнено: "Акция повышения уровня"',
+      time: "Вчера",
+      amount: "+₽300.00",
+    },
+    {
+      id: 6,
+      type: "referral",
+      title: "Новый приглашённый: Maria_S",
+      time: "2 дня назад",
+      amount: "+₽50.00",
+    },
+    {
+      id: 7,
+      type: "withdraw",
+      title: "Вывод обработан",
+      time: "5 января 2026",
+      amount: "-₽800.00",
+    },
+    {
+      id: 8,
+      type: "task",
+      title: 'Задание выполнено: "Челлендж рейтинга"',
+      time: "3 дня назад",
+      amount: "+₽500.00",
+    },
+    {
+      id: 9,
+      type: "referral",
+      title: "Новый приглашённый: Ivan_P",
+      time: "3 дня назад",
+      amount: "+₽50.00",
+    },
+    {
+      id: 10,
+      type: "task",
+      title: 'Задание выполнено: "Репост в соцсетях"',
+      time: "4 дня назад",
+      amount: "+₽120.00",
+    },
+    {
+      id: 11,
+      type: "referral",
+      title: "Новый приглашённый: Elena_M",
+      time: "5 дней назад",
+      amount: "+₽50.00",
+    },
+    {
+      id: 12,
+      type: "task",
+      title: 'Задание выполнено: "Бонус за отзыв"',
+      time: "1 неделю назад",
+      amount: "+₽80.00",
+    },
+  ],
 };
 
 const DEFAULT_PROFILE: UserProfile = {
@@ -215,19 +379,46 @@ const DEFAULT_PROFILE: UserProfile = {
   phone: "138****8888",
   avatar: "",
   level: "Normal",
-  totalSpent: 0
+  totalSpent: 0,
 };
 
 const DEFAULT_COUPONS: Coupon[] = [
-  { id: "c1", name: "Купон для новых пользователей", discount: 5, minAmount: 0, validUntil: "2025-12-31", available: true, description: "На весь ассортимент, без ограничений" },
-  { id: "c2", name: "Купон на скидку", discount: 10, minAmount: 50, validUntil: "2025-06-30", available: true, description: "Скидка 10 при заказе от 50" },
-  { id: "c3", name: "Эксклюзивный купон для участников", discount: 20, minAmount: 100, validUntil: "2025-08-31", available: true, description: "Скидка 20 при заказе от 100" },
+  {
+    id: "c1",
+    name: "Купон для новых пользователей",
+    discount: 5,
+    minAmount: 0,
+    validUntil: "2025-12-31",
+    available: true,
+    description: "На весь ассортимент, без ограничений",
+  },
+  {
+    id: "c2",
+    name: "Купон на скидку",
+    discount: 10,
+    minAmount: 50,
+    validUntil: "2025-06-30",
+    available: true,
+    description: "Скидка 10 при заказе от 50",
+  },
+  {
+    id: "c3",
+    name: "Эксклюзивный купон для участников",
+    discount: 20,
+    minAmount: 100,
+    validUntil: "2025-08-31",
+    available: true,
+    description: "Скидка 20 при заказе от 100",
+  },
 ];
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 // Helper for LocalStorage
-function useStickyState<T>(defaultValue: T, key: string): [T, React.Dispatch<React.SetStateAction<T>>] {
+function useStickyState<T>(
+  defaultValue: T,
+  key: string
+): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [value, setValue] = useState<T>(() => {
     const stickyValue = window.localStorage.getItem(key);
     return stickyValue !== null ? JSON.parse(stickyValue) : defaultValue;
@@ -241,127 +432,163 @@ function useStickyState<T>(defaultValue: T, key: string): [T, React.Dispatch<Rea
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [drinkCart, setDrinkCart] = useStickyState<CartItem[]>([], "chutea_drink_cart");
-  const [mallCart, setMallCart] = useStickyState<CartItem[]>([], "chutea_mall_cart");
+  const [drinkCart, setDrinkCart] = useStickyState<CartItem[]>(
+    [],
+    "chutea_drink_cart"
+  );
+  const [mallCart, setMallCart] = useStickyState<CartItem[]>(
+    [],
+    "chutea_mall_cart"
+  );
   const [orders, setOrders] = useStickyState<Order[]>([], "chutea_orders");
-  const [userPoints, setUserPoints] = useStickyState<number>(1250, "chutea_points");
-  const [influencerData, setInfluencerData] = useStickyState<InfluencerData>(DEFAULT_INFLUENCER_DATA, "chutea_influencer");
-  const [userProfile, setUserProfile] = useStickyState<UserProfile>(DEFAULT_PROFILE, "chutea_profile");
-  const [coupons, setCoupons] = useStickyState<Coupon[]>(DEFAULT_COUPONS, "chutea_coupons");
-  const [selectedCouponId, setSelectedCouponId] = useStickyState<string | null>(null, "chutea_selected_coupon");
+  const [userPoints, setUserPoints] = useStickyState<number>(
+    1250,
+    "chutea_points"
+  );
+  const [influencerData, setInfluencerData] = useStickyState<InfluencerData>(
+    DEFAULT_INFLUENCER_DATA,
+    "chutea_influencer"
+  );
+  const [userProfile, setUserProfile] = useStickyState<UserProfile>(
+    DEFAULT_PROFILE,
+    "chutea_profile"
+  );
+  const [coupons, setCoupons] = useStickyState<Coupon[]>(
+    DEFAULT_COUPONS,
+    "chutea_coupons"
+  );
+  const [selectedCouponId, setSelectedCouponId] = useStickyState<string | null>(
+    null,
+    "chutea_selected_coupon"
+  );
   const [city, setCity] = useStickyState<string>("Москва", "chutea_city");
-  const [favorites, setFavorites] = useStickyState<FavoriteItem[]>([], "chutea_favorites");
-  const [reviews, setReviews] = useStickyState<OrderReview[]>([
-    {
-      id: "r1",
-      orderId: "o1",
-      rating: 5,
-      comment: "Виноградный фреш с желе просто супер! Виноград свежий, много мякоти, а желейная текстура — это нечто. Сладость в меру, идеально для лета!",
-      images: [
-        "/images/reviews/grape_1.jpg",
-        "/images/reviews/grape_2.jpg",
-        "/images/reviews/grape_3.jpg"
-      ],
-      createdAt: Date.now() - 86400000 * 2
-    },
-    {
-      id: "r2",
-      orderId: "o2",
-      rating: 5,
-      comment: "Клубника с сырной пенкой — мой фаворит! Клубника свежая, крем-чиз насыщенный, но не приторный. Очень инстаграмно, рекомендую!",
-      images: [
-        "/images/reviews/strawberry_1.jpg",
-        "/images/reviews/strawberry_2.jpg"
-      ],
-      createdAt: Date.now() - 86400000 * 5
-    },
-    {
-      id: "r3",
-      orderId: "o3",
-      rating: 4,
-      comment: "Грейпфрут неплохой, очень свежий, но немного кислит. Советую брать стандартный сахар или больше. В целом довольна!",
-      images: [
-        "/images/reviews/grapefruit_1.jpg"
-      ],
-      createdAt: Date.now() - 86400000 * 7
-    },
-    {
-      id: "r4",
-      orderId: "o4",
-      rating: 5,
-      comment: "Молоко с тростниковым сахаром и боба — мой мастхэв! Насыщенный аромат, жемчужины очень упругие. Потрясающее сочетание!",
-      images: [
-        "/images/reviews/brown_sugar_1.jpg",
-        "/images/reviews/brown_sugar_2.jpg",
-        "/images/reviews/brown_sugar_3.jpg",
-        "/images/reviews/brown_sugar_4.jpg"
-      ],
-      createdAt: Date.now() - 86400000 * 10
-    },
-    {
-      id: "r5",
-      orderId: "o5",
-      rating: 5,
-      comment: "Кокосовый латте — находка для любителей кофе! Кокос и кофе идеально сочетаются, не горько и не слишком сладко. Бодрит по утрам!",
-      images: [
-        "/images/reviews/coconut_latte_1.jpg",
-        "/images/reviews/coconut_latte_2.jpg"
-      ],
-      createdAt: Date.now() - 86400000 * 12
-    },
-    {
-      id: "r6",
-      orderId: "o6",
-      rating: 4,
-      comment: "Вкусно, но очередь была слишком длинной. Надеюсь, скорость обслуживания вырастет. В остальном всё отлично!",
-      images: [],
-      createdAt: Date.now() - 86400000 * 15
-    },
-    {
-      id: "r7",
-      orderId: "o7",
-      rating: 5,
-      comment: "Первый раз попробовала здесь чай — в восторге! Щедрые порции, богатый вкус, разумная цена. Уже мой фаворит, буду приходить часто!",
-      images: [
-        "/images/reviews/mix_1.jpg"
-      ],
-      createdAt: Date.now() - 86400000 * 20
-    },
-    {
-      id: "r8",
-      orderId: "o8",
-      rating: 5,
-      comment: "Красивая упаковка, отлично подходит для подарка. Вкус тоже отличный, друзьям понравилось. Обязательно вернусь!",
-      images: [
-        "/images/reviews/gift_1.jpg",
-        "/images/reviews/gift_2.jpg"
-      ],
-      createdAt: Date.now() - 86400000 * 25
-    }
-  ], "chutea_reviews_v2");
-  const [giftCards, setGiftCards] = useStickyState<GiftCard[]>([], "chutea_gift_cards");
+  const [favorites, setFavorites] = useStickyState<FavoriteItem[]>(
+    [],
+    "chutea_favorites"
+  );
+  const [reviews, setReviews] = useStickyState<OrderReview[]>(
+    [
+      {
+        id: "r1",
+        orderId: "o1",
+        rating: 5,
+        comment:
+          "Виноградный фреш с желе просто супер! Виноград свежий, много мякоти, а желейная текстура — это нечто. Сладость в меру, идеально для лета!",
+        images: [
+          "/images/reviews/grape_1.jpg",
+          "/images/reviews/grape_2.jpg",
+          "/images/reviews/grape_3.jpg",
+        ],
+        createdAt: Date.now() - 86400000 * 2,
+      },
+      {
+        id: "r2",
+        orderId: "o2",
+        rating: 5,
+        comment:
+          "Клубника с сырной пенкой — мой фаворит! Клубника свежая, крем-чиз насыщенный, но не приторный. Очень инстаграмно, рекомендую!",
+        images: [
+          "/images/reviews/strawberry_1.jpg",
+          "/images/reviews/strawberry_2.jpg",
+        ],
+        createdAt: Date.now() - 86400000 * 5,
+      },
+      {
+        id: "r3",
+        orderId: "o3",
+        rating: 4,
+        comment:
+          "Грейпфрут неплохой, очень свежий, но немного кислит. Советую брать стандартный сахар или больше. В целом довольна!",
+        images: ["/images/reviews/grapefruit_1.jpg"],
+        createdAt: Date.now() - 86400000 * 7,
+      },
+      {
+        id: "r4",
+        orderId: "o4",
+        rating: 5,
+        comment:
+          "Молоко с тростниковым сахаром и боба — мой мастхэв! Насыщенный аромат, жемчужины очень упругие. Потрясающее сочетание!",
+        images: [
+          "/images/reviews/brown_sugar_1.jpg",
+          "/images/reviews/brown_sugar_2.jpg",
+          "/images/reviews/brown_sugar_3.jpg",
+          "/images/reviews/brown_sugar_4.jpg",
+        ],
+        createdAt: Date.now() - 86400000 * 10,
+      },
+      {
+        id: "r5",
+        orderId: "o5",
+        rating: 5,
+        comment:
+          "Кокосовый латте — находка для любителей кофе! Кокос и кофе идеально сочетаются, не горько и не слишком сладко. Бодрит по утрам!",
+        images: [
+          "/images/reviews/coconut_latte_1.jpg",
+          "/images/reviews/coconut_latte_2.jpg",
+        ],
+        createdAt: Date.now() - 86400000 * 12,
+      },
+      {
+        id: "r6",
+        orderId: "o6",
+        rating: 4,
+        comment:
+          "Вкусно, но очередь была слишком длинной. Надеюсь, скорость обслуживания вырастет. В остальном всё отлично!",
+        images: [],
+        createdAt: Date.now() - 86400000 * 15,
+      },
+      {
+        id: "r7",
+        orderId: "o7",
+        rating: 5,
+        comment:
+          "Первый раз попробовала здесь чай — в восторге! Щедрые порции, богатый вкус, разумная цена. Уже мой фаворит, буду приходить часто!",
+        images: ["/images/reviews/mix_1.jpg"],
+        createdAt: Date.now() - 86400000 * 20,
+      },
+      {
+        id: "r8",
+        orderId: "o8",
+        rating: 5,
+        comment:
+          "Красивая упаковка, отлично подходит для подарка. Вкус тоже отличный, друзьям понравилось. Обязательно вернусь!",
+        images: ["/images/reviews/gift_1.jpg", "/images/reviews/gift_2.jpg"],
+        createdAt: Date.now() - 86400000 * 25,
+      },
+    ],
+    "chutea_reviews_v2"
+  );
+  const [giftCards, setGiftCards] = useStickyState<GiftCard[]>(
+    [],
+    "chutea_gift_cards"
+  );
 
   // Drink Cart Actions
   const addToDrinkCart = (item: Partial<CartItem> & { productId: string }) => {
-    setDrinkCart((prev) => {
-      const existing = prev.find((i) => i.id === item.productId && i.specs === (item.specs || "Стандарт"));
+    setDrinkCart(prev => {
+      const existing = prev.find(
+        i => i.id === item.productId && i.specs === (item.specs || "Стандарт")
+      );
       if (existing) {
-        return prev.map((i) =>
-          i.id === item.productId && i.specs === (item.specs || "Стандарт") 
-            ? { ...i, quantity: i.quantity + (item.quantity || 1) } 
+        return prev.map(i =>
+          i.id === item.productId && i.specs === (item.specs || "Стандарт")
+            ? { ...i, quantity: i.quantity + (item.quantity || 1) }
             : i
         );
       }
-      const product = PRODUCTS.find((p) => p.id === item.productId);
+      const product = PRODUCTS.find(p => p.id === item.productId);
       if (!product) return prev;
-      
-      return [...prev, { 
-        ...product, 
-        price: item.price !== undefined ? item.price : product.price, // Использовать传递的价格（包含小料）
-        quantity: item.quantity || 1, 
-        specs: item.specs || "Standard",
-        toppings: item.toppings
-      }];
+
+      return [
+        ...prev,
+        {
+          ...product,
+          price: item.price !== undefined ? item.price : product.price, // Использовать传递的价格（包含小料）
+          quantity: item.quantity || 1,
+          specs: item.specs || "Standard",
+          toppings: item.toppings,
+        },
+      ];
     });
   };
 
@@ -370,45 +597,46 @@ export function AppProvider({ children }: { children: ReactNode }) {
       removeFromDrinkCart(productId);
       return;
     }
-    setDrinkCart((prev) =>
-      prev.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
-      )
+    setDrinkCart(prev =>
+      prev.map(item => (item.id === productId ? { ...item, quantity } : item))
     );
   };
 
   const removeFromDrinkCart = (productId: string) => {
-    setDrinkCart((prev) => prev.filter((i) => i.id !== productId));
+    setDrinkCart(prev => prev.filter(i => i.id !== productId));
   };
 
   const clearDrinkCart = () => setDrinkCart([]);
 
   // Mall Cart Actions
   const addToMallCart = (item: Partial<CartItem> & { productId: string }) => {
-    setMallCart((prev) => {
-      const existing = prev.find((i) => i.id === item.productId);
+    setMallCart(prev => {
+      const existing = prev.find(i => i.id === item.productId);
       if (existing) {
-        return prev.map((i) =>
+        return prev.map(i =>
           i.id === item.productId
-            ? { ...i, quantity: i.quantity + (item.quantity || 1) } 
+            ? { ...i, quantity: i.quantity + (item.quantity || 1) }
             : i
         );
       }
       // Mall products are passed fully in item
-      const product = { 
-        id: item.productId, 
-        name: item.name!, 
-        price: item.price!, 
-        image: item.image!, 
-        category: "mall", 
-        desc: item.desc || "", 
-        energy: 0, 
-        sugar: 0, 
-        likes: 0, 
-        reviews: 0 
+      const product = {
+        id: item.productId,
+        name: item.name!,
+        price: item.price!,
+        image: item.image!,
+        category: "mall",
+        desc: item.desc || "",
+        energy: 0,
+        sugar: 0,
+        likes: 0,
+        reviews: 0,
       };
-      
-      return [...prev, { ...product, quantity: item.quantity || 1, specs: "Standard" }];
+
+      return [
+        ...prev,
+        { ...product, quantity: item.quantity || 1, specs: "Standard" },
+      ];
     });
   };
 
@@ -417,27 +645,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
       removeFromMallCart(productId);
       return;
     }
-    setMallCart((prev) =>
-      prev.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
-      )
+    setMallCart(prev =>
+      prev.map(item => (item.id === productId ? { ...item, quantity } : item))
     );
   };
 
   const removeFromMallCart = (productId: string) => {
-    setMallCart((prev) => prev.filter((i) => i.id !== productId));
+    setMallCart(prev => prev.filter(i => i.id !== productId));
   };
 
   const clearMallCart = () => setMallCart([]);
 
   const deductPoints = (amount: number) => {
-    setUserPoints((prev) => Math.max(0, prev - amount));
+    setUserPoints(prev => Math.max(0, prev - amount));
   };
 
-  const addOrder = (order: Omit<Order, "id" | "date" | "createdAt" | "pickupCode">) => {
+  const addOrder = (
+    order: Omit<Order, "id" | "date" | "createdAt" | "pickupCode">
+  ) => {
     // 生成Код получения：T + 4 человек数字
     const pickupCode = `T${String(Math.floor(1000 + Math.random() * 9000))}`;
-    
+
     const newOrder: Order = {
       ...order,
       id: `order_${Date.now()}`,
@@ -445,17 +673,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       createdAt: Date.now(),
       pickupCode,
     };
-    setOrders((prev) => [newOrder, ...prev]);
-    
+    setOrders(prev => [newOrder, ...prev]);
+
     // 更新累计消费并检查会员等级升级
     const newTotalSpent = userProfile.totalSpent + order.total;
     checkAndUpgradeMemberLevel(newTotalSpent);
-    
+
     return newOrder;
   };
 
   const cancelOrder = (orderId: string) => {
-    setOrders((prev) => prev.filter(o => o.id !== orderId));
+    setOrders(prev => prev.filter(o => o.id !== orderId));
   };
 
   const withdrawFunds = () => {
@@ -470,10 +698,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
           type: "withdraw",
           title: "Заявка на вывод отправлена",
           time: "Только что",
-          amount: `-${formatCurrency(amount.toFixed(2))}`
+          amount: `-${formatCurrency(amount.toFixed(2))}`,
         },
-        ...prev.activities
-      ]
+        ...prev.activities,
+      ],
     }));
   };
 
@@ -486,35 +714,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const useCoupon = (id: string) => {
-    setCoupons(prev => prev.map(c => c.id === id ? { ...c, status: "used" } : c));
+    setCoupons(prev =>
+      prev.map(c => (c.id === id ? { ...c, status: "used" } : c))
+    );
   };
 
   const addToFavorites = (item: FavoriteItem) => {
-    setFavorites((prev) => {
+    setFavorites(prev => {
       if (prev.some(f => f.id === item.id)) return prev;
       return [item, ...prev];
     });
   };
 
   const removeFromFavorites = (id: string) => {
-    setFavorites((prev) => prev.filter(f => f.id !== id));
+    setFavorites(prev => prev.filter(f => f.id !== id));
   };
 
   const isFavorite = (id: string) => {
     return favorites.some(f => f.id === id);
   };
 
-  const addReview = (orderId: string, rating: number, comment: string, images?: string[]) => {
+  const addReview = (
+    orderId: string,
+    rating: number,
+    comment: string,
+    images?: string[]
+  ) => {
     const newReview: OrderReview = {
       id: `review_${Date.now()}`,
       orderId,
       rating,
       comment,
       images: images || [],
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
-    
-    setReviews((prev) => [...prev, newReview]);
+
+    setReviews(prev => [...prev, newReview]);
   };
 
   // 礼品卡方法
@@ -534,24 +769,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
           amount: amount,
           type: "purchase",
           createdAt: Date.now(),
-          description: `Покупка подарочной карты ${formatCurrency(amount)}`
-        }
-      ]
+          description: `Покупка подарочной карты ${formatCurrency(amount)}`,
+        },
+      ],
     };
-    
-    setGiftCards((prev) => [...prev, newCard]);
+
+    setGiftCards(prev => [...prev, newCard]);
     return newCard;
   };
 
   const transferGiftCard = (cardId: string, to: string, message?: string) => {
-    setGiftCards((prev) => prev.map(card => 
-      card.id === cardId 
-        ? { ...card, to, message, from: userProfile.name } 
-        : card
-    ));
+    setGiftCards(prev =>
+      prev.map(card =>
+        card.id === cardId
+          ? { ...card, to, message, from: userProfile.name }
+          : card
+      )
+    );
   };
 
-  const useGiftCard = (cardId: string, amount: number, orderId: string): boolean => {
+  const useGiftCard = (
+    cardId: string,
+    amount: number,
+    orderId: string
+  ): boolean => {
     const card = giftCards.find(c => c.id === cardId);
     if (!card || card.balance < amount || card.status !== "active") {
       return false;
@@ -564,19 +805,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       type: "use",
       orderId,
       createdAt: Date.now(),
-      description: `Оплата заказа #${orderId.slice(0, 8)}`
+      description: `Оплата заказа #${orderId.slice(0, 8)}`,
     };
 
-    setGiftCards((prev) => prev.map(card => 
-      card.id === cardId 
-        ? { 
-            ...card, 
-            balance: newBalance,
-            status: newBalance === 0 ? "used" : "active",
-            transactions: [...card.transactions, transaction]
-          } 
-        : card
-    ));
+    setGiftCards(prev =>
+      prev.map(card =>
+        card.id === cardId
+          ? {
+              ...card,
+              balance: newBalance,
+              status: newBalance === 0 ? "used" : "active",
+              transactions: [...card.transactions, transaction],
+            }
+          : card
+      )
+    );
 
     return true;
   };
@@ -589,7 +832,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // 会员等级自动升级逻辑
   const checkAndUpgradeMemberLevel = (newTotalSpent: number) => {
     let newLevel: UserProfile["level"] = "Normal";
-    
+
     if (newTotalSpent >= MEMBER_LEVELS.Platinum.threshold) {
       newLevel = "Platinum";
     } else if (newTotalSpent >= MEMBER_LEVELS.Gold.threshold) {
@@ -597,29 +840,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } else if (newTotalSpent >= MEMBER_LEVELS.Silver.threshold) {
       newLevel = "Silver";
     }
-    
+
     const oldLevel = userProfile.level;
     if (newLevel !== oldLevel) {
-      setUserProfile(prev => ({ ...prev, level: newLevel, totalSpent: newTotalSpent }));
-      
+      setUserProfile(prev => ({
+        ...prev,
+        level: newLevel,
+        totalSpent: newTotalSpent,
+      }));
+
       // 赠送升级Скидка券
-      const upgradeDiscount = newLevel === "Platinum" ? 50 : newLevel === "Gold" ? 30 : 20;
+      const upgradeDiscount =
+        newLevel === "Platinum" ? 50 : newLevel === "Gold" ? 30 : 20;
       const upgradeCoupon: Coupon = {
         id: `upgrade_${Date.now()}`,
         name: `Подарок за повышение ${MEMBER_LEVELS[newLevel].name}`,
         discount: upgradeDiscount,
         minAmount: 0,
-        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('zh-CN'),
+        validUntil: new Date(
+          Date.now() + 30 * 24 * 60 * 60 * 1000
+        ).toLocaleDateString("zh-CN"),
         available: true,
-        description: "Поздравляем с повышением, эксклюзивный купон"
+        description: "Поздравляем с повышением, эксклюзивный купон",
       };
       addCoupon(upgradeCoupon);
-      
+
       // 触发升级动画（通过事шт系统）
-      window.dispatchEvent(new CustomEvent('membershipUpgrade', { detail: { newLevel } }));
-      
-      setTimeout(() => {
-      }, 500);
+      window.dispatchEvent(
+        new CustomEvent("membershipUpgrade", { detail: { newLevel } })
+      );
+
+      setTimeout(() => {}, 500);
     } else {
       setUserProfile(prev => ({ ...prev, totalSpent: newTotalSpent }));
     }
@@ -638,114 +889,154 @@ export function AppProvider({ children }: { children: ReactNode }) {
           id: "r1",
           orderId: "o1",
           rating: 5,
-          comment: "Виноградный фреш с желе просто супер! Виноград свежий, много мякоти, а желейная текстура — это нечто. Сладость в меру, идеально для лета!",
+          comment:
+            "Виноградный фреш с желе просто супер! Виноград свежий, много мякоти, а желейная текстура — это нечто. Сладость в меру, идеально для лета!",
           images: [
             "/images/reviews/grape_1.jpg",
             "/images/reviews/grape_2.jpg",
-            "/images/reviews/grape_3.jpg"
+            "/images/reviews/grape_3.jpg",
           ],
-          createdAt: Date.now() - 86400000 * 2
+          createdAt: Date.now() - 86400000 * 2,
         },
         {
           id: "r2",
           orderId: "o2",
           rating: 5,
-          comment: "Клубника с сырной пенкой — мой фаворит! Клубника свежая, крем-чиз насыщенный, но не приторный. Очень инстаграмно, рекомендую!",
+          comment:
+            "Клубника с сырной пенкой — мой фаворит! Клубника свежая, крем-чиз насыщенный, но не приторный. Очень инстаграмно, рекомендую!",
           images: [
             "/images/reviews/strawberry_1.jpg",
-            "/images/reviews/strawberry_2.jpg"
+            "/images/reviews/strawberry_2.jpg",
           ],
-          createdAt: Date.now() - 86400000 * 5
+          createdAt: Date.now() - 86400000 * 5,
         },
         {
           id: "r3",
           orderId: "o3",
           rating: 4,
-          comment: "Грейпфрут неплохой, очень свежий, но немного кислит. Советую брать стандартный сахар или больше. В целом довольна!",
-          images: [
-            "/images/reviews/grapefruit_1.jpg"
-          ],
-          createdAt: Date.now() - 86400000 * 7
+          comment:
+            "Грейпфрут неплохой, очень свежий, но немного кислит. Советую брать стандартный сахар или больше. В целом довольна!",
+          images: ["/images/reviews/grapefruit_1.jpg"],
+          createdAt: Date.now() - 86400000 * 7,
         },
         {
           id: "r4",
           orderId: "o4",
           rating: 5,
-          comment: "Молоко с тростниковым сахаром и боба — мой мастхэв! Насыщенный аромат, жемчужины очень упругие. Потрясающее сочетание!",
+          comment:
+            "Молоко с тростниковым сахаром и боба — мой мастхэв! Насыщенный аромат, жемчужины очень упругие. Потрясающее сочетание!",
           images: [
             "/images/reviews/brown_sugar_1.jpg",
             "/images/reviews/brown_sugar_2.jpg",
             "/images/reviews/brown_sugar_3.jpg",
-            "/images/reviews/brown_sugar_4.jpg"
+            "/images/reviews/brown_sugar_4.jpg",
           ],
-          createdAt: Date.now() - 86400000 * 10
+          createdAt: Date.now() - 86400000 * 10,
         },
         {
           id: "r5",
           orderId: "o5",
           rating: 5,
-          comment: "Кокосовый латте — находка для любителей кофе! Кокос и кофе идеально сочетаются, не горько и не слишком сладко. Бодрит по утрам!",
+          comment:
+            "Кокосовый латте — находка для любителей кофе! Кокос и кофе идеально сочетаются, не горько и не слишком сладко. Бодрит по утрам!",
           images: [
             "/images/reviews/coconut_latte_1.jpg",
-            "/images/reviews/coconut_latte_2.jpg"
+            "/images/reviews/coconut_latte_2.jpg",
           ],
-          createdAt: Date.now() - 86400000 * 12
+          createdAt: Date.now() - 86400000 * 12,
         },
         {
           id: "r6",
           orderId: "o6",
           rating: 4,
-          comment: "Вкусно, но очередь была слишком длинной. Надеюсь, скорость обслуживания вырастет. В остальном всё отлично!",
+          comment:
+            "Вкусно, но очередь была слишком длинной. Надеюсь, скорость обслуживания вырастет. В остальном всё отлично!",
           images: [],
-          createdAt: Date.now() - 86400000 * 15
+          createdAt: Date.now() - 86400000 * 15,
         },
         {
           id: "r7",
           orderId: "o7",
           rating: 5,
-          comment: "Первый раз попробовала здесь чай — в восторге! Щедрые порции, богатый вкус, разумная цена. Уже мой фаворит, буду приходить часто!",
-          images: [
-            "/images/reviews/mix_1.jpg"
-          ],
-          createdAt: Date.now() - 86400000 * 20
+          comment:
+            "Первый раз попробовала здесь чай — в восторге! Щедрые порции, богатый вкус, разумная цена. Уже мой фаворит, буду приходить часто!",
+          images: ["/images/reviews/mix_1.jpg"],
+          createdAt: Date.now() - 86400000 * 20,
         },
         {
           id: "r8",
           orderId: "o8",
           rating: 5,
-          comment: "Красивая упаковка, отлично подходит для подарка. Вкус тоже отличный, друзьям понравилось. Обязательно вернусь!",
-          images: [
-            "/images/reviews/gift_1.jpg",
-            "/images/reviews/gift_2.jpg"
-          ],
-          createdAt: Date.now() - 86400000 * 25
-        }
+          comment:
+            "Красивая упаковка, отлично подходит для подарка. Вкус тоже отличный, друзьям понравилось. Обязательно вернусь!",
+          images: ["/images/reviews/gift_1.jpg", "/images/reviews/gift_2.jpg"],
+          createdAt: Date.now() - 86400000 * 25,
+        },
       ];
       setReviews(defaultReviews);
     }
   }, []); // 只在组шт挂载时执行一次
 
-  const drinkCartTotal = drinkCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const drinkCartCount = drinkCart.reduce((sum, item) => sum + item.quantity, 0);
-  
-  const mallCartTotal = mallCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const drinkCartTotal = drinkCart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+  const drinkCartCount = drinkCart.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+
+  const mallCartTotal = mallCart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
   const mallCartCount = mallCart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <AppContext.Provider
       value={{
-        drinkCart, mallCart, orders, userPoints, influencerData, userProfile, coupons, selectedCouponId, city, favorites, giftCards, reviews,
-        setCity, 
-        addToDrinkCart, updateDrinkCartQuantity, removeFromDrinkCart, clearDrinkCart,
-        addToMallCart, updateMallCartQuantity, removeFromMallCart, clearMallCart,
-        deductPoints, addOrder, cancelOrder,
-        withdrawFunds, updateProfile, addCoupon, useCoupon,
+        drinkCart,
+        mallCart,
+        orders,
+        userPoints,
+        influencerData,
+        userProfile,
+        coupons,
+        selectedCouponId,
+        city,
+        favorites,
+        giftCards,
+        reviews,
+        setCity,
+        addToDrinkCart,
+        updateDrinkCartQuantity,
+        removeFromDrinkCart,
+        clearDrinkCart,
+        addToMallCart,
+        updateMallCartQuantity,
+        removeFromMallCart,
+        clearMallCart,
+        deductPoints,
+        addOrder,
+        cancelOrder,
+        withdrawFunds,
+        updateProfile,
+        addCoupon,
+        useCoupon,
         selectCoupon: setSelectedCouponId,
-        addToFavorites, removeFromFavorites, isFavorite,
+        addToFavorites,
+        removeFromFavorites,
+        isFavorite,
         addReview,
-        purchaseGiftCard, transferGiftCard, useGiftCard, getGiftCardBalance,
+        purchaseGiftCard,
+        transferGiftCard,
+        useGiftCard,
+        getGiftCardBalance,
         resetAllData,
-        drinkCartTotal, drinkCartCount, mallCartTotal, mallCartCount
+        drinkCartTotal,
+        drinkCartCount,
+        mallCartTotal,
+        mallCartCount,
       }}
     >
       {children}

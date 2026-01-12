@@ -47,17 +47,17 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
-  
+
   // 业务 API 路由
-  app.use('/api/withdrawals', withdrawalsRouter);
-  app.use('/api/telegram', telegramRouter);
-  app.use('/api/system-settings', systemSettingsRouter);
-  app.use('/api/finance', financeRouter);
-  app.use('/api/sdui', sduiRouter);
-  app.use('/api/operations', operationsRouter);
-  app.use('/api/brain', brainRouter);
-  app.use('/api/tenant', tenantRouter);
-  
+  app.use("/api/withdrawals", withdrawalsRouter);
+  app.use("/api/telegram", telegramRouter);
+  app.use("/api/system-settings", systemSettingsRouter);
+  app.use("/api/finance", financeRouter);
+  app.use("/api/sdui", sduiRouter);
+  app.use("/api/operations", operationsRouter);
+  app.use("/api/brain", brainRouter);
+  app.use("/api/tenant", tenantRouter);
+
   // tRPC API (原系统)
   app.use(
     "/api/trpc",

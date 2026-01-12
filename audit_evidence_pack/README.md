@@ -13,11 +13,13 @@ See `EVIDENCE_PACK_MANIFEST.md` for a complete list of files and verification in
 ## Quick Verification
 
 1. Verify migration checksum:
+
    ```bash
    sha256sum prisma/migrations/20260112124722_init_schema/migration.sql
    ```
 
 2. Run compliance check:
+
    ```bash
    sudo -u postgres psql -d ctea_dev < scripts/compliance_check.sql
    ```

@@ -1,17 +1,17 @@
 /**
  * CHUTEA tRPC Router - Audit Log Management
- * 
+ *
  * 审计链与哈希验证模块
  * - 审计日志查询
  * - 审计链验证
  * - SHA-256 哈希校验
  */
 
-import { z } from 'zod';
-import { router, protectedProcedure, createPermissionProcedure } from '../trpc';
-import { TRPCError } from '@trpc/server';
-import crypto from 'crypto';
-import { mapRoleToOperatorType } from '../../utils/role-mapper';
+import { z } from "zod";
+import { router, protectedProcedure, createPermissionProcedure } from "../trpc";
+import { TRPCError } from "@trpc/server";
+import crypto from "crypto";
+import { mapRoleToOperatorType } from "../../utils/role-mapper";
 
 /**
  * Audit Router
@@ -20,12 +20,12 @@ export const auditRouter = router({
   /**
    * 获取审计日志列表
    */
-  list: createPermissionProcedure(['audit:view'])
+  list: createPermissionProcedure(["audit:view"])
     .input(
       z.object({
         tableName: z.string().optional(),
         recordId: z.string().optional(),
-        action: z.enum(['INSERT', 'UPDATE', 'DELETE']).optional(),
+        action: z.enum(["INSERT", "UPDATE", "DELETE"]).optional(),
         operatorId: z.string().optional(),
         orgId: z.string().optional(),
         startDate: z.string().optional(),
@@ -35,7 +35,17 @@ export const auditRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const { tableName, recordId, action, operatorId, orgId, startDate, endDate, page, pageSize } = input;
+      const {
+        tableName,
+        recordId,
+        action,
+        operatorId,
+        orgId,
+        startDate,
+        endDate,
+        page,
+        pageSize,
+      } = input;
 
       // 构建查询条件
       const where: any = {};
@@ -51,7 +61,7 @@ export const auditRouter = router({
       }
 
       // RBAC 权限检查（只能查看自己组织的审计日志）
-      if (ctx.userSession?.role !== 'super_admin' && ctx.userSession?.orgId) {
+      if (ctx.userSession?.role !== "super_admin" && ctx.userSession?.orgId) {
         where.orgId = ctx.userSession.orgId;
       }
 
@@ -61,7 +71,7 @@ export const auditRouter = router({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
         }),
         ctx.prisma.auditLog.count({ where }),
       ]);
@@ -80,7 +90,7 @@ export const auditRouter = router({
   /**
    * 获取审计日志详情
    */
-  getById: createPermissionProcedure(['audit:view'])
+  getById: createPermissionProcedure(["audit:view"])
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const log = await ctx.prisma.auditLog.findUnique({
@@ -89,16 +99,19 @@ export const auditRouter = router({
 
       if (!log) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Audit log not found',
+          code: "NOT_FOUND",
+          message: "Audit log not found",
         });
       }
 
       // RBAC 权限检查
-      if (ctx.userSession?.role !== 'super_admin' && log.orgId !== ctx.userSession?.orgId) {
+      if (
+        ctx.userSession?.role !== "super_admin" &&
+        log.orgId !== ctx.userSession?.orgId
+      ) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have permission to view this audit log',
+          code: "FORBIDDEN",
+          message: "You do not have permission to view this audit log",
         });
       }
 
@@ -108,7 +121,7 @@ export const auditRouter = router({
   /**
    * 验证审计链完整性
    */
-  verifyChain: createPermissionProcedure(['audit:verify'])
+  verifyChain: createPermissionProcedure(["audit:verify"])
     .input(
       z.object({
         startDate: z.string().optional(),
@@ -129,14 +142,14 @@ export const auditRouter = router({
       if (orgId) where.orgId = orgId;
 
       // RBAC 权限检查
-      if (ctx.userSession?.role !== 'super_admin' && ctx.userSession?.orgId) {
+      if (ctx.userSession?.role !== "super_admin" && ctx.userSession?.orgId) {
         where.orgId = ctx.userSession.orgId;
       }
 
       // 查询审计日志（按创建时间排序）
       const logs = await ctx.prisma.auditLog.findMany({
         where,
-        orderBy: { createdAt: 'asc' },
+        orderBy: { createdAt: "asc" },
       });
 
       if (logs.length === 0) {
@@ -165,7 +178,7 @@ export const auditRouter = router({
             errors.push({
               logId: log.id,
               eventId: log.eventId,
-              error: 'Genesis record should have previousHash = null',
+              error: "Genesis record should have previousHash = null",
             });
             invalidLogs++;
             continue;
@@ -210,7 +223,7 @@ export const auditRouter = router({
   /**
    * 获取审计统计
    */
-  getStatistics: createPermissionProcedure(['audit:view'])
+  getStatistics: createPermissionProcedure(["audit:view"])
     .input(
       z.object({
         startDate: z.string().optional(),
@@ -231,7 +244,7 @@ export const auditRouter = router({
       if (orgId) where.orgId = orgId;
 
       // RBAC 权限检查
-      if (ctx.userSession?.role !== 'super_admin' && ctx.userSession?.orgId) {
+      if (ctx.userSession?.role !== "super_admin" && ctx.userSession?.orgId) {
         where.orgId = ctx.userSession.orgId;
       }
 
@@ -239,12 +252,12 @@ export const auditRouter = router({
       const [total, byAction, byTable] = await Promise.all([
         ctx.prisma.auditLog.count({ where }),
         ctx.prisma.auditLog.groupBy({
-          by: ['action'],
+          by: ["action"],
           where,
           _count: true,
         }),
         ctx.prisma.auditLog.groupBy({
-          by: ['tableName'],
+          by: ["tableName"],
           where,
           _count: true,
         }),
@@ -252,11 +265,11 @@ export const auditRouter = router({
 
       return {
         total,
-        byAction: byAction.map((item) => ({
+        byAction: byAction.map(item => ({
           action: item.action,
           count: item._count,
         })),
-        byTable: byTable.map((item) => ({
+        byTable: byTable.map(item => ({
           tableName: item.tableName,
           count: item._count,
         })),
@@ -266,7 +279,7 @@ export const auditRouter = router({
   /**
    * 搜索审计日志
    */
-  search: createPermissionProcedure(['audit:view'])
+  search: createPermissionProcedure(["audit:view"])
     .input(
       z.object({
         keyword: z.string().min(1),
@@ -288,7 +301,7 @@ export const auditRouter = router({
       };
 
       // RBAC 权限检查
-      if (ctx.userSession?.role !== 'super_admin' && ctx.userSession?.orgId) {
+      if (ctx.userSession?.role !== "super_admin" && ctx.userSession?.orgId) {
         where.orgId = ctx.userSession.orgId;
       }
 
@@ -298,7 +311,7 @@ export const auditRouter = router({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
         }),
         ctx.prisma.auditLog.count({ where }),
       ]);
@@ -335,5 +348,5 @@ function calculateHash(log: any): string {
     createdAt: log.createdAt.toISOString(),
   };
 
-  return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
+  return crypto.createHash("sha256").update(JSON.stringify(data)).digest("hex");
 }

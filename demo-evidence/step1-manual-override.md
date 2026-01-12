@@ -4,7 +4,8 @@
 
 **Action:** Admin manually changed Product #1 price from ₽350 to ₽500
 
-**Result:** 
+**Result:**
+
 - Price updated to ₽500
 - Override status changed from "IIKO" to "Manual"
 - `is_manual_override` flag automatically set to `true`

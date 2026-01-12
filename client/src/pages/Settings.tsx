@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { ArrowLeft, LogOut, Trash2, Bell, Shield, ChevronRight, User, Globe } from "lucide-react";
+import {
+  ArrowLeft,
+  LogOut,
+  Trash2,
+  Bell,
+  Shield,
+  ChevronRight,
+  User,
+  Globe,
+} from "lucide-react";
 import { Link, useLocation } from "wouter";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { useApp } from "@/contexts/AppContext";
@@ -7,7 +16,12 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 export default function Settings() {
@@ -31,7 +45,7 @@ export default function Settings() {
   const languages = [
     { code: "ru", label: "Русский" },
     { code: "zh", label: "中文" },
-    { code: "en", label: "English" }
+    { code: "en", label: "English" },
   ];
 
   return (
@@ -47,18 +61,27 @@ export default function Settings() {
         <div className="p-4 space-y-6">
           {/* Profile Section */}
           <div className="bg-white rounded-xl overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-gray-50 flex items-center justify-between" onClick={() => setIsEditing(true)}>
+            <div
+              className="p-4 border-b border-gray-50 flex items-center justify-between"
+              onClick={() => setIsEditing(true)}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
                   {userProfile.avatar ? (
-                    <img src={userProfile.avatar} className="w-full h-full object-cover" alt="Avatar" />
+                    <img
+                      src={userProfile.avatar}
+                      className="w-full h-full object-cover"
+                      alt="Avatar"
+                    />
                   ) : (
                     <User size={24} className="text-gray-400" />
                   )}
                 </div>
                 <div>
                   <h3 className="font-bold text-sm">{userProfile.name}</h3>
-                  <p className="text-xs text-muted-foreground">{userProfile.phone}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {userProfile.phone}
+                  </p>
                 </div>
               </div>
               <ChevronRight size={20} className="text-gray-300" />
@@ -70,10 +93,12 @@ export default function Settings() {
             <div className="p-4">
               <div className="flex items-center gap-3 mb-3">
                 <Globe size={20} className="text-gray-500" />
-                <span className="font-medium text-sm">Language / Язык / Язык</span>
+                <span className="font-medium text-sm">
+                  Language / Язык / Язык
+                </span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {languages.map((lang) => (
+                {languages.map(lang => (
                   <button
                     key={lang.code}
                     onClick={() => setLanguage(lang.code as "ru" | "zh" | "en")}
@@ -95,14 +120,18 @@ export default function Settings() {
             <div className="p-4 border-b border-gray-50 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Bell size={20} className="text-gray-500" />
-                <span className="font-medium text-sm">{t("pages_settings_消息通知")}</span>
+                <span className="font-medium text-sm">
+                  {t("pages_settings_消息通知")}
+                </span>
               </div>
               <Switch defaultChecked />
             </div>
             <div className="p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Shield size={20} className="text-gray-500" />
-                <span className="font-medium text-sm">{t("pages_settings_隐私设置")}</span>
+                <span className="font-medium text-sm">
+                  {t("pages_settings_隐私设置")}
+                </span>
               </div>
               <ChevronRight size={20} className="text-gray-300" />
             </div>
@@ -110,20 +139,22 @@ export default function Settings() {
 
           {/* Actions */}
           <div className="space-y-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 border-red-100 h-12"
               onClick={resetAllData}
             >
-              <Trash2 size={18} className="mr-3" /> {t("pages_settings_清除缓存并重置数据")}
+              <Trash2 size={18} className="mr-3" />{" "}
+              {t("pages_settings_清除缓存并重置数据")}
             </Button>
-            
-            <Button 
-              variant="outline" 
+
+            <Button
+              variant="outline"
               className="w-full justify-start h-12"
               onClick={handleLogout}
             >
-              <LogOut size={18} className="mr-3" /> {t("pages_settings_退出登录")}
+              <LogOut size={18} className="mr-3" />{" "}
+              {t("pages_settings_退出登录")}
             </Button>
           </div>
         </div>
@@ -136,13 +167,14 @@ export default function Settings() {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">{t("pages_settings_昵称")}</label>
-                <Input 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
+                <label className="text-sm font-medium">
+                  {t("pages_settings_昵称")}
+                </label>
+                <Input value={name} onChange={e => setName(e.target.value)} />
               </div>
-              <Button className="w-full mt-4" onClick={handleSaveProfile}>{t("pages_settings_保存")}</Button>
+              <Button className="w-full mt-4" onClick={handleSaveProfile}>
+                {t("pages_settings_保存")}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

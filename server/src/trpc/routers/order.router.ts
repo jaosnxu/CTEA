@@ -1,6 +1,6 @@
 /**
  * CHUTEA tRPC Router - Order Management
- * 
+ *
  * 订单与状态流转模块
  * - 订单列表查询
  * - 订单详情查询
@@ -8,11 +8,11 @@
  * - 订单统计
  */
 
-import { z } from 'zod';
-import { router, protectedProcedure, createPermissionProcedure } from '../trpc';
-import { TRPCError } from '@trpc/server';
-import { getAuditService } from '../../services/audit-service';
-import { mapRoleToOperatorType } from '../../utils/role-mapper';
+import { z } from "zod";
+import { router, protectedProcedure, createPermissionProcedure } from "../trpc";
+import { TRPCError } from "@trpc/server";
+import { getAuditService } from "../../services/audit-service";
+import { mapRoleToOperatorType } from "../../utils/role-mapper";
 
 /**
  * Order Router
@@ -48,13 +48,16 @@ export const orderRouter = router({
       // RBAC 权限检查
       if (ctx.userSession?.storeId) {
         where.storeId = ctx.userSession.storeId;
-      } else if (ctx.userSession?.orgId && ctx.userSession.role !== 'super_admin') {
+      } else if (
+        ctx.userSession?.orgId &&
+        ctx.userSession.role !== "super_admin"
+      ) {
         // 查询组织下的所有门店
         const stores = await ctx.prisma.store.findMany({
           where: { orgId: ctx.userSession.orgId },
           select: { id: true },
         });
-        where.storeId = { in: stores.map((s) => s.id) };
+        where.storeId = { in: stores.map(s => s.id) };
       }
 
       // 查询订单列表
@@ -63,7 +66,7 @@ export const orderRouter = router({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           include: {
             store: {
               select: {
@@ -131,16 +134,19 @@ export const orderRouter = router({
 
       if (!order) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Order not found',
+          code: "NOT_FOUND",
+          message: "Order not found",
         });
       }
 
       // RBAC 权限检查
-      if (ctx.userSession?.storeId && order.storeId !== ctx.userSession.storeId) {
+      if (
+        ctx.userSession?.storeId &&
+        order.storeId !== ctx.userSession.storeId
+      ) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have permission to view this order',
+          code: "FORBIDDEN",
+          message: "You do not have permission to view this order",
         });
       }
 
@@ -150,7 +156,7 @@ export const orderRouter = router({
   /**
    * 更新订单状态
    */
-  updateStatus: createPermissionProcedure(['order:update'])
+  updateStatus: createPermissionProcedure(["order:update"])
     .input(
       z.object({
         id: z.string(),
@@ -168,16 +174,19 @@ export const orderRouter = router({
 
       if (!order) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Order not found',
+          code: "NOT_FOUND",
+          message: "Order not found",
         });
       }
 
       // RBAC 权限检查
-      if (ctx.userSession?.storeId && order.storeId !== ctx.userSession.storeId) {
+      if (
+        ctx.userSession?.storeId &&
+        order.storeId !== ctx.userSession.storeId
+      ) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have permission to update this order',
+          code: "FORBIDDEN",
+          message: "You do not have permission to update this order",
         });
       }
 
@@ -185,7 +194,7 @@ export const orderRouter = router({
       const oldStatus = order.status;
 
       // 更新订单状态（事务）
-      const updatedOrder = await ctx.prisma.$transaction(async (tx) => {
+      const updatedOrder = await ctx.prisma.$transaction(async tx => {
         // 更新订单状态
         const updated = await tx.order.update({
           where: { id },
@@ -198,9 +207,9 @@ export const orderRouter = router({
         // 记录审计日志
         const auditService = getAuditService();
         await auditService.logAction({
-          tableName: 'orders',
+          tableName: "orders",
           recordId: id,
-          action: 'UPDATE',
+          action: "UPDATE",
           changes: {
             status: { old: oldStatus, new: status },
             reason,
@@ -248,27 +257,30 @@ export const orderRouter = router({
       // RBAC 权限检查
       if (ctx.userSession?.storeId) {
         where.storeId = ctx.userSession.storeId;
-      } else if (ctx.userSession?.orgId && ctx.userSession.role !== 'super_admin') {
+      } else if (
+        ctx.userSession?.orgId &&
+        ctx.userSession.role !== "super_admin"
+      ) {
         // 查询组织下的所有门店
         const stores = await ctx.prisma.store.findMany({
           where: { orgId: ctx.userSession.orgId },
           select: { id: true },
         });
-        where.storeId = { in: stores.map((s) => s.id) };
+        where.storeId = { in: stores.map(s => s.id) };
       }
 
       // 统计订单
       const [total, byStatus, revenue] = await Promise.all([
         ctx.prisma.order.count({ where }),
         ctx.prisma.order.groupBy({
-          by: ['status'],
+          by: ["status"],
           where,
           _count: true,
         }),
         ctx.prisma.order.aggregate({
           where: {
             ...where,
-            status: { in: ['completed', 'delivered'] },
+            status: { in: ["completed", "delivered"] },
           },
           _sum: {
             totalAmount: true,
@@ -278,7 +290,7 @@ export const orderRouter = router({
 
       return {
         total,
-        byStatus: byStatus.map((item) => ({
+        byStatus: byStatus.map(item => ({
           status: item.status,
           count: item._count,
         })),
@@ -289,7 +301,7 @@ export const orderRouter = router({
   /**
    * 取消订单
    */
-  cancel: createPermissionProcedure(['order:cancel'])
+  cancel: createPermissionProcedure(["order:cancel"])
     .input(
       z.object({
         id: z.string(),
@@ -306,34 +318,37 @@ export const orderRouter = router({
 
       if (!order) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Order not found',
+          code: "NOT_FOUND",
+          message: "Order not found",
         });
       }
 
       // RBAC 权限检查
-      if (ctx.userSession?.storeId && order.storeId !== ctx.userSession.storeId) {
+      if (
+        ctx.userSession?.storeId &&
+        order.storeId !== ctx.userSession.storeId
+      ) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have permission to cancel this order',
+          code: "FORBIDDEN",
+          message: "You do not have permission to cancel this order",
         });
       }
 
       // 检查订单状态
-      if (['completed', 'delivered', 'cancelled'].includes(order.status)) {
+      if (["completed", "delivered", "cancelled"].includes(order.status)) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Order cannot be cancelled in current status',
+          code: "BAD_REQUEST",
+          message: "Order cannot be cancelled in current status",
         });
       }
 
       // 取消订单（事务）
-      const updatedOrder = await ctx.prisma.$transaction(async (tx) => {
+      const updatedOrder = await ctx.prisma.$transaction(async tx => {
         // 更新订单状态
         const updated = await tx.order.update({
           where: { id },
           data: {
-            status: 'cancelled',
+            status: "cancelled",
             updatedAt: new Date(),
           },
         });
@@ -341,11 +356,11 @@ export const orderRouter = router({
         // 记录审计日志
         const auditService = getAuditService();
         await auditService.logAction({
-          tableName: 'orders',
+          tableName: "orders",
           recordId: id,
-          action: 'UPDATE',
+          action: "UPDATE",
           changes: {
-            status: { old: order.status, new: 'cancelled' },
+            status: { old: order.status, new: "cancelled" },
             reason,
           },
           operatorId: ctx.userSession!.userId,
@@ -390,13 +405,16 @@ export const orderRouter = router({
       // RBAC 权限检查
       if (ctx.userSession?.storeId) {
         where.storeId = ctx.userSession.storeId;
-      } else if (ctx.userSession?.orgId && ctx.userSession.role !== 'super_admin') {
+      } else if (
+        ctx.userSession?.orgId &&
+        ctx.userSession.role !== "super_admin"
+      ) {
         // 查询组织下的所有门店
         const stores = await ctx.prisma.store.findMany({
           where: { orgId: ctx.userSession.orgId },
           select: { id: true },
         });
-        where.storeId = { in: stores.map((s) => s.id) };
+        where.storeId = { in: stores.map(s => s.id) };
       }
 
       // 查询订单
@@ -405,7 +423,7 @@ export const orderRouter = router({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           include: {
             store: {
               select: {
