@@ -50,6 +50,7 @@ import MarketingRules from "./pages/admin/MarketingRules";
 import InfluencerManagement from "./pages/admin/InfluencerManagement";
 import OrganizationSettings from "./pages/admin/OrganizationSettings";
 import BIAnalysisHub from "./pages/admin/BIAnalysisHub";
+import IntegrationHub from "./pages/admin/IntegrationHub";
 import CallScreen from "./pages/CallScreen";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -116,6 +117,8 @@ function Router() {
         component={OrganizationSettings}
       />
       <Route path="/admin/bi" component={BIAnalysisHub} />
+      {/* Integration Hub - Global Control Center */}
+      <Route path="/admin/settings/hub" component={IntegrationHub} />
       {/* AI routes - redirect to BI Analysis Hub */}
       <Route path="/admin/ai/cockpit" component={BIAnalysisHub} />
       <Route path="/admin/ai/reports" component={BIAnalysisHub} />
