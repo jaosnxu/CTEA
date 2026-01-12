@@ -1223,3 +1223,19 @@ model Usertrustscores {
   updatedBy            String?
   @@map("user_trust_scores")
 }
+
+// ============================================================================
+// System Health Check Table - For connectivity verification
+// ============================================================================
+/// 系统健康检查表 - 用于验证全链路连通性
+model SystemCheck {
+  id          String   @id @default(uuid())
+  checkKey    String   @unique @db.VarChar(100)
+  checkValue  String   @db.Text
+  description Json?    // 多语言描述 {ru, zh, en}
+  lastChecked DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("system_check")
+}

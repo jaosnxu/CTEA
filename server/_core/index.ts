@@ -19,6 +19,7 @@ import sduiRouter from "../src/routes/sdui";
 import operationsRouter from "../src/routes/operations";
 import brainRouter from "../src/routes/brain";
 import tenantRouter from "../src/routes/tenant";
+import healthCheckRouter from "../src/routes/health-check";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -57,6 +58,7 @@ async function startServer() {
   app.use("/api/operations", operationsRouter);
   app.use("/api/brain", brainRouter);
   app.use("/api/tenant", tenantRouter);
+  app.use("/api/v1/health-check", healthCheckRouter);
 
   // tRPC API (原系统)
   app.use(
