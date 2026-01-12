@@ -254,10 +254,13 @@ async function main() {
         create: {
           id: i,
           orderNumber: `ORD-${String(i).padStart(6, "0")}`,
-          status: orderStatuses[Math.floor(Math.random() * orderStatuses.length)] as any,
+          status: orderStatuses[
+            Math.floor(Math.random() * orderStatuses.length)
+          ] as any,
           totalAmount: totalAmount,
           currency: "RUB",
-          paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
+          paymentMethod:
+            paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
           paymentStatus: "PAID",
           storeId: 1,
           orgId: 1,
@@ -320,7 +323,7 @@ async function main() {
   }
 }
 
-main().catch((e) => {
+main().catch(e => {
   console.error(e);
   process.exit(1);
 });
