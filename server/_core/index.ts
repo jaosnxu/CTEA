@@ -6,6 +6,8 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
+import { adminAppRouter } from "../src/trpc/admin-app-router";
+import { createContext as createAdminContext } from "../src/trpc/context";
 import { serveStatic, setupVite } from "./vite";
 
 // 业务 API 路由
@@ -56,12 +58,21 @@ async function startServer() {
   app.use('/api/brain', brainRouter);
   app.use('/api/tenant', tenantRouter);
   
-  // tRPC API
+  // tRPC API (原系统)
   app.use(
     "/api/trpc",
     createExpressMiddleware({
       router: appRouter,
       createContext,
+    })
+  );
+
+  // 管理后台 tRPC API (新系统)
+  app.use(
+    "/api/admin-trpc",
+    createExpressMiddleware({
+      router: adminAppRouter,
+      createContext: createAdminContext,
     })
   );
   // development mode uses Vite, production mode uses static files

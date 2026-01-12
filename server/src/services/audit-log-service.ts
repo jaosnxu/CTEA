@@ -12,6 +12,7 @@
 
 import { PrismaClient, AuditAction, OperatorType } from '@prisma/client';
 import crypto from 'crypto';
+import { getPrismaClient } from '../db/prisma';
 
 export interface CreateAuditLogInput {
   orgId?: string;
@@ -318,4 +319,20 @@ export class AuditLogService {
 
     console.log(`✅ Audit event registered: ${eventId}`);
   }
+}
+
+/**
+ * Singleton instance
+ */
+let auditLogServiceInstance: AuditLogService | null = null;
+
+/**
+ * Get AuditLogService singleton
+ */
+export function getAuditLogService(): AuditLogService {
+  if (!auditLogServiceInstance) {
+    const prisma = getPrismaClient();
+    auditLogServiceInstance = new AuditLogService(prisma);
+  }
+  return auditLogServiceInstance;
 }
