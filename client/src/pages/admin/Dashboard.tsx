@@ -77,23 +77,29 @@ function formatNumber(num: number | null | undefined): string {
 
 // ==================== 模块配置生成函数 ====================
 
-function createModuleCards(stats: {
-  finance: {
-    totalBalance: number | string;
-    pendingWithdrawals: number | string;
-    withdrawalRequestCount: number;
-  };
-  orders: { totalOrders: number; todayOrders: number };
-  products: {
-    totalProducts: number;
-    totalCategories: number;
-    lowStockCount: number;
-  };
-  stores: { totalStores: number; activeStores: number };
-  system: { totalUsers: number; auditLogsToday: number };
-} | null): ModuleCard[] {
+function createModuleCards(
+  stats: {
+    finance: {
+      totalBalance: number | string;
+      pendingWithdrawals: number | string;
+      withdrawalRequestCount: number;
+    };
+    orders: { totalOrders: number; todayOrders: number };
+    products: {
+      totalProducts: number;
+      totalCategories: number;
+      lowStockCount: number;
+    };
+    stores: { totalStores: number; activeStores: number };
+    system: { totalUsers: number; auditLogsToday: number };
+  } | null
+): ModuleCard[] {
   const data = stats || {
-    finance: { totalBalance: 0, pendingWithdrawals: 0, withdrawalRequestCount: 0 },
+    finance: {
+      totalBalance: 0,
+      pendingWithdrawals: 0,
+      withdrawalRequestCount: 0,
+    },
     orders: { totalOrders: 0, todayOrders: 0 },
     products: { totalProducts: 0, totalCategories: 0, lowStockCount: 0 },
     stores: { totalStores: 0, activeStores: 0 },
@@ -169,7 +175,10 @@ function createModuleCards(stats: {
       id: "products",
       pillar: "operations",
       title: { ru: "Товарный модуль", zh: "商品模块" },
-      description: { ru: "SKU, цены, запасы", zh: "SKU管理、价格中心、库存预警" },
+      description: {
+        ru: "SKU, цены, запасы",
+        zh: "SKU管理、价格中心、库存预警",
+      },
       icon: <Package className="w-6 h-6" />,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
@@ -182,7 +191,10 @@ function createModuleCards(stats: {
           label: { ru: "Нет в наличии", zh: "缺货" },
           value: formatNumber(data.products.lowStockCount),
           trend: data.products.lowStockCount > 0 ? "down" : "up",
-          trendValue: data.products.lowStockCount > 0 ? `-${data.products.lowStockCount}` : "0",
+          trendValue:
+            data.products.lowStockCount > 0
+              ? `-${data.products.lowStockCount}`
+              : "0",
         },
         {
           label: { ru: "Категорий", zh: "分类数" },
@@ -205,14 +217,20 @@ function createModuleCards(stats: {
       color: "text-amber-600",
       bgColor: "bg-amber-100",
       stats: [
-        { label: { ru: "AI рекомендаций", zh: "AI建议" }, value: formatNumber(data.system.auditLogsToday) },
+        {
+          label: { ru: "AI рекомендаций", zh: "AI建议" },
+          value: formatNumber(data.system.auditLogsToday),
+        },
         {
           label: { ru: "Точность прогноза", zh: "预测准确率" },
           value: "89%",
           trend: "up",
           trendValue: "+5%",
         },
-        { label: { ru: "Автоматизировано", zh: "自动化任务" }, value: formatNumber(data.orders.totalOrders) },
+        {
+          label: { ru: "Автоматизировано", zh: "自动化任务" },
+          value: formatNumber(data.orders.totalOrders),
+        },
       ],
       href: "/admin/bi",
     },
@@ -239,7 +257,10 @@ function createModuleCards(stats: {
           trend: "up",
           trendValue: "+18%",
         },
-        { label: { ru: "Всего заказов", zh: "总订单" }, value: formatNumber(data.orders.totalOrders) },
+        {
+          label: { ru: "Всего заказов", zh: "总订单" },
+          value: formatNumber(data.orders.totalOrders),
+        },
       ],
       href: "/admin/tenants",
     },
@@ -256,9 +277,18 @@ function createModuleCards(stats: {
       color: "text-gray-600",
       bgColor: "bg-gray-100",
       stats: [
-        { label: { ru: "Пользователей", zh: "用户数" }, value: formatNumber(data.system.totalUsers) },
-        { label: { ru: "Магазинов", zh: "门店数" }, value: formatNumber(data.stores.totalStores) },
-        { label: { ru: "Логов сегодня", zh: "今日日志" }, value: formatNumber(data.system.auditLogsToday) },
+        {
+          label: { ru: "Пользователей", zh: "用户数" },
+          value: formatNumber(data.system.totalUsers),
+        },
+        {
+          label: { ru: "Магазинов", zh: "门店数" },
+          value: formatNumber(data.stores.totalStores),
+        },
+        {
+          label: { ru: "Логов сегодня", zh: "今日日志" },
+          value: formatNumber(data.system.auditLogsToday),
+        },
       ],
       href: "/admin/settings",
     },
@@ -275,8 +305,14 @@ function createModuleCards(stats: {
       color: "text-pink-600",
       bgColor: "bg-pink-100",
       stats: [
-        { label: { ru: "Активных блогеров", zh: "活跃达人" }, value: formatNumber(data.system.totalUsers) },
-        { label: { ru: "Выплачено", zh: "已发佣金" }, value: formatCurrency(data.finance.pendingWithdrawals) },
+        {
+          label: { ru: "Активных блогеров", zh: "活跃达人" },
+          value: formatNumber(data.system.totalUsers),
+        },
+        {
+          label: { ru: "Выплачено", zh: "已发佣金" },
+          value: formatCurrency(data.finance.pendingWithdrawals),
+        },
         {
           label: { ru: "Средний ROI", zh: "平均ROI" },
           value: "340%",
@@ -299,8 +335,14 @@ function createModuleCards(stats: {
       color: "text-indigo-600",
       bgColor: "bg-indigo-100",
       stats: [
-        { label: { ru: "Заказов", zh: "订单数" }, value: formatNumber(data.orders.totalOrders) },
-        { label: { ru: "Сегодня", zh: "今日订单" }, value: formatNumber(data.orders.todayOrders) },
+        {
+          label: { ru: "Заказов", zh: "订单数" },
+          value: formatNumber(data.orders.totalOrders),
+        },
+        {
+          label: { ru: "Сегодня", zh: "今日订单" },
+          value: formatNumber(data.orders.todayOrders),
+        },
         { label: { ru: "Оценка", zh: "好评率" }, value: "4.8★" },
       ],
       href: "/admin/skus",
@@ -318,9 +360,15 @@ function createModuleCards(stats: {
       color: "text-cyan-600",
       bgColor: "bg-cyan-100",
       stats: [
-        { label: { ru: "Обработано", zh: "已处理" }, value: formatNumber(data.orders.totalOrders) },
+        {
+          label: { ru: "Обработано", zh: "已处理" },
+          value: formatNumber(data.orders.totalOrders),
+        },
         { label: { ru: "Автоответ", zh: "自动回复率" }, value: "87%" },
-        { label: { ru: "Ожидает", zh: "待人工" }, value: formatNumber(data.finance.withdrawalRequestCount) },
+        {
+          label: { ru: "Ожидает", zh: "待人工" },
+          value: formatNumber(data.finance.withdrawalRequestCount),
+        },
       ],
       alerts: data.finance.withdrawalRequestCount,
       href: "/admin/bi",
@@ -361,7 +409,11 @@ export default function Dashboard() {
   const [selectedPillar, setSelectedPillar] = useState<string | null>(null);
 
   // Fetch REAL data from database via tRPC
-  const { data: dashboardStats, isLoading, refetch } = trpc.dashboard.getAllStats.useQuery(
+  const {
+    data: dashboardStats,
+    isLoading,
+    refetch,
+  } = trpc.dashboard.getAllStats.useQuery(
     undefined,
     { refetchInterval: 30000 } // Refresh every 30 seconds
   );
