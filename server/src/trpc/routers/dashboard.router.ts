@@ -78,7 +78,7 @@ export const dashboardRouter = router({
     ]);
 
     // Get low stock products (inventory < 10)
-    const lowStockCount = await ctx.prisma.mallInventory.count({
+    const lowStockCount = await ctx.prisma.mallinventory.count({
       where: { quantity: { lt: 10 } },
     });
 
@@ -139,7 +139,7 @@ export const dashboardRouter = router({
       }),
       ctx.prisma.products.count(),
       ctx.prisma.categories.count(),
-      ctx.prisma.mallInventory.count({
+      ctx.prisma.mallinventory.count({
         where: { quantity: { lt: 10 } },
       }),
       ctx.prisma.store.count(),

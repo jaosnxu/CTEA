@@ -66,7 +66,9 @@ interface ModuleCard {
 
 // ==================== Helper Functions ====================
 
-function formatCurrency(amount: number | string | null | undefined): string {
+function formatCurrency(
+  amount: number | string | { toString(): string } | null | undefined
+): string {
   const num = Number(amount) || 0;
   return `₽ ${num.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
@@ -80,8 +82,8 @@ function formatNumber(num: number | null | undefined): string {
 function createModuleCards(
   stats: {
     finance: {
-      totalBalance: number | string;
-      pendingWithdrawals: number | string;
+      totalBalance: number | string | { toString(): string };
+      pendingWithdrawals: number | string | { toString(): string };
       withdrawalRequestCount: number;
     };
     orders: { totalOrders: number; todayOrders: number };
