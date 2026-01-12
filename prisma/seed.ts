@@ -1,8 +1,11 @@
 /**
- * CHUTEA Production Seed Script
+ * CHUTEA Production Seed Script v2.0
  *
- * Creates initial data for production environment using raw SQL
- * to handle the mixed ID types in the schema (String UUIDs, BigInt, Int)
+ * Creates comprehensive test data for production environment:
+ * - 15+ bubble tea products with Russian names and ₽ prices
+ * - Inventory levels with low stock warnings
+ * - 60+ historical orders for chart population
+ * - System configs for Integration Hub
  */
 
 import { Pool } from "pg";
@@ -13,7 +16,7 @@ async function main() {
     throw new Error("DATABASE_URL environment variable is not set");
   }
 
-  console.log("🌱 Starting CHUTEA production seed...");
+  console.log("🌱 Starting CHUTEA production seed v2.0...");
   console.log("📡 Connecting to database...");
 
   const pool = new Pool({ connectionString });
@@ -135,23 +138,31 @@ async function main() {
     }
     console.log("✅ Created/found " + categoryIds.length + " categories");
 
-    // 5. Create 12 products (priced in ₽)
+    // 5. Create 15+ products (priced in ₽) with comprehensive Russian names
     console.log("🧋 Creating products...");
     const productData = [
-      { name: "Классический молочный чай", price: 299, catIdx: 0 },
-      { name: "Таро молочный чай", price: 349, catIdx: 0 },
-      { name: "Коричневый сахар с жемчугом", price: 379, catIdx: 0 },
-      { name: "Матча латте", price: 329, catIdx: 0 },
-      { name: "Манго фруктовый чай", price: 359, catIdx: 1 },
-      { name: "Персиковый улун", price: 339, catIdx: 1 },
-      { name: "Грейпфрут зелёный чай", price: 319, catIdx: 1 },
-      { name: "Клубничный смузи", price: 389, catIdx: 1 },
-      { name: "Жасминовый чай", price: 249, catIdx: 2 },
-      { name: "Улун чай", price: 269, catIdx: 2 },
-      { name: "Пуэр чай", price: 289, catIdx: 2 },
-      { name: "Зелёный чай с мёдом", price: 279, catIdx: 2 },
+      // Milk Tea (Молочный чай) - Category 0
+      { name: "Классический молочный чай с жемчугом", price: 299, catIdx: 0, stock: 150 },
+      { name: "Таро молочный чай", price: 349, catIdx: 0, stock: 120 },
+      { name: "Коричневый сахар с жемчугом боба", price: 379, catIdx: 0, stock: 8 }, // LOW STOCK
+      { name: "Матча латте с кремом", price: 329, catIdx: 0, stock: 95 },
+      { name: "Тигровый молочный чай", price: 359, catIdx: 0, stock: 5 }, // LOW STOCK
+      { name: "Орео молочный чай", price: 369, catIdx: 0, stock: 78 },
+      // Fruit Tea (Фруктовый чай) - Category 1
+      { name: "Манго фруктовый чай с алоэ", price: 359, catIdx: 1, stock: 110 },
+      { name: "Персиковый улун с желе", price: 339, catIdx: 1, stock: 3 }, // LOW STOCK
+      { name: "Грейпфрут зелёный чай", price: 319, catIdx: 1, stock: 88 },
+      { name: "Клубничный смузи с молоком", price: 389, catIdx: 1, stock: 65 },
+      { name: "Маракуйя фруктовый чай", price: 349, catIdx: 1, stock: 92 },
+      { name: "Лимонный чай с мёдом", price: 289, catIdx: 1, stock: 7 }, // LOW STOCK
+      // Classic Tea (Классический чай) - Category 2
+      { name: "Жасминовый зелёный чай", price: 249, catIdx: 2, stock: 200 },
+      { name: "Улун чай премиум", price: 269, catIdx: 2, stock: 180 },
+      { name: "Пуэр чай выдержанный", price: 289, catIdx: 2, stock: 45 },
+      { name: "Зелёный чай с мёдом и лимоном", price: 279, catIdx: 2, stock: 130 },
     ];
 
+    const productIds: string[] = [];
     let productsCreated = 0;
     for (const p of productData) {
       const catId = categoryIds[p.catIdx] ? 1 : 1;
@@ -167,36 +178,73 @@ async function main() {
       );
 
       if (result.rows.length > 0) {
+        productIds.push(result.rows[0].id);
         productsCreated++;
+      } else {
+        const existing = await pool.query(
+          "SELECT id FROM products WHERE name = $1 LIMIT 1",
+          [p.name]
+        );
+        if (existing.rows.length > 0) {
+          productIds.push(existing.rows[0].id);
+        }
       }
     }
-    console.log("✅ Created " + productsCreated + " new products");
+    console.log("✅ Created " + productsCreated + " new products (total: " + productIds.length + ")");
 
-    // 6. Create 55 historical orders
+    // 5b. Create inventory records with low stock warnings
+    console.log("📦 Creating inventory records...");
+    let inventoryCreated = 0;
+    for (let i = 0; i < productData.length; i++) {
+      const p = productData[i];
+      const lowStockThreshold = 10;
+      await pool.query(
+        `
+        INSERT INTO mall_inventory (id, "productId", quantity, "reservedQuantity", "lowStockThreshold", "createdAt", "updatedAt")
+        VALUES (gen_random_uuid(), $1, $2, 0, $3, NOW(), NOW())
+        ON CONFLICT DO NOTHING
+      `,
+        [i + 1, p.stock, lowStockThreshold]
+      );
+      inventoryCreated++;
+    }
+    console.log("✅ Created " + inventoryCreated + " inventory records (4 with LOW STOCK warnings)");
+
+    // 6. Create 60+ historical orders with realistic distribution
     console.log("📋 Creating historical orders...");
     const existingOrders = await pool.query(
       "SELECT COUNT(*) as count FROM orders"
     );
     const orderCount = parseInt(existingOrders.rows[0].count);
-    const ordersToCreate = Math.max(0, 55 - orderCount);
+    const ordersToCreate = Math.max(0, 65 - orderCount);
 
     if (ordersToCreate > 0) {
       const orderStatuses = [
         "COMPLETED",
         "COMPLETED",
         "COMPLETED",
+        "COMPLETED",
+        "COMPLETED",
+        "PENDING",
         "CANCELLED",
       ];
 
+      // Create orders distributed over the last 30 days for chart data
       for (let i = 0; i < ordersToCreate; i++) {
         const daysAgo = Math.floor(Math.random() * 30);
+        const hoursAgo = Math.floor(Math.random() * 24);
         const orderDate = new Date();
         orderDate.setDate(orderDate.getDate() - daysAgo);
-        const totalAmount =
-          productData[Math.floor(Math.random() * productData.length)].price *
-          (Math.floor(Math.random() * 3) + 1);
-        const status =
-          orderStatuses[Math.floor(Math.random() * orderStatuses.length)];
+        orderDate.setHours(9 + hoursAgo % 12); // Business hours 9-21
+        
+        // Realistic order amounts (1-4 items)
+        const itemCount = Math.floor(Math.random() * 4) + 1;
+        let totalAmount = 0;
+        for (let j = 0; j < itemCount; j++) {
+          totalAmount += productData[Math.floor(Math.random() * productData.length)].price;
+        }
+        
+        const status = orderStatuses[Math.floor(Math.random() * orderStatuses.length)];
 
         await pool.query(
           `
@@ -212,10 +260,35 @@ async function main() {
           ]
         );
       }
-      console.log("✅ Created " + ordersToCreate + " historical orders");
+      console.log("✅ Created " + ordersToCreate + " historical orders (distributed over 30 days)");
     } else {
       console.log("✅ Orders already exist (" + orderCount + " found)");
     }
+
+    // 6b. Create daily sales summary for charts
+    console.log("📊 Creating daily sales summaries...");
+    for (let day = 0; day < 30; day++) {
+      const salesDate = new Date();
+      salesDate.setDate(salesDate.getDate() - day);
+      const dateStr = salesDate.toISOString().split('T')[0];
+      
+      // Random daily metrics
+      const dailyOrders = Math.floor(Math.random() * 20) + 5;
+      const dailyRevenue = dailyOrders * (Math.floor(Math.random() * 200) + 300);
+      
+      await pool.query(
+        `
+        INSERT INTO system_configs (id, "configKey", "configValue", "valueType", description, "createdAt", "updatedAt")
+        VALUES (gen_random_uuid(), $1, $2::jsonb, 'JSON', '{"en": "Daily sales data"}'::jsonb, NOW(), NOW())
+        ON CONFLICT ("orgId", "storeId", "configKey") DO UPDATE SET "configValue" = $2::jsonb, "updatedAt" = NOW()
+      `,
+        [
+          `sales.daily.${dateStr}`,
+          JSON.stringify({ orders: dailyOrders, revenue: dailyRevenue, date: dateStr }),
+        ]
+      );
+    }
+    console.log("✅ Created 30 days of sales summary data");
 
     // 7. Create system configs
     console.log("⚙️ Creating system configs...");
