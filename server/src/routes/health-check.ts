@@ -23,7 +23,9 @@ router.get("/", async (req: Request, res: Response) => {
 
   try {
     // 1. 数据库连通性检查
-    const dbCheck = await prisma.$queryRaw<{ now: Date }[]>`SELECT NOW() as now`;
+    const dbCheck = await prisma.$queryRaw<
+      { now: Date }[]
+    >`SELECT NOW() as now`;
 
     // 2. 查询 system_check 表数据
     let systemChecks: any[] = [];
