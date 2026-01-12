@@ -41,7 +41,9 @@ async function main() {
       RETURNING id, code
     `);
     const orgId = orgResult.rows[0].id;
-    console.log("✅ Organization created/updated: CHUCHUTEA (ID: " + orgId + ")");
+    console.log(
+      "✅ Organization created/updated: CHUCHUTEA (ID: " + orgId + ")"
+    );
 
     // 2. Create store
     console.log("🏪 Creating store...");
@@ -179,7 +181,12 @@ async function main() {
     const ordersToCreate = Math.max(0, 55 - orderCount);
 
     if (ordersToCreate > 0) {
-      const orderStatuses = ["COMPLETED", "COMPLETED", "COMPLETED", "CANCELLED"];
+      const orderStatuses = [
+        "COMPLETED",
+        "COMPLETED",
+        "COMPLETED",
+        "CANCELLED",
+      ];
 
       for (let i = 0; i < ordersToCreate; i++) {
         const daysAgo = Math.floor(Math.random() * 30);
