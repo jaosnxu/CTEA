@@ -142,9 +142,19 @@ async function main() {
     console.log("🧋 Creating products...");
     const productData = [
       // Milk Tea (Молочный чай) - Category 0
-      { name: "Классический молочный чай с жемчугом", price: 299, catIdx: 0, stock: 150 },
+      {
+        name: "Классический молочный чай с жемчугом",
+        price: 299,
+        catIdx: 0,
+        stock: 150,
+      },
       { name: "Таро молочный чай", price: 349, catIdx: 0, stock: 120 },
-      { name: "Коричневый сахар с жемчугом боба", price: 379, catIdx: 0, stock: 8 }, // LOW STOCK
+      {
+        name: "Коричневый сахар с жемчугом боба",
+        price: 379,
+        catIdx: 0,
+        stock: 8,
+      }, // LOW STOCK
       { name: "Матча латте с кремом", price: 329, catIdx: 0, stock: 95 },
       { name: "Тигровый молочный чай", price: 359, catIdx: 0, stock: 5 }, // LOW STOCK
       { name: "Орео молочный чай", price: 369, catIdx: 0, stock: 78 },
@@ -159,7 +169,12 @@ async function main() {
       { name: "Жасминовый зелёный чай", price: 249, catIdx: 2, stock: 200 },
       { name: "Улун чай премиум", price: 269, catIdx: 2, stock: 180 },
       { name: "Пуэр чай выдержанный", price: 289, catIdx: 2, stock: 45 },
-      { name: "Зелёный чай с мёдом и лимоном", price: 279, catIdx: 2, stock: 130 },
+      {
+        name: "Зелёный чай с мёдом и лимоном",
+        price: 279,
+        catIdx: 2,
+        stock: 130,
+      },
     ];
 
     const productIds: string[] = [];
@@ -190,7 +205,13 @@ async function main() {
         }
       }
     }
-    console.log("✅ Created " + productsCreated + " new products (total: " + productIds.length + ")");
+    console.log(
+      "✅ Created " +
+        productsCreated +
+        " new products (total: " +
+        productIds.length +
+        ")"
+    );
 
     // 5b. Create inventory records with low stock warnings
     console.log("📦 Creating inventory records...");
@@ -208,7 +229,11 @@ async function main() {
       );
       inventoryCreated++;
     }
-    console.log("✅ Created " + inventoryCreated + " inventory records (4 with LOW STOCK warnings)");
+    console.log(
+      "✅ Created " +
+        inventoryCreated +
+        " inventory records (4 with LOW STOCK warnings)"
+    );
 
     // 6. Create 60+ historical orders with realistic distribution
     console.log("📋 Creating historical orders...");
@@ -235,16 +260,18 @@ async function main() {
         const hoursAgo = Math.floor(Math.random() * 24);
         const orderDate = new Date();
         orderDate.setDate(orderDate.getDate() - daysAgo);
-        orderDate.setHours(9 + hoursAgo % 12); // Business hours 9-21
-        
+        orderDate.setHours(9 + (hoursAgo % 12)); // Business hours 9-21
+
         // Realistic order amounts (1-4 items)
         const itemCount = Math.floor(Math.random() * 4) + 1;
         let totalAmount = 0;
         for (let j = 0; j < itemCount; j++) {
-          totalAmount += productData[Math.floor(Math.random() * productData.length)].price;
+          totalAmount +=
+            productData[Math.floor(Math.random() * productData.length)].price;
         }
-        
-        const status = orderStatuses[Math.floor(Math.random() * orderStatuses.length)];
+
+        const status =
+          orderStatuses[Math.floor(Math.random() * orderStatuses.length)];
 
         await pool.query(
           `
@@ -260,7 +287,11 @@ async function main() {
           ]
         );
       }
-      console.log("✅ Created " + ordersToCreate + " historical orders (distributed over 30 days)");
+      console.log(
+        "✅ Created " +
+          ordersToCreate +
+          " historical orders (distributed over 30 days)"
+      );
     } else {
       console.log("✅ Orders already exist (" + orderCount + " found)");
     }
@@ -270,12 +301,13 @@ async function main() {
     for (let day = 0; day < 30; day++) {
       const salesDate = new Date();
       salesDate.setDate(salesDate.getDate() - day);
-      const dateStr = salesDate.toISOString().split('T')[0];
-      
+      const dateStr = salesDate.toISOString().split("T")[0];
+
       // Random daily metrics
       const dailyOrders = Math.floor(Math.random() * 20) + 5;
-      const dailyRevenue = dailyOrders * (Math.floor(Math.random() * 200) + 300);
-      
+      const dailyRevenue =
+        dailyOrders * (Math.floor(Math.random() * 200) + 300);
+
       await pool.query(
         `
         INSERT INTO system_configs (id, "configKey", "configValue", "valueType", description, "createdAt", "updatedAt")
@@ -284,7 +316,11 @@ async function main() {
       `,
         [
           `sales.daily.${dateStr}`,
-          JSON.stringify({ orders: dailyOrders, revenue: dailyRevenue, date: dateStr }),
+          JSON.stringify({
+            orders: dailyOrders,
+            revenue: dailyRevenue,
+            date: dateStr,
+          }),
         ]
       );
     }
