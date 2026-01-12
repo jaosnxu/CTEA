@@ -4,17 +4,22 @@ import { InsertUser, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _connectionAttempted = false;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
+// Drizzle ORM connection - disabled to prevent MySQL timeout errors
+// All new database operations should use Prisma client instead
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
-    try {
-      _db = drizzle(process.env.DATABASE_URL);
-    } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
-      _db = null;
-    }
+  // Only log once to avoid spam
+  if (!_connectionAttempted) {
+    _connectionAttempted = true;
+    console.log(
+      "[Database] Drizzle ORM disabled - MySQL connection skipped to prevent ETIMEDOUT errors"
+    );
+    console.log(
+      "[Database] Use Prisma client (getPrismaClient) for database operations"
+    );
   }
+  // Return null - routes should handle this gracefully
   return _db;
 }
 
