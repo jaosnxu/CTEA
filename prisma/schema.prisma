@@ -183,7 +183,88 @@ enum UserType {
   ADMIN
 }
 
+// ============================================================================
+// NEW ENUMS - Full Architecture Implementation
+// ============================================================================
 
+/// 组织类型 - 茶饮店 vs 商城
+enum OrganizationType {
+  TEA_SHOP      // 茶饮店
+  SHOPPING_MALL // 商城
+}
+
+/// 扩展管理员角色 - RBAC 完整角色
+enum ExtendedAdminRole {
+  OWNER             // 老板/所有者
+  FINANCE_HEAD      // 财务总监
+  CASHIER           // 收银员
+  ACCOUNTANT        // 会计
+  MARKETING         // 市场营销
+  STORE_MANAGER     // 店长
+  STAFF             // 员工
+  AREA_MANAGER      // 区域经理
+  OPERATIONS_DIRECTOR // 运营总监
+}
+
+/// Banner 类型
+enum BannerType {
+  IMAGE
+  VIDEO
+}
+
+/// 营销规则类型
+enum MarketingRuleType {
+  BOGO              // 买一送一
+  FIXED_DISCOUNT    // 固定折扣
+  BIRTHDAY_COUPON   // 生日券
+  SECOND_HALF_PRICE // 第二杯半价
+  FREE_VOUCHER      // 免费券
+  PERCENTAGE_OFF    // 百分比折扣
+  SPEND_GET         // 满减
+}
+
+/// 活动审批状态
+enum CampaignApprovalStatus {
+  DRAFT             // 草稿
+  PENDING_APPROVAL  // 待审批
+  APPROVED          // 已批准
+  REJECTED          // 已拒绝
+  ACTIVE            // 进行中
+  EXPIRED           // 已过期
+  CANCELLED         // 已取消
+}
+
+/// 产品选项类型
+enum ProductOptionType {
+  SINGLE_CHOICE     // 单选 (冰度、甜度、规格)
+  MULTI_CHOICE      // 多选 (加料)
+}
+
+/// 积分交易类型
+enum PointsTransactionType {
+  EARN              // 获得
+  REDEEM            // 兑换
+  EXPIRE            // 过期
+  ADJUST            // 调整
+  REFUND            // 退还
+}
+
+/// 网红状态
+enum InfluencerStatus {
+  PENDING           // 待审核
+  ACTIVE            // 活跃
+  SUSPENDED         // 暂停
+  REJECTED          // 拒绝
+}
+
+/// 提现状态
+enum WithdrawalStatus {
+  PENDING           // 待处理
+  APPROVED          // 已批准
+  PROCESSING        // 处理中
+  COMPLETED         // 已完成
+  REJECTED          // 已拒绝
+}
 
 // ============================================================================
 // Models
@@ -1238,4 +1319,493 @@ model SystemCheck {
   updatedAt   DateTime @updatedAt
   
   @@map("system_check")
+}
+
+// ============================================================================
+// NEW MODELS - Full Architecture Implementation
+// ============================================================================
+
+/// 用户偏好设置 - 语言持久化
+model UserPreference {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  languageCode  String   @default("ru") @db.VarChar(10) // ru, zh, en
+  timezone      String   @default("Europe/Moscow") @db.VarChar(50)
+  notifications Json?    // 通知偏好设置
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("user_preferences")
+}
+
+/// Banner 轮播图 - 动态配置
+model Banner {
+  id            String      @id @default(uuid())
+  orgId         String
+  storeId       String?     // null = 全组织
+  
+  title         Json        // 多语言标题 {ru, zh, en}
+  mediaType     BannerType  @default(IMAGE)
+  mediaUrl      String      @db.VarChar(500)
+  linkUrl       String?     @db.VarChar(500)
+  linkType      String?     @db.VarChar(50) // internal, external, product, category
+  linkTarget    String?     @db.VarChar(100) // 目标ID或URL
+  
+  displayOrder  Int         @default(0)
+  isActive      Boolean     @default(true)
+  startTime     DateTime?
+  endTime       DateTime?
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  
+  @@index([orgId])
+  @@index([storeId])
+  @@index([isActive, startTime, endTime])
+  @@map("banners")
+}
+
+/// 营销规则 - 规则引擎
+model MarketingRule {
+  id            String              @id @default(uuid())
+  orgId         String
+  storeId       String?             // null = 全组织
+  
+  name          Json                // 多语言名称 {ru, zh, en}
+  description   Json?               // 多语言描述
+  ruleType      MarketingRuleType
+  ruleConfig    Json                // 规则配置 (折扣值、条件等)
+  
+  priority      Int                 @default(0)
+  isStackable   Boolean             @default(false) // 是否可叠加
+  maxUsageTotal Int?                // 总使用次数限制
+  maxUsagePerUser Int?              // 每用户使用次数限制
+  currentUsage  Int                 @default(0)
+  
+  applicableProducts Json?          // 适用产品ID列表
+  applicableCategories Json?        // 适用分类ID列表
+  excludedProducts Json?            // 排除产品ID列表
+  
+  minOrderAmount Decimal?           @db.Decimal(15, 2)
+  
+  startTime     DateTime?
+  endTime       DateTime?
+  isActive      Boolean             @default(true)
+  
+  approvalStatus CampaignApprovalStatus @default(DRAFT)
+  approvedBy    String?
+  approvedAt    DateTime?
+  rejectionReason String?
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  
+  @@index([orgId])
+  @@index([ruleType])
+  @@index([isActive, startTime, endTime])
+  @@index([approvalStatus])
+  @@map("marketing_rules")
+}
+
+/// 产品选项组 - 单选/多选配置
+model ProductOptionGroup {
+  id            String              @id @default(uuid())
+  orgId         String
+  
+  name          Json                // 多语言名称 {ru, zh, en} (冰度、甜度、规格、加料)
+  code          String              @db.VarChar(50) // ICE, SWEETNESS, SIZE, TOPPING
+  optionType    ProductOptionType
+  
+  isRequired    Boolean             @default(false)
+  minSelect     Int                 @default(0)
+  maxSelect     Int                 @default(1)
+  displayOrder  Int                 @default(0)
+  isActive      Boolean             @default(true)
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  
+  options       ProductOptionItem[]
+  productOptions ProductOptionMapping[]
+  
+  @@unique([orgId, code])
+  @@index([orgId])
+  @@map("product_option_groups")
+}
+
+/// 产品选项项 - 选项值
+model ProductOptionItem {
+  id            String              @id @default(uuid())
+  groupId       String
+  group         ProductOptionGroup  @relation(fields: [groupId], references: [id])
+  
+  name          Json                // 多语言名称 {ru, zh, en} (正常冰、少冰、去冰)
+  code          String              @db.VarChar(50)
+  priceAdjust   Decimal             @default(0) @db.Decimal(15, 2) // 价格调整
+  
+  displayOrder  Int                 @default(0)
+  isDefault     Boolean             @default(false)
+  isActive      Boolean             @default(true)
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  
+  @@index([groupId])
+  @@map("product_option_items")
+}
+
+/// 产品-选项组映射
+model ProductOptionMapping {
+  id            String              @id @default(uuid())
+  productId     String
+  optionGroupId String
+  optionGroup   ProductOptionGroup  @relation(fields: [optionGroupId], references: [id])
+  
+  isRequired    Boolean             @default(false)
+  displayOrder  Int                 @default(0)
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  
+  @@unique([productId, optionGroupId])
+  @@index([productId])
+  @@map("product_option_mappings")
+}
+
+/// 积分账户
+model PointsAccount {
+  id            String              @id @default(uuid())
+  userId        String
+  orgId         String
+  
+  balance       Int                 @default(0)
+  totalEarned   Int                 @default(0)
+  totalRedeemed Int                 @default(0)
+  totalExpired  Int                 @default(0)
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  
+  transactions  PointsTransaction[]
+  
+  @@unique([userId, orgId])
+  @@index([userId])
+  @@index([orgId])
+  @@map("points_accounts")
+}
+
+/// 积分交易记录
+model PointsTransaction {
+  id            String                  @id @default(uuid())
+  accountId     String
+  account       PointsAccount           @relation(fields: [accountId], references: [id])
+  
+  type          PointsTransactionType
+  amount        Int                     // 正数=获得，负数=消耗
+  balance       Int                     // 交易后余额
+  
+  orderId       String?                 // 关联订单
+  ruleId        String?                 // 关联规则
+  description   Json?                   // 多语言描述
+  
+  expiresAt     DateTime?               // 过期时间
+  
+  createdAt     DateTime                @default(now())
+  createdBy     String?
+  
+  @@index([accountId])
+  @@index([orderId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("points_transactions")
+}
+
+/// 积分规则
+model PointsRule {
+  id            String              @id @default(uuid())
+  orgId         String
+  
+  name          Json                // 多语言名称
+  description   Json?               // 多语言描述
+  
+  earnRate      Decimal             @default(1) @db.Decimal(10, 4) // 消费1元=X积分
+  redeemRate    Decimal             @default(100) @db.Decimal(10, 4) // X积分=1元
+  
+  minEarnAmount Decimal?            @db.Decimal(15, 2) // 最低消费金额才能获得积分
+  maxRedeemPercent Int              @default(100) // 最大抵扣比例
+  
+  excludeDiscounted Boolean         @default(true) // 折扣商品不获得积分
+  excludeCategories Json?           // 排除的分类
+  excludeProducts Json?             // 排除的产品
+  
+  expiryDays    Int?                // 积分有效期(天)
+  
+  isActive      Boolean             @default(true)
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  
+  @@index([orgId])
+  @@map("points_rules")
+}
+
+/// 网红详情增强
+model InfluencerProfile {
+  id            String              @id @default(uuid())
+  userId        String              @unique
+  orgId         String
+  storeId       String?             // 绑定门店
+  
+  displayName   Json                // 多语言显示名
+  bio           Json?               // 多语言简介
+  avatarUrl     String?             @db.VarChar(500)
+  
+  trackingCode  String              @unique @db.VarChar(50) // 追踪码
+  trackingUrl   String?             @db.VarChar(500) // 完整追踪链接
+  
+  status        InfluencerStatus    @default(PENDING)
+  
+  totalOrders   Int                 @default(0)
+  totalRevenue  Decimal             @default(0) @db.Decimal(15, 2)
+  totalCommission Decimal           @default(0) @db.Decimal(15, 2)
+  pendingCommission Decimal         @default(0) @db.Decimal(15, 2)
+  
+  commissionRate Decimal            @default(0.05) @db.Decimal(5, 4) // 佣金比例
+  
+  ranking       Int?                // 排名
+  rankingUpdatedAt DateTime?
+  
+  socialLinks   Json?               // 社交媒体链接
+  
+  approvedBy    String?
+  approvedAt    DateTime?
+  rejectionReason String?
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  
+  withdrawals   InfluencerWithdrawal[]
+  
+  @@index([orgId])
+  @@index([storeId])
+  @@index([trackingCode])
+  @@index([status])
+  @@index([ranking])
+  @@map("influencer_profiles")
+}
+
+/// 网红提现记录
+model InfluencerWithdrawal {
+  id            String              @id @default(uuid())
+  influencerId  String
+  influencer    InfluencerProfile   @relation(fields: [influencerId], references: [id])
+  
+  amount        Decimal             @db.Decimal(15, 2)
+  status        WithdrawalStatus    @default(PENDING)
+  
+  bankInfo      Json?               // 银行信息
+  paymentMethod String?             @db.VarChar(50)
+  transactionId String?             @db.VarChar(100)
+  
+  processedBy   String?
+  processedAt   DateTime?
+  rejectionReason String?
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  
+  @@index([influencerId])
+  @@index([status])
+  @@map("influencer_withdrawals")
+}
+
+/// LLM 配置 - AI API Key 管理
+model LLMConfig {
+  id            String              @id @default(uuid())
+  orgId         String
+  
+  provider      String              @db.VarChar(50) // openai, deepseek, claude
+  name          String              @db.VarChar(100)
+  apiKey        String              @db.VarChar(500) // 加密存储
+  apiEndpoint   String?             @db.VarChar(500)
+  
+  modelName     String?             @db.VarChar(100)
+  maxTokens     Int?
+  temperature   Decimal?            @db.Decimal(3, 2)
+  
+  isDefault     Boolean             @default(false)
+  isActive      Boolean             @default(true)
+  
+  usageCount    Int                 @default(0)
+  lastUsedAt    DateTime?
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  
+  @@index([orgId])
+  @@index([provider])
+  @@map("llm_configs")
+}
+
+/// IIKO 集成配置
+model IIKOConfig {
+  id            String              @id @default(uuid())
+  orgId         String              @unique
+  
+  apiKey        String              @db.VarChar(500) // 加密存储
+  apiEndpoint   String?             @db.VarChar(500)
+  organizationId String?            @db.VarChar(100)
+  
+  syncEnabled   Boolean             @default(true)
+  lastSyncAt    DateTime?
+  syncStatus    String?             @db.VarChar(50)
+  syncError     String?
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  
+  @@map("iiko_configs")
+}
+
+/// 分类增强 - 动态排序和显示
+model CategoryEnhanced {
+  id            String              @id @default(uuid())
+  orgId         String
+  parentId      String?
+  
+  name          Json                // 多语言名称 {ru, zh, en}
+  description   Json?               // 多语言描述
+  icon          String?             @db.VarChar(100)
+  imageUrl      String?             @db.VarChar(500)
+  
+  displayOrder  Int                 @default(0)
+  isVisible     Boolean             @default(true)
+  isActive      Boolean             @default(true)
+  
+  // 时间控制
+  visibleStartTime DateTime?
+  visibleEndTime DateTime?
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  
+  products      ProductEnhanced[]
+  
+  @@index([orgId])
+  @@index([parentId])
+  @@index([displayOrder])
+  @@map("categories_enhanced")
+}
+
+/// 产品增强 - 完整动态配置
+model ProductEnhanced {
+  id            String              @id @default(uuid())
+  orgId         String
+  categoryId    String
+  category      CategoryEnhanced    @relation(fields: [categoryId], references: [id])
+  
+  code          String              @db.VarChar(50)
+  name          Json                // 多语言名称 {ru, zh, en}
+  description   Json?               // 多语言描述
+  
+  basePrice     Decimal             @db.Decimal(15, 2)
+  currency      String              @default("RUB") @db.VarChar(10)
+  
+  images        Json?               // 图片URL列表
+  thumbnailUrl  String?             @db.VarChar(500)
+  
+  // 库存
+  stockQuantity Int?
+  lowStockThreshold Int?            @default(10)
+  trackStock    Boolean             @default(false)
+  
+  // 显示控制
+  displayOrder  Int                 @default(0)
+  isVisible     Boolean             @default(true)
+  isActive      Boolean             @default(true)
+  isFeatured    Boolean             @default(false)
+  isNew         Boolean             @default(false)
+  
+  // 时间控制
+  availableStartTime DateTime?
+  availableEndTime DateTime?
+  
+  // 限购
+  maxPerOrder   Int?
+  maxPerUser    Int?
+  
+  // 标签
+  tags          Json?               // 标签列表
+  
+  // IIKO 同步
+  iikoProductId String?             @db.VarChar(100)
+  isManualOverride Boolean          @default(false) // Shadow DB 保护
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  
+  @@unique([orgId, code])
+  @@index([orgId])
+  @@index([categoryId])
+  @@index([displayOrder])
+  @@index([isActive, isVisible])
+  @@map("products_enhanced")
+}
+
+/// 权限定义
+model Permission {
+  id            String              @id @default(uuid())
+  
+  code          String              @unique @db.VarChar(100)
+  name          Json                // 多语言名称
+  description   Json?               // 多语言描述
+  module        String              @db.VarChar(50) // 模块: product, order, finance, marketing, etc.
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  
+  rolePermissions RolePermission[]
+  
+  @@index([module])
+  @@map("permissions")
+}
+
+/// 角色权限映射
+model RolePermission {
+  id            String              @id @default(uuid())
+  role          ExtendedAdminRole
+  permissionId  String
+  permission    Permission          @relation(fields: [permissionId], references: [id])
+  
+  orgId         String?             // null = 全局默认
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  createdBy     String?
+  
+  @@unique([role, permissionId, orgId])
+  @@index([role])
+  @@index([orgId])
+  @@map("role_permissions")
 }
