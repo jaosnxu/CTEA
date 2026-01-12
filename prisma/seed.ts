@@ -31,7 +31,7 @@ async function main() {
   try {
     // 1. Create default organization
     console.log("📦 Creating organization...");
-    const org = await prisma.organizations.upsert({
+    const org = await prisma.organization.upsert({
       where: { id: 1 },
       update: {},
       create: {
@@ -51,7 +51,7 @@ async function main() {
 
     // 2. Create admin user
     console.log("👤 Creating admin user...");
-    const admin = await prisma.adminUsers.upsert({
+    const admin = await prisma.adminUser.upsert({
       where: { id: 1 },
       update: {},
       create: {
@@ -68,7 +68,7 @@ async function main() {
 
     // 3. Create store
     console.log("🏪 Creating store...");
-    const store = await prisma.stores.upsert({
+    const store = await prisma.store.upsert({
       where: { id: 1 },
       update: {},
       create: {
@@ -117,7 +117,10 @@ async function main() {
         update: {},
         create: {
           id: i + 1,
-          ...categories[i],
+          name: categories[i].name,
+          nameRu: categories[i].nameRu,
+          nameZh: categories[i].nameZh,
+          slug: categories[i].slug,
           sortOrder: i + 1,
           isActive: true,
           orgId: 1,
@@ -252,11 +255,8 @@ async function main() {
       const quantity = Math.floor(Math.random() * 3) + 1;
       const totalAmount = products[productIndex].price * quantity;
 
-      await prisma.orders.upsert({
-        where: { id: i },
-        update: {},
-        create: {
-          id: i,
+      await prisma.orders.create({
+        data: {
           orderNumber: `ORD-${String(i).padStart(6, "0")}`,
           status: orderStatuses[
             Math.floor(Math.random() * orderStatuses.length)
