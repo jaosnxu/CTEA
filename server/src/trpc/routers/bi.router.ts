@@ -110,20 +110,20 @@ export const biRouter = router({
           totalInfluencers,
           recentOrders,
         ] = await Promise.all([
-          prisma.order.count({
+          prisma.orders.count({
             where: { store: { orgId: input.orgId } },
           }),
-          prisma.order.aggregate({
+          prisma.orders.aggregate({
             where: { store: { orgId: input.orgId } },
             _sum: { totalAmount: true },
           }),
-          prisma.product.count({
+          prisma.products.count({
             where: { category: { orgId: input.orgId } },
           }),
           prisma.influencerProfile.count({
-            where: { user: { orgId: input.orgId }, isActive: true },
+            where: { orgId: input.orgId, status: "ACTIVE" },
           }),
-          prisma.order.findMany({
+          prisma.orders.findMany({
             where: {
               store: { orgId: input.orgId },
               createdAt: { gte: thirtyDaysAgo },

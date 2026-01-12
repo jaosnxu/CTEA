@@ -34,6 +34,7 @@ import {
   LogOut,
   Menu,
   X,
+  BarChart3,
 } from "lucide-react";
 
 // ==================== 类型定义 ====================
