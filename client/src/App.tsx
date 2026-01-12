@@ -49,6 +49,7 @@ import BannerManagement from "./pages/admin/BannerManagement";
 import MarketingRules from "./pages/admin/MarketingRules";
 import InfluencerManagement from "./pages/admin/InfluencerManagement";
 import OrganizationSettings from "./pages/admin/OrganizationSettings";
+import BIAnalysisHub from "./pages/admin/BIAnalysisHub";
 import CallScreen from "./pages/CallScreen";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -114,6 +115,7 @@ function Router() {
         path="/admin/system/organizations"
         component={OrganizationSettings}
       />
+      <Route path="/admin/bi" component={BIAnalysisHub} />
       <Route path="/admin" component={Dashboard} />
       {/* Final fallback route */}
       <Route component={NotFound} />

@@ -14,6 +14,7 @@ import { healthRouter } from "./routers/health.router";
 import { bannerRouter } from "./routers/banner.router";
 import { marketingRouter } from "./routers/marketing.router";
 import { productRouter } from "./routers/product.router";
+import { biRouter } from "./routers/bi.router";
 
 /**
  * 主 Router
@@ -28,6 +29,7 @@ export const appRouter = router({
   banner: bannerRouter,
   marketing: marketingRouter,
   product: productRouter,
+  bi: biRouter,
 });
 
 /**

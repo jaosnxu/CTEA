@@ -233,6 +233,12 @@ const navigationConfig: NavItem[] = [
         href: "/admin/system/organizations",
       },
       {
+        id: "system-bi",
+        label: { ru: "BI Аналитика", zh: "BI分析中心" },
+        icon: <BarChart3 className="w-4 h-4" />,
+        href: "/admin/bi",
+      },
+      {
         id: "system-audit",
         label: { ru: "Журнал аудита", zh: "审计日志" },
         icon: <FileText className="w-4 h-4" />,
