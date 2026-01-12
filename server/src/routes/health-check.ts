@@ -9,10 +9,9 @@
  */
 
 import { Router, Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { getPrismaClient } from "../db/prisma";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 /**
  * GET /api/v1/health-check
@@ -20,6 +19,7 @@ const prisma = new PrismaClient();
  */
 router.get("/", async (req: Request, res: Response) => {
   const startTime = Date.now();
+  const prisma = getPrismaClient();
 
   try {
     // 1. 数据库连通性检查
@@ -117,6 +117,7 @@ router.get("/", async (req: Request, res: Response) => {
  * 获取单个系统检查项
  */
 router.get("/system/:key", async (req: Request, res: Response) => {
+  const prisma = getPrismaClient();
   try {
     const { key } = req.params;
 
@@ -154,6 +155,7 @@ router.get("/system/:key", async (req: Request, res: Response) => {
  * 获取动态数据（产品、分类、活动）
  */
 router.get("/dynamic-data", async (req: Request, res: Response) => {
+  const prisma = getPrismaClient();
   try {
     const [categories, products, campaigns] = await Promise.all([
       prisma.categories.findMany({
