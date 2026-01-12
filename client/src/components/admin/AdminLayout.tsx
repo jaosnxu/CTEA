@@ -113,6 +113,18 @@ const navigationConfig: NavItem[] = [
         href: "/admin/marketing/sdui",
       },
       {
+        id: "marketing-banners",
+        label: { ru: "Управление баннерами", zh: "Banner管理" },
+        icon: <Target className="w-4 h-4" />,
+        href: "/admin/marketing/banners",
+      },
+      {
+        id: "marketing-rules",
+        label: { ru: "Маркетинговые правила", zh: "营销规则" },
+        icon: <Gift className="w-4 h-4" />,
+        href: "/admin/marketing/rules",
+      },
+      {
         id: "marketing-coupons",
         label: { ru: "Купоны", zh: "优惠券管理" },
         icon: <Gift className="w-4 h-4" />,
@@ -149,6 +161,12 @@ const navigationConfig: NavItem[] = [
         label: { ru: "Товары и SKU", zh: "SKU管理" },
         icon: <Package className="w-4 h-4" />,
         href: "/admin/ops/products",
+      },
+      {
+        id: "ops-product-management",
+        label: { ru: "Управление товарами", zh: "产品管理" },
+        icon: <Package className="w-4 h-4" />,
+        href: "/admin/ops/product-management",
       },
       {
         id: "ops-orders",
@@ -207,6 +225,12 @@ const navigationConfig: NavItem[] = [
         label: { ru: "Настройки", zh: "系统设置" },
         icon: <Settings className="w-4 h-4" />,
         href: "/admin/settings",
+      },
+      {
+        id: "system-organizations",
+        label: { ru: "Организации", zh: "组织设置" },
+        icon: <Store className="w-4 h-4" />,
+        href: "/admin/system/organizations",
       },
       {
         id: "system-audit",

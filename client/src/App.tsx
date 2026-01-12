@@ -44,6 +44,11 @@ import SDUIConfig from "./pages/admin/SDUIConfig";
 import SKUManagement from "./pages/admin/SKUManagement";
 import BrainDashboard from "./pages/admin/BrainDashboard";
 import TenantManagement from "./pages/admin/TenantManagement";
+import ProductManagement from "./pages/admin/ProductManagement";
+import BannerManagement from "./pages/admin/BannerManagement";
+import MarketingRules from "./pages/admin/MarketingRules";
+import InfluencerManagement from "./pages/admin/InfluencerManagement";
+import OrganizationSettings from "./pages/admin/OrganizationSettings";
 import CallScreen from "./pages/CallScreen";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -95,6 +100,20 @@ function Router() {
       <Route path="/admin/skus" component={SKUManagement} />
       <Route path="/admin/brain" component={BrainDashboard} />
       <Route path="/admin/tenants" component={TenantManagement} />
+      <Route
+        path="/admin/ops/product-management"
+        component={ProductManagement}
+      />
+      <Route path="/admin/marketing/banners" component={BannerManagement} />
+      <Route path="/admin/marketing/rules" component={MarketingRules} />
+      <Route
+        path="/admin/marketing/influencers"
+        component={InfluencerManagement}
+      />
+      <Route
+        path="/admin/system/organizations"
+        component={OrganizationSettings}
+      />
       <Route path="/admin" component={Dashboard} />
       {/* Final fallback route */}
       <Route component={NotFound} />
