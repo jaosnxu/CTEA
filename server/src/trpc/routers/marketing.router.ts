@@ -114,8 +114,15 @@ export const marketingRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const { orgId, storeId, ruleType, approvalStatus, isActive, page, pageSize } =
-        input;
+      const {
+        orgId,
+        storeId,
+        ruleType,
+        approvalStatus,
+        isActive,
+        page,
+        pageSize,
+      } = input;
 
       const where: any = {};
       if (orgId) where.orgId = orgId;
@@ -278,7 +285,10 @@ export const marketingRouter = router({
       }
 
       // 如果规则已激活，修改后需要重新审批
-      if (existing.approvalStatus === "ACTIVE" && Object.keys(data).length > 0) {
+      if (
+        existing.approvalStatus === "ACTIVE" &&
+        Object.keys(data).length > 0
+      ) {
         updateData.approvalStatus = "PENDING_APPROVAL";
       }
 
@@ -532,7 +542,10 @@ export const marketingRouter = router({
               OR: [{ endTime: null }, { endTime: { gte: now } }],
             },
             {
-              OR: [{ minOrderAmount: null }, { minOrderAmount: { lte: orderAmount } }],
+              OR: [
+                { minOrderAmount: null },
+                { minOrderAmount: { lte: orderAmount } },
+              ],
             },
           ],
         },
@@ -547,22 +560,28 @@ export const marketingRouter = router({
         // 检查产品限制
         const applicableProducts = rule.applicableProducts as string[] | null;
         const excludedProducts = rule.excludedProducts as string[] | null;
-        const applicableCategories = rule.applicableCategories as string[] | null;
+        const applicableCategories = rule.applicableCategories as
+          | string[]
+          | null;
 
         if (applicableProducts && applicableProducts.length > 0) {
-          if (!productIds.some(id => applicableProducts.includes(id))) return false;
+          if (!productIds.some(id => applicableProducts.includes(id)))
+            return false;
         }
 
         if (excludedProducts && excludedProducts.length > 0) {
-          if (productIds.some(id => excludedProducts.includes(id))) return false;
+          if (productIds.some(id => excludedProducts.includes(id)))
+            return false;
         }
 
         if (applicableCategories && applicableCategories.length > 0) {
-          if (!categoryIds.some(id => applicableCategories.includes(id))) return false;
+          if (!categoryIds.some(id => applicableCategories.includes(id)))
+            return false;
         }
 
         // 检查使用次数限制
-        if (rule.maxUsageTotal && rule.currentUsage >= rule.maxUsageTotal) return false;
+        if (rule.maxUsageTotal && rule.currentUsage >= rule.maxUsageTotal)
+          return false;
 
         return true;
       });

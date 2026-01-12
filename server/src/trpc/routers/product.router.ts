@@ -49,7 +49,10 @@ export const productRouter = router({
           isVisible: true,
           AND: [
             {
-              OR: [{ visibleStartTime: null }, { visibleStartTime: { lte: now } }],
+              OR: [
+                { visibleStartTime: null },
+                { visibleStartTime: { lte: now } },
+              ],
             },
             {
               OR: [{ visibleEndTime: null }, { visibleEndTime: { gte: now } }],
@@ -130,7 +133,9 @@ export const productRouter = router({
         const newCategory = await tx.categoryEnhanced.create({
           data: {
             ...data,
-            visibleStartTime: visibleStartTime ? new Date(visibleStartTime) : null,
+            visibleStartTime: visibleStartTime
+              ? new Date(visibleStartTime)
+              : null,
             visibleEndTime: visibleEndTime ? new Date(visibleEndTime) : null,
             createdBy: ctx.userSession!.userId,
             updatedBy: ctx.userSession!.userId,
@@ -195,7 +200,9 @@ export const productRouter = router({
           : null;
       }
       if (visibleEndTime !== undefined) {
-        updateData.visibleEndTime = visibleEndTime ? new Date(visibleEndTime) : null;
+        updateData.visibleEndTime = visibleEndTime
+          ? new Date(visibleEndTime)
+          : null;
       }
 
       const category = await ctx.prisma.$transaction(async tx => {
@@ -268,15 +275,25 @@ export const productRouter = router({
         categoryId: z.string().optional(),
         isFeatured: z.boolean().optional(),
         isNew: z.boolean().optional(),
-        sortBy: z.enum(["displayOrder", "basePrice", "createdAt"]).default("displayOrder"),
+        sortBy: z
+          .enum(["displayOrder", "basePrice", "createdAt"])
+          .default("displayOrder"),
         sortOrder: z.enum(["asc", "desc"]).default("asc"),
         limit: z.number().min(1).max(100).default(20),
         offset: z.number().min(0).default(0),
       })
     )
     .query(async ({ ctx, input }) => {
-      const { orgId, categoryId, isFeatured, isNew, sortBy, sortOrder, limit, offset } =
-        input;
+      const {
+        orgId,
+        categoryId,
+        isFeatured,
+        isNew,
+        sortBy,
+        sortOrder,
+        limit,
+        offset,
+      } = input;
       const now = new Date();
 
       const where: any = {
@@ -285,10 +302,16 @@ export const productRouter = router({
         isVisible: true,
         AND: [
           {
-            OR: [{ availableStartTime: null }, { availableStartTime: { lte: now } }],
+            OR: [
+              { availableStartTime: null },
+              { availableStartTime: { lte: now } },
+            ],
           },
           {
-            OR: [{ availableEndTime: null }, { availableEndTime: { gte: now } }],
+            OR: [
+              { availableEndTime: null },
+              { availableEndTime: { gte: now } },
+            ],
           },
         ],
       };
@@ -457,8 +480,12 @@ export const productRouter = router({
         const newProduct = await tx.productEnhanced.create({
           data: {
             ...data,
-            availableStartTime: availableStartTime ? new Date(availableStartTime) : null,
-            availableEndTime: availableEndTime ? new Date(availableEndTime) : null,
+            availableStartTime: availableStartTime
+              ? new Date(availableStartTime)
+              : null,
+            availableEndTime: availableEndTime
+              ? new Date(availableEndTime)
+              : null,
             createdBy: ctx.userSession!.userId,
             updatedBy: ctx.userSession!.userId,
           },
