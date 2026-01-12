@@ -2,6 +2,7 @@
  * Global Prisma Client Instance
  *
  * Singleton pattern to ensure only one Prisma Client instance is created
+ * Uses lazy initialization to ensure environment variables are loaded first
  */
 
 import { PrismaClient } from "@prisma/client";
@@ -15,11 +16,19 @@ let prismaInstance: PrismaClient | null = null;
 
 /**
  * Get or create Prisma Client instance
+ * Uses lazy initialization to ensure DATABASE_URL is available
  */
 export function getPrismaClient(): PrismaClient {
   if (!prismaInstance) {
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+      throw new Error(
+        "DATABASE_URL environment variable is not set. Please configure it in your .env file."
+      );
+    }
+
     // Prisma 7.x requires adapter for PostgreSQL
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const pool = new Pool({ connectionString });
     const adapter = new PrismaPg(pool);
 
     prismaInstance = new PrismaClient({
@@ -44,6 +53,12 @@ export async function closePrismaClient(): Promise<void> {
 }
 
 /**
- * Export default instance
+ * Lazy proxy for Prisma Client
+ * This ensures the client is only instantiated when first accessed,
+ * after environment variables have been loaded
  */
-export const prisma = getPrismaClient();
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    return getPrismaClient()[prop as keyof PrismaClient];
+  },
+});
