@@ -111,13 +111,13 @@ export const rbacRouter = router({
    */
   createPermissionRule: createPermissionProcedure(["rbac:manage"])
     .input(
-            z.object({
-              role: z.string(),
-              resource: z.string(),
-              action: z.string(),
-              isAllowed: z.boolean().default(true),
-              conditions: z.record(z.string(), z.any()).optional(),
-            })
+      z.object({
+        role: z.string(),
+        resource: z.string(),
+        action: z.string(),
+        isAllowed: z.boolean().default(true),
+        conditions: z.record(z.string(), z.any()).optional(),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       // 创建权限规则（事务）
@@ -162,11 +162,11 @@ export const rbacRouter = router({
    */
   updatePermissionRule: createPermissionProcedure(["rbac:manage"])
     .input(
-            z.object({
-              id: z.string(),
-              isAllowed: z.boolean().optional(),
-              conditions: z.record(z.string(), z.any()).optional(),
-            })
+      z.object({
+        id: z.string(),
+        isAllowed: z.boolean().optional(),
+        conditions: z.record(z.string(), z.any()).optional(),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
@@ -298,13 +298,13 @@ export const rbacRouter = router({
         });
       }
 
-            // 查询用户角色的权限规则
-            const rules = await ctx.prisma.permissionRule.findMany({
-              where: {
-                role: user.role,
-                isAllowed: true,
-              },
-            });
+      // 查询用户角色的权限规则
+      const rules = await ctx.prisma.permissionRule.findMany({
+        where: {
+          role: user.role,
+          isAllowed: true,
+        },
+      });
 
       // 提取权限列表
       const permissions = rules.map(rule => `${rule.resource}:${rule.action}`);
@@ -346,13 +346,13 @@ export const rbacRouter = router({
         });
       }
 
-            // Super admin 拥有所有权限
-            if (user.role === "HQ_ADMIN") {
-              return {
-                hasPermission: true,
-                reason: "Super admin has all permissions",
-              };
-            }
+      // Super admin 拥有所有权限
+      if (user.role === "HQ_ADMIN") {
+        return {
+          hasPermission: true,
+          reason: "Super admin has all permissions",
+        };
+      }
 
       // 查询权限规则
       const rule = await ctx.prisma.permissionRule.findFirst({
@@ -370,11 +370,11 @@ export const rbacRouter = router({
         };
       }
 
-            return {
-              hasPermission: rule.isAllowed,
-              reason: rule.isAllowed ? "Permission granted" : "Permission denied",
-              rule,
-            };
+      return {
+        hasPermission: rule.isAllowed,
+        reason: rule.isAllowed ? "Permission granted" : "Permission denied",
+        rule,
+      };
     }),
 
   /**
@@ -392,24 +392,24 @@ export const rbacRouter = router({
       if (!matrix[rule.role]) {
         matrix[rule.role] = [];
       }
-            matrix[rule.role].push({
-              resource: rule.resource,
-              action: rule.action,
-              isAllowed: rule.isAllowed,
-              conditions: rule.conditions,
-            });
+      matrix[rule.role].push({
+        resource: rule.resource,
+        action: rule.action,
+        isAllowed: rule.isAllowed,
+        conditions: rule.conditions,
+      });
     }
 
-        return {
-          matrix,
-          roles: [
-            "HQ_ADMIN",
-            "HQ_OPERATOR",
-            "ORG_ADMIN",
-            "ORG_OPERATOR",
-            "STORE_MANAGER",
-            "STORE_STAFF",
-          ],
-        };
+    return {
+      matrix,
+      roles: [
+        "HQ_ADMIN",
+        "HQ_OPERATOR",
+        "ORG_ADMIN",
+        "ORG_OPERATOR",
+        "STORE_MANAGER",
+        "STORE_STAFF",
+      ],
+    };
   }),
 });

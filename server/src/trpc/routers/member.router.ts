@@ -195,36 +195,36 @@ export const memberRouter = router({
         where.orgId = ctx.userSession.orgId;
       }
 
-            // 查询用户列表
-            const [users, total] = await Promise.all([
-              ctx.prisma.adminUser.findMany({
-                where,
-                skip: (page - 1) * pageSize,
-                take: pageSize,
-                orderBy: { createdAt: "desc" },
-                select: {
-                  id: true,
-                  username: true,
-                  email: true,
-                  role: true,
-                  status: true,
-                  createdAt: true,
-                  organization: {
-                    select: {
-                      id: true,
-                      name: true,
-                    },
-                  },
-                  store: {
-                    select: {
-                      id: true,
-                      name: true,
-                    },
-                  },
-                },
-              }),
-              ctx.prisma.adminUser.count({ where }),
-            ]);
+      // 查询用户列表
+      const [users, total] = await Promise.all([
+        ctx.prisma.adminUser.findMany({
+          where,
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true,
+            status: true,
+            createdAt: true,
+            organization: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            store: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        }),
+        ctx.prisma.adminUser.count({ where }),
+      ]);
 
       return {
         users,
@@ -246,14 +246,14 @@ export const memberRouter = router({
         username: z.string().min(3).max(50),
         email: z.string().email(),
         password: z.string().min(6),
-                role: z.enum([
-                  "HQ_ADMIN",
-                  "HQ_OPERATOR",
-                  "ORG_ADMIN",
-                  "ORG_OPERATOR",
-                  "STORE_MANAGER",
-                  "STORE_STAFF",
-                ]),
+        role: z.enum([
+          "HQ_ADMIN",
+          "HQ_OPERATOR",
+          "ORG_ADMIN",
+          "ORG_OPERATOR",
+          "STORE_MANAGER",
+          "STORE_STAFF",
+        ]),
         orgId: z.string().optional(),
         storeId: z.string().optional(),
       })
@@ -343,17 +343,19 @@ export const memberRouter = router({
       z.object({
         id: z.string(),
         email: z.string().email().optional(),
-                role: z
-                  .enum([
-                    "HQ_ADMIN",
-                    "HQ_OPERATOR",
-                    "ORG_ADMIN",
-                    "ORG_OPERATOR",
-                    "STORE_MANAGER",
-                    "STORE_STAFF",
-                  ])
-                  .optional(),
-                status: z.enum(["ACTIVE", "INACTIVE", "PENDING_ACTIVATION", "SUSPENDED"]).optional(),
+        role: z
+          .enum([
+            "HQ_ADMIN",
+            "HQ_OPERATOR",
+            "ORG_ADMIN",
+            "ORG_OPERATOR",
+            "STORE_MANAGER",
+            "STORE_STAFF",
+          ])
+          .optional(),
+        status: z
+          .enum(["ACTIVE", "INACTIVE", "PENDING_ACTIVATION", "SUSPENDED"])
+          .optional(),
         orgId: z.string().optional(),
         storeId: z.string().optional(),
       })
@@ -373,16 +375,16 @@ export const memberRouter = router({
         });
       }
 
-            // RBAC 权限检查
-            if (
-              ctx.userSession?.role !== "HQ_ADMIN" &&
-              user.orgId !== ctx.userSession?.orgId
-            ) {
-              throw new TRPCError({
-                code: "FORBIDDEN",
-                message: "You do not have permission to update this user",
-              });
-            }
+      // RBAC 权限检查
+      if (
+        ctx.userSession?.role !== "HQ_ADMIN" &&
+        user.orgId !== ctx.userSession?.orgId
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have permission to update this user",
+        });
+      }
 
       // 更新用户（事务）
       const updatedUser = await ctx.prisma.$transaction(async tx => {
@@ -446,16 +448,16 @@ export const memberRouter = router({
         });
       }
 
-            // RBAC 权限检查
-            if (
-              ctx.userSession?.role !== "HQ_ADMIN" &&
-              user.orgId !== ctx.userSession?.orgId
-            ) {
-              throw new TRPCError({
-                code: "FORBIDDEN",
-                message: "You do not have permission to delete this user",
-              });
-            }
+      // RBAC 权限检查
+      if (
+        ctx.userSession?.role !== "HQ_ADMIN" &&
+        user.orgId !== ctx.userSession?.orgId
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have permission to delete this user",
+        });
+      }
 
       // 软删除用户（事务）
       await ctx.prisma.$transaction(async tx => {
@@ -463,19 +465,19 @@ export const memberRouter = router({
         await tx.adminUser.update({
           where: { id },
           data: {
-                    status: "INACTIVE",
-                    updatedAt: new Date(),
-                    updatedBy: ctx.userSession!.userId,
-                  },
-                });
+            status: "INACTIVE",
+            updatedAt: new Date(),
+            updatedBy: ctx.userSession!.userId,
+          },
+        });
 
-                // 记录审计日志
-                const auditService = getAuditService();
-                await auditService.logAction({
-                  tableName: "admin_users",
-                  recordId: id,
-                  action: "DELETE",
-                  changes: { status: "INACTIVE" },
+        // 记录审计日志
+        const auditService = getAuditService();
+        await auditService.logAction({
+          tableName: "admin_users",
+          recordId: id,
+          action: "DELETE",
+          changes: { status: "INACTIVE" },
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
           operatorName: null,
@@ -506,10 +508,10 @@ export const memberRouter = router({
       // 构建查询条件
       const where: any = {};
 
-            // RBAC 权限检查
-            if (ctx.userSession?.role !== "HQ_ADMIN" && ctx.userSession?.orgId) {
-              where.id = ctx.userSession.orgId;
-            }
+      // RBAC 权限检查
+      if (ctx.userSession?.role !== "HQ_ADMIN" && ctx.userSession?.orgId) {
+        where.id = ctx.userSession.orgId;
+      }
 
       // 查询组织列表
       const [organizations, total] = await Promise.all([
@@ -536,30 +538,30 @@ export const memberRouter = router({
   /**
    * 创建组织
    */
-    createOrganization: createPermissionProcedure(["org:create"])
-      .input(
-        z.object({
-          code: z.string().min(1).max(50),
-          name: z.string().min(1).max(200),
-          level: z.enum(["HQ", "ORG", "STORE"]),
-          description: z.string().optional(),
-        })
-      )
-      .mutation(async ({ ctx, input }) => {
-        // 创建组织（事务）
-        const organization = await ctx.prisma.$transaction(async tx => {
-          // 创建组织
-          const { description, ...orgData } = input;
-          const newOrg = await tx.organization.create({
-            data: {
-              ...orgData,
-              name: { en: input.name, ru: input.name, zh: input.name },
-              createdAt: new Date(),
-              createdBy: ctx.userSession!.userId,
-              updatedAt: new Date(),
-              updatedBy: ctx.userSession!.userId,
-            },
-          });
+  createOrganization: createPermissionProcedure(["org:create"])
+    .input(
+      z.object({
+        code: z.string().min(1).max(50),
+        name: z.string().min(1).max(200),
+        level: z.enum(["HQ", "ORG", "STORE"]),
+        description: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // 创建组织（事务）
+      const organization = await ctx.prisma.$transaction(async tx => {
+        // 创建组织
+        const { description, ...orgData } = input;
+        const newOrg = await tx.organization.create({
+          data: {
+            ...orgData,
+            name: { en: input.name, ru: input.name, zh: input.name },
+            createdAt: new Date(),
+            createdBy: ctx.userSession!.userId,
+            updatedAt: new Date(),
+            updatedBy: ctx.userSession!.userId,
+          },
+        });
 
         // 记录审计日志
         const auditService = getAuditService();

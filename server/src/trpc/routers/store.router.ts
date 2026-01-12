@@ -201,17 +201,17 @@ export const storeRouter = router({
   /**
    * 创建门店
    */
-    create: createPermissionProcedure(["store:create"])
-      .input(
-        z.object({
-          orgId: z.string(),
-          code: z.string().min(1).max(50),
-          name: z.string().min(1).max(200),
-          address: z.string().optional(),
-          phone: z.string().optional(),
-          status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]).default("ACTIVE"),
-        })
-      )
+  create: createPermissionProcedure(["store:create"])
+    .input(
+      z.object({
+        orgId: z.string(),
+        code: z.string().min(1).max(50),
+        name: z.string().min(1).max(200),
+        address: z.string().optional(),
+        phone: z.string().optional(),
+        status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]).default("ACTIVE"),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       // RBAC 权限检查
       if (!ctx.rbacScope.canAccessOrg(input.orgId)) {

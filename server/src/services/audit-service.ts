@@ -176,36 +176,36 @@ class AuditService {
     for (const log of logs) {
       // Check if previousHash matches
       if (log.previousHash !== previousHash) {
-                brokenLinks.push({
-                  id: log.id,
-                  eventId: log.eventId ?? "",
-                  reason: `Previous hash mismatch. Expected: ${previousHash}, Got: ${log.previousHash}`,
-                });
+        brokenLinks.push({
+          id: log.id,
+          eventId: log.eventId ?? "",
+          reason: `Previous hash mismatch. Expected: ${previousHash}, Got: ${log.previousHash}`,
+        });
       }
 
-            // Verify SHA-256 hash
-            const hashInput: string = JSON.stringify({
-              eventId: log.eventId,
-              tableName: log.tableName,
-              recordId: log.recordId,
-              action: log.action,
-              previousHash: log.previousHash,
-              timestamp: log.createdAt.toISOString(),
-            });
-            const expectedHash: string = crypto
-              .createHash("sha256")
-              .update(hashInput)
-              .digest("hex");
+      // Verify SHA-256 hash
+      const hashInput: string = JSON.stringify({
+        eventId: log.eventId,
+        tableName: log.tableName,
+        recordId: log.recordId,
+        action: log.action,
+        previousHash: log.previousHash,
+        timestamp: log.createdAt.toISOString(),
+      });
+      const expectedHash: string = crypto
+        .createHash("sha256")
+        .update(hashInput)
+        .digest("hex");
 
-            if (log.sha256Hash !== expectedHash) {
-              brokenLinks.push({
-                id: log.id,
-                eventId: log.eventId ?? "",
-                reason: `Hash verification failed. Expected: ${expectedHash}, Got: ${log.sha256Hash}`,
-              });
-            }
+      if (log.sha256Hash !== expectedHash) {
+        brokenLinks.push({
+          id: log.id,
+          eventId: log.eventId ?? "",
+          reason: `Hash verification failed. Expected: ${expectedHash}, Got: ${log.sha256Hash}`,
+        });
+      }
 
-            previousHash = log.sha256Hash ?? null;
+      previousHash = log.sha256Hash ?? null;
     }
 
     return {

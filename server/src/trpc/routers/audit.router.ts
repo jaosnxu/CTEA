@@ -90,12 +90,18 @@ export const auditRouter = router({
   /**
    * 获取审计日志详情
    */
-    getById: createPermissionProcedure(["audit:view"])
-      .input(z.object({ id: z.union([z.string(), z.number(), z.bigint()]).transform(v => BigInt(v)) }))
-      .query(async ({ ctx, input }) => {
-        const log = await ctx.prisma.auditLog.findUnique({
-          where: { id: input.id },
-        });
+  getById: createPermissionProcedure(["audit:view"])
+    .input(
+      z.object({
+        id: z
+          .union([z.string(), z.number(), z.bigint()])
+          .transform(v => BigInt(v)),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const log = await ctx.prisma.auditLog.findUnique({
+        where: { id: input.id },
+      });
 
       if (!log) {
         throw new TRPCError({

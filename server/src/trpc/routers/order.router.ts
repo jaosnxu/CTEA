@@ -99,11 +99,17 @@ export const orderRouter = router({
   /**
    * 获取订单详情
    */
-    getById: protectedProcedure
-      .input(z.object({ id: z.union([z.string(), z.number(), z.bigint()]).transform(v => BigInt(v)) }))
-      .query(async ({ ctx, input }) => {
-        const order = await ctx.prisma.orders.findUnique({
-          where: { id: input.id },
+  getById: protectedProcedure
+    .input(
+      z.object({
+        id: z
+          .union([z.string(), z.number(), z.bigint()])
+          .transform(v => BigInt(v)),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const order = await ctx.prisma.orders.findUnique({
+        where: { id: input.id },
         include: {
           store: {
             select: {
@@ -156,21 +162,23 @@ export const orderRouter = router({
   /**
    * 更新订单状态
    */
-    updateStatus: createPermissionProcedure(["order:update"])
-      .input(
-        z.object({
-          id: z.union([z.string(), z.number(), z.bigint()]).transform(v => BigInt(v)),
-          status: z.string(),
-          reason: z.string().optional(),
-        })
-      )
-      .mutation(async ({ ctx, input }) => {
-        const { id, status, reason } = input;
+  updateStatus: createPermissionProcedure(["order:update"])
+    .input(
+      z.object({
+        id: z
+          .union([z.string(), z.number(), z.bigint()])
+          .transform(v => BigInt(v)),
+        status: z.string(),
+        reason: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, status, reason } = input;
 
-        // 查询订单
-        const order = await ctx.prisma.orders.findUnique({
-          where: { id },
-        });
+      // 查询订单
+      const order = await ctx.prisma.orders.findUnique({
+        where: { id },
+      });
 
       if (!order) {
         throw new TRPCError({
@@ -204,16 +212,16 @@ export const orderRouter = router({
           },
         });
 
-                // 记录审计日志
-                const auditService = getAuditService();
-                await auditService.logAction({
-                  tableName: "orders",
-                  recordId: id.toString(),
-                  action: "UPDATE",
-                  changes: {
-                    status: { old: oldStatus, new: status },
-                    reason,
-                  },
+        // 记录审计日志
+        const auditService = getAuditService();
+        await auditService.logAction({
+          tableName: "orders",
+          recordId: id.toString(),
+          action: "UPDATE",
+          changes: {
+            status: { old: oldStatus, new: status },
+            reason,
+          },
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
           operatorName: null,
@@ -301,20 +309,22 @@ export const orderRouter = router({
   /**
    * 取消订单
    */
-    cancel: createPermissionProcedure(["order:cancel"])
-      .input(
-        z.object({
-          id: z.union([z.string(), z.number(), z.bigint()]).transform(v => BigInt(v)),
-          reason: z.string(),
-        })
-      )
-      .mutation(async ({ ctx, input }) => {
-        const { id, reason } = input;
+  cancel: createPermissionProcedure(["order:cancel"])
+    .input(
+      z.object({
+        id: z
+          .union([z.string(), z.number(), z.bigint()])
+          .transform(v => BigInt(v)),
+        reason: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, reason } = input;
 
-        // 查询订单
-        const order = await ctx.prisma.orders.findUnique({
-          where: { id },
-        });
+      // 查询订单
+      const order = await ctx.prisma.orders.findUnique({
+        where: { id },
+      });
 
       if (!order) {
         throw new TRPCError({
@@ -353,16 +363,16 @@ export const orderRouter = router({
           },
         });
 
-                // 记录审计日志
-                const auditService = getAuditService();
-                await auditService.logAction({
-                  tableName: "orders",
-                  recordId: id.toString(),
-                  action: "UPDATE",
-                  changes: {
-                    status: { old: order.status, new: "cancelled" },
-                    reason,
-                  },
+        // 记录审计日志
+        const auditService = getAuditService();
+        await auditService.logAction({
+          tableName: "orders",
+          recordId: id.toString(),
+          action: "UPDATE",
+          changes: {
+            status: { old: order.status, new: "cancelled" },
+            reason,
+          },
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
           operatorName: null,
