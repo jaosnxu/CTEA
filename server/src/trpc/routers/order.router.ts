@@ -50,7 +50,7 @@ export const orderRouter = router({
         where.storeId = ctx.userSession.storeId;
       } else if (
         ctx.userSession?.orgId &&
-        ctx.userSession.role !== "super_admin"
+        ctx.userSession.role !== "HQ_ADMIN"
       ) {
         // 查询组织下的所有门店
         const stores = await ctx.prisma.store.findMany({
@@ -62,7 +62,7 @@ export const orderRouter = router({
 
       // 查询订单列表
       const [orders, total] = await Promise.all([
-        ctx.prisma.order.findMany({
+        ctx.prisma.orders.findMany({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
@@ -82,7 +82,7 @@ export const orderRouter = router({
             },
           },
         }),
-        ctx.prisma.order.count({ where }),
+        ctx.prisma.orders.count({ where }),
       ]);
 
       return {
@@ -99,11 +99,11 @@ export const orderRouter = router({
   /**
    * 获取订单详情
    */
-  getById: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const order = await ctx.prisma.order.findUnique({
-        where: { id: input.id },
+    getById: protectedProcedure
+      .input(z.object({ id: z.union([z.string(), z.number(), z.bigint()]).transform(v => BigInt(v)) }))
+      .query(async ({ ctx, input }) => {
+        const order = await ctx.prisma.orders.findUnique({
+          where: { id: input.id },
         include: {
           store: {
             select: {
@@ -156,21 +156,21 @@ export const orderRouter = router({
   /**
    * 更新订单状态
    */
-  updateStatus: createPermissionProcedure(["order:update"])
-    .input(
-      z.object({
-        id: z.string(),
-        status: z.string(),
-        reason: z.string().optional(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { id, status, reason } = input;
+    updateStatus: createPermissionProcedure(["order:update"])
+      .input(
+        z.object({
+          id: z.union([z.string(), z.number(), z.bigint()]).transform(v => BigInt(v)),
+          status: z.string(),
+          reason: z.string().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { id, status, reason } = input;
 
-      // 查询订单
-      const order = await ctx.prisma.order.findUnique({
-        where: { id },
-      });
+        // 查询订单
+        const order = await ctx.prisma.orders.findUnique({
+          where: { id },
+        });
 
       if (!order) {
         throw new TRPCError({
@@ -196,7 +196,7 @@ export const orderRouter = router({
       // 更新订单状态（事务）
       const updatedOrder = await ctx.prisma.$transaction(async tx => {
         // 更新订单状态
-        const updated = await tx.order.update({
+        const updated = await tx.orders.update({
           where: { id },
           data: {
             status,
@@ -204,16 +204,16 @@ export const orderRouter = router({
           },
         });
 
-        // 记录审计日志
-        const auditService = getAuditService();
-        await auditService.logAction({
-          tableName: "orders",
-          recordId: id,
-          action: "UPDATE",
-          changes: {
-            status: { old: oldStatus, new: status },
-            reason,
-          },
+                // 记录审计日志
+                const auditService = getAuditService();
+                await auditService.logAction({
+                  tableName: "orders",
+                  recordId: id.toString(),
+                  action: "UPDATE",
+                  changes: {
+                    status: { old: oldStatus, new: status },
+                    reason,
+                  },
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
           operatorName: null,
@@ -259,7 +259,7 @@ export const orderRouter = router({
         where.storeId = ctx.userSession.storeId;
       } else if (
         ctx.userSession?.orgId &&
-        ctx.userSession.role !== "super_admin"
+        ctx.userSession.role !== "HQ_ADMIN"
       ) {
         // 查询组织下的所有门店
         const stores = await ctx.prisma.store.findMany({
@@ -271,13 +271,13 @@ export const orderRouter = router({
 
       // 统计订单
       const [total, byStatus, revenue] = await Promise.all([
-        ctx.prisma.order.count({ where }),
-        ctx.prisma.order.groupBy({
+        ctx.prisma.orders.count({ where }),
+        ctx.prisma.orders.groupBy({
           by: ["status"],
           where,
           _count: true,
         }),
-        ctx.prisma.order.aggregate({
+        ctx.prisma.orders.aggregate({
           where: {
             ...where,
             status: { in: ["completed", "delivered"] },
@@ -301,20 +301,20 @@ export const orderRouter = router({
   /**
    * 取消订单
    */
-  cancel: createPermissionProcedure(["order:cancel"])
-    .input(
-      z.object({
-        id: z.string(),
-        reason: z.string(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { id, reason } = input;
+    cancel: createPermissionProcedure(["order:cancel"])
+      .input(
+        z.object({
+          id: z.union([z.string(), z.number(), z.bigint()]).transform(v => BigInt(v)),
+          reason: z.string(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { id, reason } = input;
 
-      // 查询订单
-      const order = await ctx.prisma.order.findUnique({
-        where: { id },
-      });
+        // 查询订单
+        const order = await ctx.prisma.orders.findUnique({
+          where: { id },
+        });
 
       if (!order) {
         throw new TRPCError({
@@ -345,7 +345,7 @@ export const orderRouter = router({
       // 取消订单（事务）
       const updatedOrder = await ctx.prisma.$transaction(async tx => {
         // 更新订单状态
-        const updated = await tx.order.update({
+        const updated = await tx.orders.update({
           where: { id },
           data: {
             status: "cancelled",
@@ -353,16 +353,16 @@ export const orderRouter = router({
           },
         });
 
-        // 记录审计日志
-        const auditService = getAuditService();
-        await auditService.logAction({
-          tableName: "orders",
-          recordId: id,
-          action: "UPDATE",
-          changes: {
-            status: { old: order.status, new: "cancelled" },
-            reason,
-          },
+                // 记录审计日志
+                const auditService = getAuditService();
+                await auditService.logAction({
+                  tableName: "orders",
+                  recordId: id.toString(),
+                  action: "UPDATE",
+                  changes: {
+                    status: { old: order.status, new: "cancelled" },
+                    reason,
+                  },
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
           operatorName: null,
@@ -407,7 +407,7 @@ export const orderRouter = router({
         where.storeId = ctx.userSession.storeId;
       } else if (
         ctx.userSession?.orgId &&
-        ctx.userSession.role !== "super_admin"
+        ctx.userSession.role !== "HQ_ADMIN"
       ) {
         // 查询组织下的所有门店
         const stores = await ctx.prisma.store.findMany({
@@ -419,7 +419,7 @@ export const orderRouter = router({
 
       // 查询订单
       const [orders, total] = await Promise.all([
-        ctx.prisma.order.findMany({
+        ctx.prisma.orders.findMany({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
@@ -439,7 +439,7 @@ export const orderRouter = router({
             },
           },
         }),
-        ctx.prisma.order.count({ where }),
+        ctx.prisma.orders.count({ where }),
       ]);
 
       return {

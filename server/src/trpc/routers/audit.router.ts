@@ -61,7 +61,7 @@ export const auditRouter = router({
       }
 
       // RBAC 权限检查（只能查看自己组织的审计日志）
-      if (ctx.userSession?.role !== "super_admin" && ctx.userSession?.orgId) {
+      if (ctx.userSession?.role !== "HQ_ADMIN" && ctx.userSession?.orgId) {
         where.orgId = ctx.userSession.orgId;
       }
 
@@ -90,12 +90,12 @@ export const auditRouter = router({
   /**
    * 获取审计日志详情
    */
-  getById: createPermissionProcedure(["audit:view"])
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const log = await ctx.prisma.auditLog.findUnique({
-        where: { id: input.id },
-      });
+    getById: createPermissionProcedure(["audit:view"])
+      .input(z.object({ id: z.union([z.string(), z.number(), z.bigint()]).transform(v => BigInt(v)) }))
+      .query(async ({ ctx, input }) => {
+        const log = await ctx.prisma.auditLog.findUnique({
+          where: { id: input.id },
+        });
 
       if (!log) {
         throw new TRPCError({
@@ -106,7 +106,7 @@ export const auditRouter = router({
 
       // RBAC 权限检查
       if (
-        ctx.userSession?.role !== "super_admin" &&
+        ctx.userSession?.role !== "HQ_ADMIN" &&
         log.orgId !== ctx.userSession?.orgId
       ) {
         throw new TRPCError({
@@ -142,7 +142,7 @@ export const auditRouter = router({
       if (orgId) where.orgId = orgId;
 
       // RBAC 权限检查
-      if (ctx.userSession?.role !== "super_admin" && ctx.userSession?.orgId) {
+      if (ctx.userSession?.role !== "HQ_ADMIN" && ctx.userSession?.orgId) {
         where.orgId = ctx.userSession.orgId;
       }
 
@@ -244,7 +244,7 @@ export const auditRouter = router({
       if (orgId) where.orgId = orgId;
 
       // RBAC 权限检查
-      if (ctx.userSession?.role !== "super_admin" && ctx.userSession?.orgId) {
+      if (ctx.userSession?.role !== "HQ_ADMIN" && ctx.userSession?.orgId) {
         where.orgId = ctx.userSession.orgId;
       }
 
@@ -301,7 +301,7 @@ export const auditRouter = router({
       };
 
       // RBAC 权限检查
-      if (ctx.userSession?.role !== "super_admin" && ctx.userSession?.orgId) {
+      if (ctx.userSession?.role !== "HQ_ADMIN" && ctx.userSession?.orgId) {
         where.orgId = ctx.userSession.orgId;
       }
 

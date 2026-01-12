@@ -247,14 +247,15 @@ model Store {
   createdBy       String?
   updatedBy       String?
   
-  // Relations
-  adminUsers            AdminUser[]
-  depositAccounts       DepositAccount[]
-  crossStoreLedgersIssue CrossStoreLedger[] @relation("IssueStore")
-  crossStoreLedgersRedeem CrossStoreLedger[] @relation("RedeemStore")
-  systemConfigs         SystemConfig[]
+    // Relations
+    adminUsers            AdminUser[]
+    depositAccounts       DepositAccount[]
+    crossStoreLedgersIssue CrossStoreLedger[] @relation("IssueStore")
+    crossStoreLedgersRedeem CrossStoreLedger[] @relation("RedeemStore")
+    systemConfigs         SystemConfig[]
+    orders                Orders[]
   
-  @@unique([orgId, code])
+    @@unique([orgId, code])
   @@index([orgId])
   @@map("stores")
 }
@@ -612,10 +613,14 @@ model Products {
   orgId                Int
   categoryId           Int
   code                 String?
+  name                 String?  @db.VarChar(200)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   createdBy            String?
   updatedBy            String?
+  
+  orderItems           Orderitems[]
+  
   @@map("products")
 }
 /// Skuattributes
@@ -761,15 +766,29 @@ model Llmcalllogs {
 /// Orders
 model Orders {
   id                   BigInt @id @default(autoincrement())
+  orderNumber          String?  @db.VarChar(50)
+  storeId              String?
+  store                Store?   @relation(fields: [storeId], references: [id])
+  userId               String?
+  user                 Users?   @relation(fields: [userId], references: [id])
+  status               String   @default("pending") @db.VarChar(50)
+  totalAmount          Decimal? @db.Decimal(10, 2)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   createdBy            String?
   updatedBy            String?
+  
+  orderItems           Orderitems[]
+  
   @@map("orders")
 }
 /// Orderitems
 model Orderitems {
   id                   BigInt @id @default(autoincrement())
+  orderId              BigInt?
+  order                Orders?  @relation(fields: [orderId], references: [id])
+  productId            String?
+  product              Products? @relation(fields: [productId], references: [id])
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   createdBy            String?
@@ -997,10 +1016,14 @@ model Telegrambotconfig {
 model Users {
   id                   String @id @default(uuid())
   openId               String?
+  phone                String?  @db.VarChar(20)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   createdBy            String?
   updatedBy            String?
+  
+  orders               Orders[]
+  
   @@map("users")
 }
 /// Useraddresses

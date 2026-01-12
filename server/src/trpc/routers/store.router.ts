@@ -29,7 +29,7 @@ export const storeRouter = router({
     .input(
       z.object({
         orgId: z.string().optional(),
-        status: z.enum(["active", "inactive", "maintenance"]).optional(),
+        status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]).optional(),
         page: z.number().min(1).default(1),
         pageSize: z.number().min(1).max(100).default(20),
       })
@@ -129,7 +129,7 @@ export const storeRouter = router({
     .input(
       z.object({
         id: z.string(),
-        status: z.enum(["active", "inactive", "maintenance"]),
+        status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]),
         reason: z.string().optional(),
       })
     )
@@ -201,16 +201,17 @@ export const storeRouter = router({
   /**
    * 创建门店
    */
-  create: createPermissionProcedure(["store:create"])
-    .input(
-      z.object({
-        orgId: z.string(),
-        name: z.string().min(1).max(200),
-        address: z.string().optional(),
-        phone: z.string().optional(),
-        status: z.enum(["active", "inactive", "maintenance"]).default("active"),
-      })
-    )
+    create: createPermissionProcedure(["store:create"])
+      .input(
+        z.object({
+          orgId: z.string(),
+          code: z.string().min(1).max(50),
+          name: z.string().min(1).max(200),
+          address: z.string().optional(),
+          phone: z.string().optional(),
+          status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]).default("ACTIVE"),
+        })
+      )
     .mutation(async ({ ctx, input }) => {
       // RBAC 权限检查
       if (!ctx.rbacScope.canAccessOrg(input.orgId)) {
@@ -363,7 +364,7 @@ export const storeRouter = router({
         await tx.store.update({
           where: { id },
           data: {
-            status: "inactive",
+            status: "INACTIVE",
             updatedAt: new Date(),
             updatedBy: ctx.userSession!.userId,
           },
@@ -375,7 +376,7 @@ export const storeRouter = router({
           tableName: "stores",
           recordId: id,
           action: "DELETE",
-          changes: { status: "inactive" },
+          changes: { status: "INACTIVE" },
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
           operatorName: null,
