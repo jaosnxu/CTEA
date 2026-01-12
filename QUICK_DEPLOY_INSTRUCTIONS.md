@@ -89,6 +89,7 @@ PM2 Process:       chutea-backend (running)
 #### 3. 后台修改价格
 
 在窗口 A 中：
+
 1. 点击 **"Клубничный Чиз"** 旁边的 **"Edit Price"** 按钮
 2. 将价格改为 **₽550**
 3. 点击 **"Save"** 保存
@@ -96,6 +97,7 @@ PM2 Process:       chutea-backend (running)
 #### 4. 观察前端自动更新
 
 **不要刷新窗口 B！** 在 1 秒内，您应该看到：
+
 - 价格自动从 **₽500** 更新为 **₽550**
 - 产品旁边出现 **"Manual"** 标签（表示手动覆盖已激活）
 
@@ -110,7 +112,7 @@ sudo -u postgres psql -d chutea_db -c "SELECT id, name_ru, price, is_manual_over
 **预期输出：**
 
 ```
- id |     name_ru      | price  | is_manual_override 
+ id |     name_ru      | price  | is_manual_override
 ----+------------------+--------+--------------------
   1 | Клубничный Чиз   | 550.00 | t
 ```
@@ -212,14 +214,14 @@ cat /var/www/chutea/.env.production | grep DATABASE_URL
 
 ## 📊 部署后检查清单
 
-| 检查项 | 命令 | 预期结果 | 状态 |
-|--------|------|----------|------|
-| **Nginx 运行** | `systemctl status nginx` | Active (running) | ⬜ |
-| **PM2 运行** | `pm2 status` | chutea-backend online | ⬜ |
-| **数据库连接** | `sudo -u postgres psql -d chutea_db -c "SELECT COUNT(*) FROM products;"` | 10 | ⬜ |
-| **前端可访问** | `curl -I http://43.166.239.99` | HTTP/1.1 200 OK | ⬜ |
-| **API 可访问** | `curl -X POST http://43.166.239.99/trpc/products.list -H "Content-Type: application/json" -d '{"json":{}}'` | JSON 响应包含产品列表 | ⬜ |
-| **实时同步** | 后台改价 → 前端自动更新 | 1 秒内更新 | ⬜ |
+| 检查项         | 命令                                                                                                        | 预期结果              | 状态 |
+| -------------- | ----------------------------------------------------------------------------------------------------------- | --------------------- | ---- |
+| **Nginx 运行** | `systemctl status nginx`                                                                                    | Active (running)      | ⬜   |
+| **PM2 运行**   | `pm2 status`                                                                                                | chutea-backend online | ⬜   |
+| **数据库连接** | `sudo -u postgres psql -d chutea_db -c "SELECT COUNT(*) FROM products;"`                                    | 10                    | ⬜   |
+| **前端可访问** | `curl -I http://43.166.239.99`                                                                              | HTTP/1.1 200 OK       | ⬜   |
+| **API 可访问** | `curl -X POST http://43.166.239.99/trpc/products.list -H "Content-Type: application/json" -d '{"json":{}}'` | JSON 响应包含产品列表 | ⬜   |
+| **实时同步**   | 后台改价 → 前端自动更新                                                                                     | 1 秒内更新            | ⬜   |
 
 ---
 

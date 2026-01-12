@@ -1,8 +1,8 @@
 /**
  * Audit Middleware
- * 
+ *
  * Automatically logs all API operations to the audit chain
- * 
+ *
  * Features:
  * - Captures all successful operations
  * - Records operator information
@@ -10,9 +10,9 @@
  * - Non-blocking (doesn't fail main operation)
  */
 
-import { Request, Response, NextFunction } from 'express';
-import { AuditLogService } from '../services/audit-log-service';
-import { AuditAction } from '@prisma/client';
+import { Request, Response, NextFunction } from "express";
+import { AuditLogService } from "../services/audit-log-service";
+import { AuditAction } from "@prisma/client";
 
 export interface AuditMiddlewareOptions {
   auditLogService: AuditLogService;
@@ -32,7 +32,7 @@ export function createAuditMiddleware(options: AuditMiddlewareOptions) {
     }
 
     // Skip audit logging for GET requests (read-only)
-    if (req.method === 'GET') {
+    if (req.method === "GET") {
       return next();
     }
 
@@ -41,7 +41,7 @@ export function createAuditMiddleware(options: AuditMiddlewareOptions) {
     const originalSend = res.send.bind(res);
 
     // Override res.json to capture response
-    res.json = function(body: any) {
+    res.json = function (body: any) {
       // Log successful operations (2xx status codes)
       if (res.statusCode >= 200 && res.statusCode < 300) {
         logAuditEvent(req, body);
@@ -50,11 +50,11 @@ export function createAuditMiddleware(options: AuditMiddlewareOptions) {
     };
 
     // Override res.send to capture response
-    res.send = function(body: any) {
+    res.send = function (body: any) {
       // Log successful operations (2xx status codes)
       if (res.statusCode >= 200 && res.statusCode < 300) {
         try {
-          const parsedBody = typeof body === 'string' ? JSON.parse(body) : body;
+          const parsedBody = typeof body === "string" ? JSON.parse(body) : body;
           logAuditEvent(req, parsedBody);
         } catch (error) {
           // Ignore parsing errors
@@ -68,15 +68,15 @@ export function createAuditMiddleware(options: AuditMiddlewareOptions) {
         // Determine action based on HTTP method
         let action: AuditAction;
         switch (req.method) {
-          case 'POST':
-            action = 'INSERT';
+          case "POST":
+            action = "INSERT";
             break;
-          case 'PUT':
-          case 'PATCH':
-            action = 'UPDATE';
+          case "PUT":
+          case "PATCH":
+            action = "UPDATE";
             break;
-          case 'DELETE':
-            action = 'DELETE';
+          case "DELETE":
+            action = "DELETE";
             break;
           default:
             return; // Skip other methods
@@ -98,18 +98,24 @@ export function createAuditMiddleware(options: AuditMiddlewareOptions) {
           tableName,
           recordId,
           action,
-          diffBefore: action === 'UPDATE' || action === 'DELETE' ? req.body?.before : undefined,
-          diffAfter: action === 'INSERT' || action === 'UPDATE' ? responseBody : undefined,
+          diffBefore:
+            action === "UPDATE" || action === "DELETE"
+              ? req.body?.before
+              : undefined,
+          diffAfter:
+            action === "INSERT" || action === "UPDATE"
+              ? responseBody
+              : undefined,
           operatorId: operator.id,
           operatorType: operator.type,
           operatorName: operator.name,
           ipAddress: req.ip || req.socket.remoteAddress,
-          userAgent: req.headers['user-agent'],
-          requestId: req.headers['x-request-id'] as string
+          userAgent: req.headers["user-agent"],
+          requestId: req.headers["x-request-id"] as string,
         });
       } catch (error) {
         // Log error but don't fail the request
-        console.error('❌ Failed to create audit log:', error);
+        console.error("❌ Failed to create audit log:", error);
       }
     }
 
@@ -124,19 +130,19 @@ export function createAuditMiddleware(options: AuditMiddlewareOptions) {
  *   /api/admin/users/456 -> users
  */
 function extractTableName(req: Request): string | null {
-  const pathParts = req.path.split('/').filter(Boolean);
-  
+  const pathParts = req.path.split("/").filter(Boolean);
+
   // Find the first path part that looks like a table name (plural noun)
   for (let i = 0; i < pathParts.length; i++) {
     const part = pathParts[i];
     // Skip common prefixes
-    if (part === 'api' || part === 'admin' || part === 'v1' || part === 'v2') {
+    if (part === "api" || part === "admin" || part === "v1" || part === "v2") {
       continue;
     }
     // Return the first non-prefix part
     return part;
   }
-  
+
   return null;
 }
 
@@ -145,22 +151,26 @@ function extractTableName(req: Request): string | null {
  */
 function extractRecordId(req: Request, responseBody: any): string | null {
   // Try to get ID from URL path
-  const pathParts = req.path.split('/').filter(Boolean);
+  const pathParts = req.path.split("/").filter(Boolean);
   const lastPart = pathParts[pathParts.length - 1];
-  
+
   // Check if last part looks like an ID (UUID or number)
-  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lastPart)) {
+  if (
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      lastPart
+    )
+  ) {
     return lastPart;
   }
   if (/^\d+$/.test(lastPart)) {
     return lastPart;
   }
-  
+
   // Try to get ID from request body
   if (req.body?.id) {
     return String(req.body.id);
   }
-  
+
   // Try to get ID from response body
   if (responseBody?.id) {
     return String(responseBody.id);
@@ -168,7 +178,7 @@ function extractRecordId(req: Request, responseBody: any): string | null {
   if (responseBody?.data?.id) {
     return String(responseBody.data.id);
   }
-  
+
   return null;
 }
 
@@ -177,7 +187,7 @@ function extractRecordId(req: Request, responseBody: any): string | null {
  */
 function extractOperator(req: Request): {
   id?: string;
-  type: 'ADMIN' | 'USER' | 'SYSTEM' | 'API';
+  type: "ADMIN" | "USER" | "SYSTEM" | "API";
   name?: string;
 } {
   // Check for authenticated user
@@ -185,23 +195,23 @@ function extractOperator(req: Request): {
   if (user) {
     return {
       id: user.id || user.userId,
-      type: user.role === 'admin' ? 'ADMIN' : 'USER',
-      name: user.name || user.username || user.email
+      type: user.role === "admin" ? "ADMIN" : "USER",
+      name: user.name || user.username || user.email,
     };
   }
-  
+
   // Check for API key
-  const apiKey = req.headers['x-api-key'];
+  const apiKey = req.headers["x-api-key"];
   if (apiKey) {
     return {
-      type: 'API',
-      name: 'API Client'
+      type: "API",
+      name: "API Client",
     };
   }
-  
+
   // Default to SYSTEM
   return {
-    type: 'SYSTEM',
-    name: 'System'
+    type: "SYSTEM",
+    name: "System",
   };
 }

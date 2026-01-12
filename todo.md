@@ -1,4 +1,3 @@
-
 - [x] Migrate frontend from fetch to tRPC for real-time data sync
 - [x] Add is_manual_override field to products schema
 - [ ] Implement admin-only access control for /admin routes (deferred - auth needed)

@@ -8,14 +8,14 @@ import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 import { VitePWA } from "vite-plugin-pwa";
 
 const plugins = [
-  react(), 
-  tailwindcss(), 
-  jsxLocPlugin(), 
+  react(),
+  tailwindcss(),
+  jsxLocPlugin(),
   vitePluginManusRuntime(),
   VitePWA({
-    registerType: 'autoUpdate',
-    injectRegister: 'auto',
-    includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+    registerType: "autoUpdate",
+    injectRegister: "auto",
+    includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
     workbox: {
       cleanupOutdatedCaches: true, // 自动清理旧缓存
       skipWaiting: true, // 立即激活新的Service Worker
@@ -24,74 +24,74 @@ const plugins = [
       runtimeCaching: [
         {
           urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-          handler: 'CacheFirst',
+          handler: "CacheFirst",
           options: {
-            cacheName: 'google-fonts-cache',
+            cacheName: "google-fonts-cache",
             expiration: {
               maxEntries: 10,
-              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 年
+              maxAgeSeconds: 60 * 60 * 24 * 365, // 1 年
             },
             cacheableResponse: {
-              statuses: [0, 200]
-            }
-          }
+              statuses: [0, 200],
+            },
+          },
         },
         {
           urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
-          handler: 'CacheFirst',
+          handler: "CacheFirst",
           options: {
-            cacheName: 'images-cache',
+            cacheName: "images-cache",
             expiration: {
               maxEntries: 60,
-              maxAgeSeconds: 60 * 60 * 24 * 30 // 30 天
-            }
-          }
+              maxAgeSeconds: 60 * 60 * 24 * 30, // 30 天
+            },
+          },
         },
         {
           urlPattern: /\.(?:js|css)$/,
-          handler: 'StaleWhileRevalidate',
+          handler: "StaleWhileRevalidate",
           options: {
-            cacheName: 'static-resources'
-          }
-        }
-      ]
+            cacheName: "static-resources",
+          },
+        },
+      ],
     },
     manifest: {
-      name: 'CHUTEA - 俄罗斯奶茶连锁',
-      short_name: 'CHUTEA',
-      description: 'CHUTEA 俄罗斯奶茶连锁移动应用',
-      theme_color: '#ffffff',
-      background_color: '#ffffff',
-      display: 'standalone', // 独立窗口模式，减少插件干扰
-      orientation: 'portrait',
-      scope: '/',
-      start_url: '/',
-      categories: ['food', 'lifestyle'],
+      name: "CHUTEA - 俄罗斯奶茶连锁",
+      short_name: "CHUTEA",
+      description: "CHUTEA 俄罗斯奶茶连锁移动应用",
+      theme_color: "#ffffff",
+      background_color: "#ffffff",
+      display: "standalone", // 独立窗口模式，减少插件干扰
+      orientation: "portrait",
+      scope: "/",
+      start_url: "/",
+      categories: ["food", "lifestyle"],
       icons: [
         {
-          src: '/icon-192x192.png',
-          sizes: '192x192',
-          type: 'image/png'
+          src: "/icon-192x192.png",
+          sizes: "192x192",
+          type: "image/png",
         },
         {
-          src: '/icon-512x512.png',
-          sizes: '512x512',
-          type: 'image/png'
+          src: "/icon-512x512.png",
+          sizes: "512x512",
+          type: "image/png",
         },
         {
-          src: '/icon-512x512.png',
-          sizes: '512x512',
-          type: 'image/png',
-          purpose: 'any maskable'
-        }
-      ]
+          src: "/icon-512x512.png",
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "any maskable",
+        },
+      ],
     },
     devOptions: {
-      enabled: true // 开发环境也启用 PWA
+      enabled: true, // 开发环境也启用 PWA
     },
     // 添加版本号，每次构建时自动更新
-    manifestFilename: 'manifest.webmanifest'
-  })
+    manifestFilename: "manifest.webmanifest",
+  }),
 ];
 
 export default defineConfig({

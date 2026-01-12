@@ -8,6 +8,7 @@
 ✅ **All 3 demo orders displaying correctly with proper status colors**
 
 ### Order 1: COMPLETED (Завершен) - Green Badge ✅
+
 - **Order ID:** P20260106001
 - **Prefix:** P (PWA)
 - **Date:** 6 янв., 08:30 (Jan 6, 08:30)
@@ -19,6 +20,7 @@
 - **Actions:** Invoice, Reorder buttons visible
 
 ### Order 2: VOIDED (Возврат) - Red Badge ✅
+
 - **Order ID:** P20260106002
 - **Prefix:** P (PWA)
 - **Date:** 6 янв., 09:15 (Jan 6, 09:15)
@@ -31,6 +33,7 @@
 - **Demonstrates:** Payment fail-safe mechanism (IIKO timeout → auto-void)
 
 ### Order 3: PENDING (Ожидание) - Orange Badge ✅
+
 - **Order ID:** K20260106003
 - **Prefix:** K (Delivery/Курьер)
 - **Date:** 6 янв., 10:00 (Jan 6, 10:00)
@@ -44,22 +47,26 @@
 ## UI Quality Assessment
 
 **Status Color Coding:**
+
 - ✅ Green (Завершен) - Completed orders, payment captured
 - ❌ Red (Возврат) - Voided orders, payment auto-refunded
 - 🟠 Orange (Ожидание) - Pending orders, payment on hold
 
 **Order Prefix System:**
+
 - P (PWA) - Orders 1 & 2 ✅
 - K (Delivery/Курьер) - Order 3 ✅
 - System correctly tracks order channels for analytics
 
 **Russian Localization:**
+
 - All product names in Russian ✅
 - Status labels in Russian ✅
 - Date format localized (6 янв.) ✅
 - Currency symbol (₽) correctly positioned ✅
 
 **User Experience:**
+
 - Orders sorted by date (newest first) ✅
 - Clear visual hierarchy with status badges ✅
 - Invoice and Reorder actions available ✅

@@ -10,7 +10,7 @@ import { toast } from "sonner";
 const FLASH_SALE_SESSIONS = [
   { id: "10am", time: "10:00", label: "Утренняя сессия", startHour: 10 },
   { id: "2pm", time: "14:00", label: "Дневная сессия", startHour: 14 },
-  { id: "8pm", time: "20:00", label: "Вечерняя сессия", startHour: 20 }
+  { id: "8pm", time: "20:00", label: "Вечерняя сессия", startHour: 20 },
 ];
 
 // 模拟秒杀Товары数据
@@ -24,7 +24,7 @@ const FLASH_SALE_PRODUCTS = [
     discount: 67,
     stock: 100,
     sold: 87,
-    session: "10am"
+    session: "10am",
   },
   {
     id: "fs_2",
@@ -35,7 +35,7 @@ const FLASH_SALE_PRODUCTS = [
     discount: 60,
     stock: 200,
     sold: 156,
-    session: "10am"
+    session: "10am",
   },
   {
     id: "fs_3",
@@ -46,7 +46,7 @@ const FLASH_SALE_PRODUCTS = [
     discount: 60,
     stock: 50,
     sold: 48,
-    session: "2pm"
+    session: "2pm",
   },
   {
     id: "fs_4",
@@ -57,7 +57,7 @@ const FLASH_SALE_PRODUCTS = [
     discount: 63,
     stock: 150,
     sold: 89,
-    session: "2pm"
+    session: "2pm",
   },
   {
     id: "fs_5",
@@ -68,44 +68,52 @@ const FLASH_SALE_PRODUCTS = [
     discount: 60,
     stock: 80,
     sold: 12,
-    session: "8pm"
-  }
+    session: "8pm",
+  },
 ];
 
 // 倒计时组шт
 function Countdown({ targetHour }: { targetHour: number }) {
-  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [status, setStatus] = useState<"upcoming" | "active" | "ended">("upcoming");
-  
+  const [timeLeft, setTimeLeft] = useState({
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+  const [status, setStatus] = useState<"upcoming" | "active" | "ended">(
+    "upcoming"
+  );
+
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = new Date();
       const currentHour = now.getHours();
-      
+
       // 计算目标时间
       let target = new Date();
       target.setHours(targetHour, 0, 0, 0);
-      
+
       // 如果目标时间已过，设置为明天
       if (currentHour >= targetHour) {
         target.setDate(target.getDate() + 1);
       }
-      
+
       const diff = target.getTime() - now.getTime();
-      
+
       if (diff <= 0) {
         setStatus("active");
         // 秒杀进行中，显示结束倒计时（假设持续2ч）
         const endTime = new Date(target);
         endTime.setHours(endTime.getHours() + 2);
         const endDiff = endTime.getTime() - now.getTime();
-        
+
         if (endDiff <= 0) {
           setStatus("ended");
           setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
         } else {
           const hours = Math.floor(endDiff / (1000 * 60 * 60));
-          const minutes = Math.floor((endDiff % (1000 * 60 * 60)) / (1000 * 60));
+          const minutes = Math.floor(
+            (endDiff % (1000 * 60 * 60)) / (1000 * 60)
+          );
           const seconds = Math.floor((endDiff % (1000 * 60)) / 1000);
           setTimeLeft({ hours, minutes, seconds });
         }
@@ -117,15 +125,15 @@ function Countdown({ targetHour }: { targetHour: number }) {
         setTimeLeft({ hours, minutes, seconds });
       }
     };
-    
+
     calculateTimeLeft();
     const timer = setInterval(calculateTimeLeft, 1000);
-    
+
     return () => clearInterval(timer);
   }, [targetHour]);
-  
-  const formatNumber = (num: number) => String(num).padStart(2, '0');
-  
+
+  const formatNumber = (num: number) => String(num).padStart(2, "0");
+
   return (
     <div className="flex items-center gap-2">
       {status === "upcoming" && (
@@ -143,7 +151,7 @@ function Countdown({ targetHour }: { targetHour: number }) {
       {status === "ended" && (
         <span className="text-sm text-gray-400">已结束</span>
       )}
-      
+
       {status !== "ended" && (
         <div className="flex items-center gap-1">
           <div className="bg-gray-900 text-white text-xs px-1.5 py-1 rounded font-mono">
@@ -166,27 +174,35 @@ function Countdown({ targetHour }: { targetHour: number }) {
 export default function FlashSale() {
   const { t } = useLanguage();
   const [, setLocation] = useLocation();
-  const [selectedSession, setSelectedSession] = useState(FLASH_SALE_SESSIONS[0].id);
-  
-  const currentProducts = FLASH_SALE_PRODUCTS.filter(p => p.session === selectedSession);
-  
+  const [selectedSession, setSelectedSession] = useState(
+    FLASH_SALE_SESSIONS[0].id
+  );
+
+  const currentProducts = FLASH_SALE_PRODUCTS.filter(
+    p => p.session === selectedSession
+  );
+
   const handleBuy = (productId: string) => {
     // toast.success("已В корзину！");
   };
-  
+
   return (
     <MobileLayout>
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <header className="bg-gradient-to-r from-red-600 to-orange-600 px-4 py-3 flex items-center sticky top-0 z-10">
           <Link href="/mall">
-            <Button variant="ghost" size="icon" className="-ml-2 text-white hover:bg-white/20">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="-ml-2 text-white hover:bg-white/20"
+            >
               <ChevronLeft size={24} />
             </Button>
           </Link>
           <h1 className="font-bold text-lg ml-2 text-white">限时秒杀</h1>
         </header>
-        
+
         {/* Hero Banner */}
         <div className="bg-gradient-to-r from-red-600 to-orange-600 px-4 pb-6 text-white">
           <div className="flex items-center gap-2 mb-2">
@@ -195,10 +211,10 @@ export default function FlashSale() {
           </div>
           <p className="text-sm text-white/90">整点开抢，超低价限量抢购</p>
         </div>
-        
+
         {/* Session Tabs */}
         <div className="bg-white px-4 py-3 flex gap-2 overflow-x-auto sticky top-[52px] z-10 border-b border-gray-100">
-          {FLASH_SALE_SESSIONS.map((session) => (
+          {FLASH_SALE_SESSIONS.map(session => (
             <button
               key={session.id}
               onClick={() => setSelectedSession(session.id)}
@@ -213,36 +229,55 @@ export default function FlashSale() {
             </button>
           ))}
         </div>
-        
+
         {/* Countdown */}
         <div className="bg-gradient-to-r from-orange-50 to-red-50 px-4 py-3 flex items-center justify-center">
-          <Countdown targetHour={FLASH_SALE_SESSIONS.find(s => s.id === selectedSession)?.startHour || 10} />
+          <Countdown
+            targetHour={
+              FLASH_SALE_SESSIONS.find(s => s.id === selectedSession)
+                ?.startHour || 10
+            }
+          />
         </div>
-        
+
         {/* Products Grid */}
         <div className="p-4 grid grid-cols-2 gap-3">
-          {currentProducts.map((product) => {
-            const stockPercent = ((product.stock - product.sold) / product.stock) * 100;
-            
+          {currentProducts.map(product => {
+            const stockPercent =
+              ((product.stock - product.sold) / product.stock) * 100;
+
             return (
-              <div key={product.id} className="bg-white rounded-xl overflow-hidden shadow-sm">
+              <div
+                key={product.id}
+                className="bg-white rounded-xl overflow-hidden shadow-sm"
+              >
                 {/* Product Image */}
                 <div className="relative aspect-square bg-gray-100">
-                  <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
                   <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full font-bold">
                     {product.discount}% OFF
                   </div>
                 </div>
-                
+
                 {/* Product Info */}
                 <div className="p-3">
-                  <h3 className="text-sm font-medium mb-2 line-clamp-2 h-10">{product.name}</h3>
-                  
+                  <h3 className="text-sm font-medium mb-2 line-clamp-2 h-10">
+                    {product.name}
+                  </h3>
+
                   <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-xl font-bold text-red-600">₽{product.flashPrice}</span>
-                    <span className="text-xs text-gray-400 line-through">₽{product.originalPrice}</span>
+                    <span className="text-xl font-bold text-red-600">
+                      ₽{product.flashPrice}
+                    </span>
+                    <span className="text-xs text-gray-400 line-through">
+                      ₽{product.originalPrice}
+                    </span>
                   </div>
-                  
+
                   {/* Stock Progress */}
                   <div className="mb-3">
                     <div className="flex justify-between text-xs text-gray-600 mb-1">
@@ -250,27 +285,29 @@ export default function FlashSale() {
                       <span>剩余{product.stock - product.sold}шт</span>
                     </div>
                     <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className="h-full bg-gradient-to-r from-red-600 to-orange-600 transition-all"
                         style={{ width: `${100 - stockPercent}%` }}
                       />
                     </div>
                   </div>
-                  
+
                   {/* Buy Button */}
                   <Button
                     onClick={() => handleBuy(product.id)}
                     disabled={product.sold >= product.stock}
                     className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-full py-2 text-sm disabled:opacity-50"
                   >
-                    {product.sold >= product.stock ? "Распродано" : "Купить сейчас"}
+                    {product.sold >= product.stock
+                      ? "Распродано"
+                      : "Купить сейчас"}
                   </Button>
                 </div>
               </div>
             );
           })}
         </div>
-        
+
         {/* Rules Section */}
         <div className="p-4">
           <div className="bg-white rounded-xl p-4">

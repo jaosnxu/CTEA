@@ -7,21 +7,22 @@ import { formatCurrency } from "@/lib/i18n";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Favorites() {
-  const { favorites, removeFromFavorites, addToDrinkCart, addToMallCart } = useApp();
+  const { favorites, removeFromFavorites, addToDrinkCart, addToMallCart } =
+    useApp();
   const { t, language } = useLanguage();
 
-  const handleQuickAdd = (item: typeof favorites[0]) => {
+  const handleQuickAdd = (item: (typeof favorites)[0]) => {
     if (item.type === "drink") {
       addToDrinkCart({
         productId: item.id,
         quantity: 1,
-        specs: t("pages_favorites_标准")
+        specs: t("pages_favorites_标准"),
       });
     } else {
       addToMallCart({
         productId: item.id,
         quantity: 1,
-        specs: t("pages_favorites_默认规格")
+        specs: t("pages_favorites_默认规格"),
       });
     }
   };
@@ -32,7 +33,8 @@ export default function Favorites() {
   };
 
   const formatDate = (timestamp: number) => {
-    const locale = language === "ru" ? "ru-RU" : language === "zh" ? "zh-CN" : "en-US";
+    const locale =
+      language === "ru" ? "ru-RU" : language === "zh" ? "zh-CN" : "en-US";
     return new Date(timestamp).toLocaleDateString(locale);
   };
 
@@ -53,8 +55,12 @@ export default function Favorites() {
           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <Heart size={40} className="text-muted-foreground" />
           </div>
-          <h3 className="font-bold text-lg mb-2">{t("pages_favorites_暂无收藏")}</h3>
-          <p className="text-sm text-muted-foreground mb-6">{t("pages_favorites_快去收藏喜欢的商品吧")}</p>
+          <h3 className="font-bold text-lg mb-2">
+            {t("pages_favorites_暂无收藏")}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-6">
+            {t("pages_favorites_快去收藏喜欢的商品吧")}
+          </p>
           <div className="flex gap-3">
             <Link href="/order">
               <Button variant="outline">{t("pages_favorites_去点单")}</Button>
@@ -66,7 +72,7 @@ export default function Favorites() {
         </div>
       ) : (
         <div className="p-4 space-y-3">
-          {favorites.map((item) => (
+          {favorites.map(item => (
             <div key={item.id} className="bg-white rounded-xl p-4 shadow-sm">
               <div className="flex gap-3">
                 <img
@@ -75,17 +81,23 @@ export default function Favorites() {
                   className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-sm mb-1 truncate">{item.name}</h3>
+                  <h3 className="font-bold text-sm mb-1 truncate">
+                    {item.name}
+                  </h3>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded">
-                      {item.type === "drink" ? t("pages_favorites_饮品") : t("pages_favorites_商城")}
+                      {item.type === "drink"
+                        ? t("pages_favorites_饮品")
+                        : t("pages_favorites_商城")}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {formatDate(item.addedAt)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-primary font-bold text-lg">{formatCurrency(item.price)}</span>
+                    <span className="text-primary font-bold text-lg">
+                      {formatCurrency(item.price)}
+                    </span>
                     <div className="flex gap-2">
                       <Button
                         onClick={() => handleQuickAdd(item)}

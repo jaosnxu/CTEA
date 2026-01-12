@@ -17,39 +17,44 @@ const PAYMENT_METHODS = [
     name: "YooKassa",
     icon: CreditCard,
     desc: "Банковская карта, электронный кошелёк",
-    popular: true
+    popular: true,
   },
   {
     id: "sberbank",
     name: "Sberbank",
     icon: Building2,
     desc: "Сбербанк России",
-    popular: true
+    popular: true,
   },
   {
     id: "tinkoff",
     name: "Tinkoff",
     icon: CreditCard,
     desc: "Карта Тинькофф",
-    popular: false
+    popular: false,
   },
   {
     id: "qiwi",
     name: "QIWI Wallet",
     icon: Wallet,
     desc: "Оплата электронным кошельком",
-    popular: false
+    popular: false,
   },
   {
     id: "sbp",
     name: "СБП",
     icon: Smartphone,
     desc: "Система быстрых платежей",
-    popular: true
-  }
+    popular: true,
+  },
 ];
 
-export default function RussianPaymentModal({ isOpen, onClose, amount, onPaymentSelect }: RussianPaymentModalProps) {
+export default function RussianPaymentModal({
+  isOpen,
+  onClose,
+  amount,
+  onPaymentSelect,
+}: RussianPaymentModalProps) {
   const { t } = useLanguage();
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
 
@@ -68,7 +73,10 @@ export default function RussianPaymentModal({ isOpen, onClose, amount, onPayment
         {/* Header */}
         <div className="px-4 py-4 border-b border-gray-100 flex items-center justify-between">
           <h3 className="font-bold text-lg">选择支付方式</h3>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          >
             <X size={20} />
           </button>
         </div>
@@ -76,33 +84,39 @@ export default function RussianPaymentModal({ isOpen, onClose, amount, onPayment
         {/* Amount */}
         <div className="px-4 py-4 bg-gradient-to-r from-teal-50 to-blue-50">
           <div className="text-sm text-gray-600 mb-1">支付金额</div>
-          <div className="text-3xl font-bold text-teal-600">₽{amount.toFixed(2)}</div>
+          <div className="text-3xl font-bold text-teal-600">
+            ₽{amount.toFixed(2)}
+          </div>
         </div>
 
         {/* Payment Methods */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {PAYMENT_METHODS.map((method) => {
+          {PAYMENT_METHODS.map(method => {
             const Icon = method.icon;
             const isSelected = selectedMethod === method.id;
-            
+
             return (
               <button
                 key={method.id}
                 onClick={() => setSelectedMethod(method.id)}
                 className={cn(
                   "w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4 text-left",
-                  isSelected 
-                    ? "border-teal-600 bg-teal-50" 
+                  isSelected
+                    ? "border-teal-600 bg-teal-50"
                     : "border-gray-200 hover:border-gray-300 bg-white"
                 )}
               >
-                <div className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0",
-                  isSelected ? "bg-teal-600 text-white" : "bg-gray-100 text-gray-600"
-                )}>
+                <div
+                  className={cn(
+                    "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0",
+                    isSelected
+                      ? "bg-teal-600 text-white"
+                      : "bg-gray-100 text-gray-600"
+                  )}
+                >
                   <Icon size={24} />
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-semibold text-sm">{method.name}</span>
@@ -114,11 +128,17 @@ export default function RussianPaymentModal({ isOpen, onClose, amount, onPayment
                   </div>
                   <p className="text-xs text-gray-500">{method.desc}</p>
                 </div>
-                
+
                 {isSelected && (
                   <div className="w-6 h-6 rounded-full bg-teal-600 flex items-center justify-center flex-shrink-0">
                     <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
-                      <path d="M1 5L5 9L13 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path
+                        d="M1 5L5 9L13 1"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </div>
                 )}

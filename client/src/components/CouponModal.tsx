@@ -27,14 +27,18 @@ export default function CouponModal({
   coupons,
   selectedCouponId,
   onSelectCoupon,
-  totalAmount
+  totalAmount,
 }: CouponModalProps) {
   const { t } = useLanguage();
-  
+
   if (!open) return null;
 
-  const availableCoupons = coupons.filter(c => c.available && totalAmount >= c.minAmount);
-  const unavailableCoupons = coupons.filter(c => !c.available || totalAmount < c.minAmount);
+  const availableCoupons = coupons.filter(
+    c => c.available && totalAmount >= c.minAmount
+  );
+  const unavailableCoupons = coupons.filter(
+    c => !c.available || totalAmount < c.minAmount
+  );
 
   const handleSelectCoupon = (couponId: string) => {
     if (selectedCouponId === couponId) {
@@ -47,16 +51,15 @@ export default function CouponModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/50"
-        onClick={onClose}
-      />
-      
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+
       {/* Modal */}
       <div className="relative w-full bg-white rounded-t-3xl max-h-[80vh] overflow-hidden flex flex-col animate-slide-up">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b">
-          <h2 className="text-lg font-bold">{t("components_couponmodal_选择优惠券")}</h2>
+          <h2 className="text-lg font-bold">
+            {t("components_couponmodal_选择优惠券")}
+          </h2>
           <button onClick={onClose} className="p-1">
             <X size={24} />
           </button>
@@ -67,8 +70,10 @@ export default function CouponModal({
           {/* Available Coupons */}
           {availableCoupons.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-sm font-bold text-gray-600">{t("components_couponmodal_可用优惠券")}</h3>
-              {availableCoupons.map((coupon) => (
+              <h3 className="text-sm font-bold text-gray-600">
+                {t("components_couponmodal_可用优惠券")}
+              </h3>
+              {availableCoupons.map(coupon => (
                 <div
                   key={coupon.id}
                   onClick={() => handleSelectCoupon(coupon.id)}
@@ -88,17 +93,25 @@ export default function CouponModal({
                   <div className="flex items-center gap-4">
                     {/* Discount Amount */}
                     <div className="flex-shrink-0 text-center">
-                      <div className="text-2xl font-bold text-primary">{formatCurrency(coupon.discount)}</div>
-                      <div className="text-xs text-gray-500">满{coupon.minAmount}可用</div>
+                      <div className="text-2xl font-bold text-primary">
+                        {formatCurrency(coupon.discount)}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        满{coupon.minAmount}可用
+                      </div>
                     </div>
 
                     {/* Coupon Info */}
                     <div className="flex-1">
                       <h4 className="font-bold mb-1">{coupon.name}</h4>
                       {coupon.description && (
-                        <p className="text-xs text-gray-500 mb-1">{coupon.description}</p>
+                        <p className="text-xs text-gray-500 mb-1">
+                          {coupon.description}
+                        </p>
                       )}
-                      <p className="text-xs text-gray-400">有效期至 {coupon.validUntil}</p>
+                      <p className="text-xs text-gray-400">
+                        有效期至 {coupon.validUntil}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -109,8 +122,10 @@ export default function CouponModal({
           {/* Unavailable Coupons */}
           {unavailableCoupons.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-sm font-bold text-gray-600">{t("components_couponmodal_不可用优惠券")}</h3>
-              {unavailableCoupons.map((coupon) => (
+              <h3 className="text-sm font-bold text-gray-600">
+                {t("components_couponmodal_不可用优惠券")}
+              </h3>
+              {unavailableCoupons.map(coupon => (
                 <div
                   key={coupon.id}
                   className="relative border-2 border-gray-200 rounded-lg p-4 opacity-50"
@@ -118,15 +133,23 @@ export default function CouponModal({
                   <div className="flex items-center gap-4">
                     {/* Discount Amount */}
                     <div className="flex-shrink-0 text-center">
-                      <div className="text-2xl font-bold text-gray-400">{formatCurrency(coupon.discount)}</div>
-                      <div className="text-xs text-gray-400">满{coupon.minAmount}可用</div>
+                      <div className="text-2xl font-bold text-gray-400">
+                        {formatCurrency(coupon.discount)}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        满{coupon.minAmount}可用
+                      </div>
                     </div>
 
                     {/* Coupon Info */}
                     <div className="flex-1">
-                      <h4 className="font-bold mb-1 text-gray-600">{coupon.name}</h4>
+                      <h4 className="font-bold mb-1 text-gray-600">
+                        {coupon.name}
+                      </h4>
                       {coupon.description && (
-                        <p className="text-xs text-gray-400 mb-1">{coupon.description}</p>
+                        <p className="text-xs text-gray-400 mb-1">
+                          {coupon.description}
+                        </p>
                       )}
                       <p className="text-xs text-gray-400">
                         {totalAmount < coupon.minAmount

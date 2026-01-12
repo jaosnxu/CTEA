@@ -5,7 +5,13 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +19,13 @@ export default function Payment() {
   const { t } = useLanguage();
   const [cards, setCards] = useState([
     { id: 1, type: "Visa", last4: "4242", expiry: "12/25", isDefault: true },
-    { id: 2, type: "Mastercard", last4: "8888", expiry: "09/26", isDefault: false },
+    {
+      id: 2,
+      type: "Mastercard",
+      last4: "8888",
+      expiry: "09/26",
+      isDefault: false,
+    },
   ]);
   const [isAdding, setIsAdding] = useState(false);
   const [newCard, setNewCard] = useState({ number: "", expiry: "", cvc: "" });
@@ -23,7 +35,7 @@ export default function Payment() {
       toast.error("Заполните все данные карты");
       return;
     }
-    
+
     setCards([
       ...cards,
       {
@@ -31,8 +43,8 @@ export default function Payment() {
         type: "Visa", // Mock detection
         last4: newCard.number.slice(-4),
         expiry: newCard.expiry,
-        isDefault: false
-      }
+        isDefault: false,
+      },
     ]);
     setIsAdding(false);
     setNewCard({ number: "", expiry: "", cvc: "" });
@@ -60,9 +72,9 @@ export default function Payment() {
         </div>
 
         <div className="p-4 space-y-4">
-          {cards.map((card) => (
-            <div 
-              key={card.id} 
+          {cards.map(card => (
+            <div
+              key={card.id}
               className={cn(
                 "bg-white rounded-xl p-5 shadow-sm border-2 transition-all relative overflow-hidden",
                 card.isDefault ? "border-primary" : "border-transparent"
@@ -74,7 +86,9 @@ export default function Payment() {
                   <div className="w-10 h-6 bg-gray-100 rounded flex items-center justify-center text-[10px] font-bold text-gray-500">
                     {card.type}
                   </div>
-                  <span className="font-mono font-bold text-lg">•••• {card.last4}</span>
+                  <span className="font-mono font-bold text-lg">
+                    •••• {card.last4}
+                  </span>
                 </div>
                 {card.isDefault && (
                   <div className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
@@ -82,17 +96,19 @@ export default function Payment() {
                   </div>
                 )}
               </div>
-              
+
               <div className="flex justify-between items-end">
                 <div>
-                  <p className="text-[10px] text-muted-foreground uppercase">有效期</p>
+                  <p className="text-[10px] text-muted-foreground uppercase">
+                    有效期
+                  </p>
                   <p className="font-mono text-sm font-medium">{card.expiry}</p>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="text-red-500 hover:bg-red-50 h-8 w-8"
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     removeCard(card.id);
                   }}
@@ -116,34 +132,42 @@ export default function Payment() {
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">卡号</label>
-                  <Input 
-                    placeholder="0000 0000 0000 0000" 
+                  <Input
+                    placeholder="0000 0000 0000 0000"
                     value={newCard.number}
-                    onChange={(e) => setNewCard({...newCard, number: e.target.value})}
+                    onChange={e =>
+                      setNewCard({ ...newCard, number: e.target.value })
+                    }
                     maxLength={19}
                   />
                 </div>
                 <div className="flex gap-4">
                   <div className="space-y-2 flex-1">
                     <label className="text-sm font-medium">有效期</label>
-                    <Input 
-                      placeholder="MM/YY" 
+                    <Input
+                      placeholder="MM/YY"
                       value={newCard.expiry}
-                      onChange={(e) => setNewCard({...newCard, expiry: e.target.value})}
+                      onChange={e =>
+                        setNewCard({ ...newCard, expiry: e.target.value })
+                      }
                       maxLength={5}
                     />
                   </div>
                   <div className="space-y-2 w-24">
                     <label className="text-sm font-medium">CVC</label>
-                    <Input 
-                      placeholder="123" 
+                    <Input
+                      placeholder="123"
                       value={newCard.cvc}
-                      onChange={(e) => setNewCard({...newCard, cvc: e.target.value})}
+                      onChange={e =>
+                        setNewCard({ ...newCard, cvc: e.target.value })
+                      }
                       maxLength={3}
                     />
                   </div>
                 </div>
-                <Button className="w-full mt-4" onClick={handleAddCard}>Подтвердить添加</Button>
+                <Button className="w-full mt-4" onClick={handleAddCard}>
+                  Подтвердить添加
+                </Button>
               </div>
             </DialogContent>
           </Dialog>

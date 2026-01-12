@@ -14,11 +14,11 @@ The CHU TEA platform has successfully passed comprehensive full-stack logic test
 
 **Key Findings:**
 
-| Test Category | Result | Success Rate | Performance |
-|--------------|--------|--------------|-------------|
-| Real-Time Price Sync | ✅ PASS | 100% | <1 second latency |
-| Manual Override Protection | ✅ PASS | 100% | 2/2 products protected |
-| Stress Test (5 Rapid Changes) | ✅ PASS | 100% (5/5) | Zero errors |
+| Test Category                 | Result  | Success Rate | Performance            |
+| ----------------------------- | ------- | ------------ | ---------------------- |
+| Real-Time Price Sync          | ✅ PASS | 100%         | <1 second latency      |
+| Manual Override Protection    | ✅ PASS | 100%         | 2/2 products protected |
+| Stress Test (5 Rapid Changes) | ✅ PASS | 100% (5/5)   | Zero errors            |
 
 The platform is now ready for deployment to production environments and can confidently handle real-world scenarios including flash sales, concurrent admin edits, and IIKO POS synchronization conflicts.
 
@@ -36,13 +36,13 @@ An administrator modifies the price of **Виноградный Чиз (Grape Ch
 
 ### Execution Timeline
 
-| Time | Action | Location | Result |
-|------|--------|----------|--------|
-| 03:03:41 | Click "Edit Price" for Product #3 | Admin Panel | Edit mode activated |
-| 03:03:51 | Change price from ₽290 → ₽399 | Admin Panel | Input accepted |
-| 03:04:06 | Click "Save" button | Admin Panel | Mutation successful |
-| 03:04:06 | Backend updates database | Server | `is_manual_override: true` set |
-| 03:04:35 | Navigate to Order page | Frontend | Price displays **₽399** ✅ |
+| Time     | Action                            | Location    | Result                         |
+| -------- | --------------------------------- | ----------- | ------------------------------ |
+| 03:03:41 | Click "Edit Price" for Product #3 | Admin Panel | Edit mode activated            |
+| 03:03:51 | Change price from ₽290 → ₽399     | Admin Panel | Input accepted                 |
+| 03:04:06 | Click "Save" button               | Admin Panel | Mutation successful            |
+| 03:04:06 | Backend updates database          | Server      | `is_manual_override: true` set |
+| 03:04:35 | Navigate to Order page            | Frontend    | Price displays **₽399** ✅     |
 
 ### Technical Implementation
 
@@ -86,20 +86,20 @@ Two products have been manually modified by admins (₽500 and ₽399). The IIKO
 
 ### Initial State
 
-| Product ID | Name | Local Price | Override Status | IIKO Attempted Price |
-|------------|------|-------------|-----------------|----------------------|
-| #1 | Клубничный Чиз | ₽500 | Manual Override ✅ | ₽300 |
-| #2 | Манго Чиз (IIKO) | ₽310 | IIKO Managed | ₽310 |
-| #3 | Виноградный Чиз | ₽399 | Manual Override ✅ | ₽290 |
+| Product ID | Name             | Local Price | Override Status    | IIKO Attempted Price |
+| ---------- | ---------------- | ----------- | ------------------ | -------------------- |
+| #1         | Клубничный Чиз   | ₽500        | Manual Override ✅ | ₽300                 |
+| #2         | Манго Чиз (IIKO) | ₽310        | IIKO Managed       | ₽310                 |
+| #3         | Виноградный Чиз  | ₽399        | Manual Override ✅ | ₽290                 |
 
 ### Execution Timeline
 
-| Time | Action | Result |
-|------|--------|--------|
-| 03:05:17 | Navigate to IIKO Sync Demo page | Sync interface loaded |
-| 03:05:33 | Click "Run IIKO Sync (Safe)" | Sync simulation triggered |
-| 03:05:33 | Backend processes sync logic | Protection algorithm executed |
-| 03:05:33 | Sync completes | 1 updated, 2 protected, 2 conflicts logged |
+| Time     | Action                          | Result                                     |
+| -------- | ------------------------------- | ------------------------------------------ |
+| 03:05:17 | Navigate to IIKO Sync Demo page | Sync interface loaded                      |
+| 03:05:33 | Click "Run IIKO Sync (Safe)"    | Sync simulation triggered                  |
+| 03:05:33 | Backend processes sync logic    | Protection algorithm executed              |
+| 03:05:33 | Sync completes                  | 1 updated, 2 protected, 2 conflicts logged |
 
 ### Protection Logic Implementation
 
@@ -108,14 +108,14 @@ The Shadow DB protection mechanism is implemented in `server/iiko-sync.ts` using
 ```typescript
 for (const iikoProduct of iikoData) {
   const localProduct = PRODUCTS.find(p => p.id === iikoProduct.id);
-  
+
   if (localProduct?.is_manual_override) {
     // BLOCK: Manual override active, log conflict
     conflicts.push({
       productId: localProduct.id,
       localPrice: localProduct.price,
       iikoPrice: iikoProduct.price,
-      reason: "Manual override active"
+      reason: "Manual override active",
     });
     protectedCount++;
   } else {
@@ -131,6 +131,7 @@ This logic ensures that products with `is_manual_override: true` are completely 
 ### Sync Results
 
 **Summary Statistics:**
+
 - ✅ **1 Updated:** Product #2 (IIKO Managed) synced successfully from ₽310 → ₽310
 - 🛡️ **2 Protected:** Products #1 and #3 (Manual Override) blocked from sync
 - ⚠️ **2 Conflicts:** Logged for admin review
@@ -138,12 +139,14 @@ This logic ensures that products with `is_manual_override: true` are completely 
 **Protected Products:**
 
 #### Product #1: Клубничный Чиз
+
 - **Manual Price:** ₽500 (preserved ✅)
 - **IIKO Attempted:** ₽300 (blocked ❌)
 - **Conflict Logged:** Yes
 - **Result:** Manual price maintained
 
 #### Product #3: Виноградный Чиз
+
 - **Manual Price:** ₽399 (preserved ✅)
 - **IIKO Attempted:** ₽290 (blocked ❌)
 - **Conflict Logged:** Yes
@@ -169,13 +172,13 @@ An administrator modifies the price of **Классический чай с мо
 
 ### Price Change Sequence
 
-| Change # | Timestamp | New Price | Time Since Last Change | Result |
-|----------|-----------|-----------|------------------------|--------|
-| 1 | 03:07:03 | ₽350 | — | ✅ Success |
-| 2 | 03:07:41 | ₽380 | 38 seconds | ✅ Success |
-| 3 | 03:08:20 | ₽420 | 39 seconds | ✅ Success |
-| 4 | 03:08:57 | ₽390 | 37 seconds | ✅ Success |
-| 5 | 03:09:36 | ₽410 | 39 seconds | ✅ Success |
+| Change # | Timestamp | New Price | Time Since Last Change | Result     |
+| -------- | --------- | --------- | ---------------------- | ---------- |
+| 1        | 03:07:03  | ₽350      | —                      | ✅ Success |
+| 2        | 03:07:41  | ₽380      | 38 seconds             | ✅ Success |
+| 3        | 03:08:20  | ₽420      | 39 seconds             | ✅ Success |
+| 4        | 03:08:57  | ₽390      | 37 seconds             | ✅ Success |
+| 5        | 03:09:36  | ₽410      | 39 seconds             | ✅ Success |
 
 **Average Time Between Changes:** ~38 seconds  
 **Total Changes:** 5 consecutive updates  
@@ -185,6 +188,7 @@ An administrator modifies the price of **Классический чай с мо
 ### System Behavior Analysis
 
 #### Backend Performance
+
 - All 5 mutations processed successfully without errors
 - No database lock conflicts or deadlocks detected
 - `is_manual_override` flag correctly set to `true` after first change
@@ -192,6 +196,7 @@ An administrator modifies the price of **Классический чай с мо
 - Sequential processing ensured correct final state
 
 #### Frontend Stability
+
 - tRPC query cache invalidated correctly after each mutation
 - Auto-refetch triggered successfully for all 5 updates
 - No UI freezing or loading state errors
@@ -199,6 +204,7 @@ An administrator modifies the price of **Классический чай с мо
 - Frontend remained responsive throughout the test
 
 #### Network Resilience
+
 - No WebSocket disconnections
 - No HTTP 500 errors
 - Query invalidation propagated within <1 second for each change
@@ -218,18 +224,19 @@ The frontend correctly displayed the final price after all 5 rapid changes, conf
 
 In production environments, rapid price changes can expose critical system weaknesses. The following table compares potential failure modes with CHU TEA's actual performance:
 
-| Failure Mode | Risk | CHU TEA Result |
-|--------------|------|----------------|
-| **Race Conditions** | Backend processes updates out of order → Final price is wrong | ✅ Sequential processing ensured correct final state |
-| **Cache Staleness** | Frontend shows old price because invalidation failed | ✅ tRPC invalidation worked flawlessly for all 5 changes |
-| **Database Locks** | Rapid writes cause deadlocks → Some updates lost | ✅ No lock conflicts, all updates persisted |
-| **UI Freezing** | Frontend re-renders too frequently → App becomes unresponsive | ✅ Smooth UI updates, no performance degradation |
+| Failure Mode        | Risk                                                          | CHU TEA Result                                           |
+| ------------------- | ------------------------------------------------------------- | -------------------------------------------------------- |
+| **Race Conditions** | Backend processes updates out of order → Final price is wrong | ✅ Sequential processing ensured correct final state     |
+| **Cache Staleness** | Frontend shows old price because invalidation failed          | ✅ tRPC invalidation worked flawlessly for all 5 changes |
+| **Database Locks**  | Rapid writes cause deadlocks → Some updates lost              | ✅ No lock conflicts, all updates persisted              |
+| **UI Freezing**     | Frontend re-renders too frequently → App becomes unresponsive | ✅ Smooth UI updates, no performance degradation         |
 
 ### Test Result: ✅ PASS
 
 **Observed Behavior:** The tRPC subscription mechanism demonstrated excellent stability under stress. Five rapid consecutive price changes were processed correctly without any data loss, cache inconsistency, or UI degradation. The system maintained 100% accuracy and <1 second sync latency throughout the test.
 
 **Performance Metrics:**
+
 - **Update Success Rate:** 100% (5/5)
 - **Frontend Sync Latency:** <1 second per update
 - **Zero Errors:** No backend crashes, no frontend exceptions
@@ -283,41 +290,41 @@ Based on the comprehensive testing results, the CHU TEA platform demonstrates th
 
 ### ✅ Functional Requirements
 
-| Requirement | Status | Evidence |
-|-------------|--------|----------|
-| Real-time price updates | ✅ Verified | Test 1: <1 second sync latency |
-| Manual override protection | ✅ Verified | Test 2: 2/2 products protected |
-| High-frequency update handling | ✅ Verified | Test 3: 5/5 rapid changes successful |
-| IIKO sync conflict logging | ✅ Verified | Test 2: Conflicts logged correctly |
-| Multi-language support (RU/EN/ZH) | ✅ Verified | All UI elements localized |
-| Order prefix system (P/K/M/T) | ✅ Verified | Demo orders display correct prefixes |
+| Requirement                       | Status      | Evidence                             |
+| --------------------------------- | ----------- | ------------------------------------ |
+| Real-time price updates           | ✅ Verified | Test 1: <1 second sync latency       |
+| Manual override protection        | ✅ Verified | Test 2: 2/2 products protected       |
+| High-frequency update handling    | ✅ Verified | Test 3: 5/5 rapid changes successful |
+| IIKO sync conflict logging        | ✅ Verified | Test 2: Conflicts logged correctly   |
+| Multi-language support (RU/EN/ZH) | ✅ Verified | All UI elements localized            |
+| Order prefix system (P/K/M/T)     | ✅ Verified | Demo orders display correct prefixes |
 
 ### ✅ Non-Functional Requirements
 
-| Requirement | Status | Performance |
-|-------------|--------|-------------|
-| Response time | ✅ Excellent | <1 second for all operations |
-| System stability | ✅ Excellent | Zero crashes during stress test |
-| Data accuracy | ✅ Perfect | 100% correct final state |
-| UI responsiveness | ✅ Excellent | No freezing or lag detected |
-| Error handling | ✅ Robust | Conflicts logged, not silently ignored |
+| Requirement       | Status       | Performance                            |
+| ----------------- | ------------ | -------------------------------------- |
+| Response time     | ✅ Excellent | <1 second for all operations           |
+| System stability  | ✅ Excellent | Zero crashes during stress test        |
+| Data accuracy     | ✅ Perfect   | 100% correct final state               |
+| UI responsiveness | ✅ Excellent | No freezing or lag detected            |
+| Error handling    | ✅ Robust    | Conflicts logged, not silently ignored |
 
 ### 🟡 Pending Production Requirements
 
 The following items require completion before full production deployment:
 
-| Item | Priority | Estimated Effort |
-|------|----------|------------------|
-| **Real Payment Gateway Integration** | 🔴 Critical | 2-3 days |
-| Connect Tinkoff/YooKassa API | High | Replace mock payment with real pre-auth |
-| **Real IIKO API Integration** | 🔴 Critical | 3-5 days |
-| Replace mock sync with IIKO REST API | High | Implement webhook for order status updates |
-| **User Authentication System** | 🟡 Important | 2-3 days |
-| Enable OAuth login (Google/VK/Telegram) | Medium | Configure SMS verification |
-| **Admin Role-Based Access Control** | 🟡 Important | 1-2 days |
-| Lock /admin routes to authorized users | Medium | Implement role assignment UI |
-| **Load Testing** | 🟢 Recommended | 1 day |
-| Simulate 1000+ concurrent users | Low | Validate database connection pooling |
+| Item                                    | Priority       | Estimated Effort                           |
+| --------------------------------------- | -------------- | ------------------------------------------ |
+| **Real Payment Gateway Integration**    | 🔴 Critical    | 2-3 days                                   |
+| Connect Tinkoff/YooKassa API            | High           | Replace mock payment with real pre-auth    |
+| **Real IIKO API Integration**           | 🔴 Critical    | 3-5 days                                   |
+| Replace mock sync with IIKO REST API    | High           | Implement webhook for order status updates |
+| **User Authentication System**          | 🟡 Important   | 2-3 days                                   |
+| Enable OAuth login (Google/VK/Telegram) | Medium         | Configure SMS verification                 |
+| **Admin Role-Based Access Control**     | 🟡 Important   | 1-2 days                                   |
+| Lock /admin routes to authorized users  | Medium         | Implement role assignment UI               |
+| **Load Testing**                        | 🟢 Recommended | 1 day                                      |
+| Simulate 1000+ concurrent users         | Low            | Validate database connection pooling       |
 
 ---
 
@@ -329,6 +336,7 @@ The following items require completion before full production deployment:
 **Required Action:** Integrate Tinkoff or YooKassa API with ₽1 test transactions
 
 **Implementation Steps:**
+
 1. Register merchant account with Tinkoff or YooKassa
 2. Obtain API credentials and configure in `server/.env`
 3. Replace `server/payment.controller.ts` mock logic with real API calls
@@ -343,6 +351,7 @@ The following items require completion before full production deployment:
 **Required Action:** Replace with IIKO REST API integration
 
 **Implementation Steps:**
+
 1. Obtain IIKO API credentials from POS system administrator
 2. Implement IIKO product catalog sync (daily scheduled job)
 3. Configure webhook endpoint to receive order status updates
@@ -357,6 +366,7 @@ The following items require completion before full production deployment:
 **Required Action:** Enable Google/VK/Telegram login
 
 **Implementation Steps:**
+
 1. Configure OAuth providers in `server/_core/auth.ts`
 2. Add login UI to frontend (`client/src/pages/Login.tsx`)
 3. Implement SMS verification for phone-based registration
@@ -371,6 +381,7 @@ The following items require completion before full production deployment:
 **Required Action:** Simulate 1000+ concurrent users
 
 **Implementation Steps:**
+
 1. Use k6 or Artillery to generate load test scenarios
 2. Simulate 1000 concurrent users placing orders
 3. Monitor database connection pool utilization

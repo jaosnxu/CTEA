@@ -19,12 +19,14 @@
 ## 1. Migration Context
 
 ### 1.1 Migration Trigger
+
 - **Original Stack**: MySQL + Drizzle ORM
 - **Target Stack**: PostgreSQL 14+ + Prisma ORM
 - **Reason**: Compliance with M3.4-GLOBAL-STANDARD-001 technical standards
 - **Approval**: M3.4-GLOBAL-COMP-002A directive
 
 ### 1.2 Migration Scope
+
 - **Total Tables**: 74
 - **Total Enums**: 24
 - **Primary Key Strategy**: UUID v4 (except BigInt log tables)
@@ -36,6 +38,7 @@
 ## 2. Pre-Migration Preparation
 
 ### 2.1 Legacy Schema Preservation
+
 ```bash
 # Backup MySQL schema
 cd /home/ubuntu/CTEA
@@ -48,6 +51,7 @@ cp drizzle.config.ts legacy/drizzle.config.ts.bak
 **Location**: `/home/ubuntu/CTEA/legacy/`
 
 ### 2.2 Schema Analysis
+
 - **Total Lines**: 1789 lines
 - **Table Definitions**: 74 tables
 - **Field Count**: ~500+ fields
@@ -58,6 +62,7 @@ cp drizzle.config.ts legacy/drizzle.config.ts.bak
 ## 3. Prisma Schema Generation
 
 ### 3.1 Installation
+
 ```bash
 cd /home/ubuntu/CTEA
 pnpm add -D prisma @prisma/client
@@ -65,6 +70,7 @@ npx prisma init --datasource-provider postgresql
 ```
 
 **Output**:
+
 ```
 ✔ Your Prisma schema was created at prisma/schema.prisma
 ```
@@ -72,29 +78,35 @@ npx prisma init --datasource-provider postgresql
 ### 3.2 Schema Conversion Strategy
 
 #### Manual Conversion (Core Tables)
+
 **Tables**: 12 core tables (System Management + Finance modules)  
 **Method**: Hand-crafted for precision  
 **Features**:
+
 - Correct field types and constraints
 - Proper relationships and indexes
 - SHA-256 audit chain fields in audit_logs
 - UUID v4 primary keys
 
 #### Automated Conversion (Remaining Tables)
+
 **Tables**: 62 tables  
 **Method**: Python script (`scripts/generate_prisma_schema.py`)  
 **Features**:
+
 - Type mapping (MySQL → PostgreSQL)
 - Automatic audit field injection
 - Primary key conversion (auto-increment → UUID)
 - Index migration
 
 ### 3.3 Schema Validation
+
 ```bash
 npx prisma validate
 ```
 
 **Output**:
+
 ```
 ✅ The schema at prisma/schema.prisma is valid 🚀
 ```
@@ -104,6 +116,7 @@ npx prisma validate
 ## 4. Database Initialization
 
 ### 4.1 PostgreSQL Installation
+
 ```bash
 sudo apt-get update
 sudo apt-get install -y postgresql postgresql-contrib
@@ -111,23 +124,27 @@ sudo service postgresql start
 ```
 
 **Result**:
+
 - **Version**: PostgreSQL 14
 - **Status**: ✅ Active (online)
 - **Port**: 5432
 
 ### 4.2 Database Creation
+
 ```bash
 sudo -u postgres createdb ctea_dev
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
 ```
 
 **Result**:
+
 - **Database**: ctea_dev
 - **Owner**: postgres
 - **Encoding**: UTF8
 - **Collation**: C.UTF-8
 
 ### 4.3 Environment Configuration
+
 ```bash
 echo 'DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ctea_dev"' >> .env
 ```
@@ -137,21 +154,25 @@ echo 'DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ctea_dev"' >> 
 ## 5. Migration Execution
 
 ### 5.1 Prisma Client Generation
+
 ```bash
 npx prisma generate
 ```
 
 **Output**:
+
 ```
 ✔ Generated Prisma Client (v7.2.0) to ./node_modules/@prisma/client in 419ms
 ```
 
 ### 5.2 Database Migration
+
 ```bash
 npx prisma migrate dev --name init_schema
 ```
 
 **Output**:
+
 ```
 Prisma schema loaded from prisma/schema.prisma.
 Datasource "db": PostgreSQL database "ctea_dev", schema "public" at "localhost:5432"
@@ -168,6 +189,7 @@ Your database is now in sync with your schema.
 ```
 
 **Migration Details**:
+
 - **Migration ID**: 20260112124722_init_schema
 - **Migration File**: `prisma/migrations/20260112124722_init_schema/migration.sql`
 - **SHA-256 Checksum**: `390dc21de1f1c3b7a5eefa5f3c209548d4723be389378046ab08a49009240f38`
@@ -177,6 +199,7 @@ Your database is now in sync with your schema.
 ## 6. Migration Verification
 
 ### 6.1 Table Count Verification
+
 ```bash
 sudo -u postgres psql -d ctea_dev -c "\dt" | grep "public" | wc -l
 ```
@@ -184,11 +207,13 @@ sudo -u postgres psql -d ctea_dev -c "\dt" | grep "public" | wc -l
 **Result**: 74 tables (excluding `_prisma_migrations`)
 
 ### 6.2 Audit Log Table Verification
+
 ```bash
 sudo -u postgres psql -d ctea_dev -c "\d audit_logs"
 ```
 
 **Key Fields Verified**:
+
 - ✅ `id` (bigint, primary key)
 - ✅ `eventId` (varchar(100), unique)
 - ✅ `previousHash` (varchar(64))
@@ -196,6 +221,7 @@ sudo -u postgres psql -d ctea_dev -c "\d audit_logs"
 - ✅ `createdAt` (timestamp)
 
 ### 6.3 UUID Primary Key Verification
+
 ```bash
 sudo -u postgres psql -d ctea_dev -c "\d organizations"
 ```
@@ -207,6 +233,7 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 ## 7. Migration Content Summary
 
 ### 7.1 Enum Types Created (24)
+
 1. OrganizationLevel
 2. OrganizationStatus
 3. AdminUserRole
@@ -236,6 +263,7 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 ### 7.2 Tables Created (74)
 
 #### System Management Module (6 tables)
+
 1. organizations
 2. stores
 3. admin_users
@@ -244,6 +272,7 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 6. permission_rules
 
 #### Financial Module (6 tables)
+
 7. deposit_accounts
 8. settlement_rules
 9. cross_store_ledger
@@ -252,6 +281,7 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 12. financial_reports
 
 #### Marketing Module (6 tables)
+
 13. campaigns
 14. coupons
 15. user_coupons
@@ -260,6 +290,7 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 18. weather_triggers
 
 #### Product & Menu Module (8 tables)
+
 19. categories
 20. products
 21. sku_attributes
@@ -270,6 +301,7 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 26. price_change_logs
 
 #### AI & Data Module (6 tables)
+
 27. data_pipelines
 28. ai_reports
 29. translation_reviews
@@ -278,6 +310,7 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 32. llm_call_logs
 
 #### Order Module (5 tables)
+
 33. orders
 34. order_items
 35. order_discounts
@@ -285,6 +318,7 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 37. review_images
 
 #### Mall Module (5 tables)
+
 38. mall_products
 39. mall_orders
 40. mall_order_items
@@ -292,6 +326,7 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 42. logistics_tracking
 
 #### Influencer Module (6 tables)
+
 43. influencers
 44. influencer_tasks
 45. task_submissions
@@ -300,6 +335,7 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 48. referral_links
 
 #### Customer Service Module (5 tables)
+
 49. chat_sessions
 50. chat_messages
 51. ai_intents
@@ -307,15 +343,18 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 53. faq_entries
 
 #### Telegram Bot Module (1 table)
+
 54. telegram_bot_config
 
 #### User Module (4 tables)
+
 55. users
 56. user_addresses
 57. user_points
 58. gift_cards
 
 #### Security Module (13 tables)
+
 59. sms_providers
 60. sms_verification_logs
 61. phone_bindings
@@ -330,13 +369,16 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 70. blocked_entities
 
 #### Translation Module (2 tables)
+
 71. translations
 72. translation_audit_log
 
 #### Offline Module (1 table)
+
 73. offline_redemption_queue
 
 #### User Trust Module (1 table)
+
 74. user_trust_scores
 
 ---
@@ -345,29 +387,30 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 
 ### 8.1 M3.4-GLOBAL-STANDARD-001 Compliance
 
-| Requirement | Standard | Implementation | Status |
-|-------------|----------|----------------|--------|
-| Database | PostgreSQL 14+ | PostgreSQL 14 | ✅ |
-| ORM | Prisma ORM | Prisma 7.2.0 | ✅ |
-| Primary Keys | UUID v4 | @default(uuid()) | ✅ |
-| Audit Fields | createdAt, updatedAt, createdBy, updatedBy | All tables | ✅ |
-| Multi-Tenant | orgId, storeId | All core tables | ✅ |
-| Migration | Prisma Migrate | prisma migrate dev | ✅ |
+| Requirement  | Standard                                   | Implementation     | Status |
+| ------------ | ------------------------------------------ | ------------------ | ------ |
+| Database     | PostgreSQL 14+                             | PostgreSQL 14      | ✅     |
+| ORM          | Prisma ORM                                 | Prisma 7.2.0       | ✅     |
+| Primary Keys | UUID v4                                    | @default(uuid())   | ✅     |
+| Audit Fields | createdAt, updatedAt, createdBy, updatedBy | All tables         | ✅     |
+| Multi-Tenant | orgId, storeId                             | All core tables    | ✅     |
+| Migration    | Prisma Migrate                             | prisma migrate dev | ✅     |
 
 ### 8.2 M3.4-GLOBAL-COMP-002A Compliance
 
-| Requirement | Implementation | Status |
-|-------------|----------------|--------|
-| SHA-256 Audit Chain | eventId, previousHash, sha256Hash in audit_logs | ✅ |
-| All 74 Tables | 74/74 tables created | ✅ |
-| Schema Validation | Prisma validate passed | ✅ |
-| Migration Checksum | SHA-256 recorded | ✅ |
+| Requirement         | Implementation                                  | Status |
+| ------------------- | ----------------------------------------------- | ------ |
+| SHA-256 Audit Chain | eventId, previousHash, sha256Hash in audit_logs | ✅     |
+| All 74 Tables       | 74/74 tables created                            | ✅     |
+| Schema Validation   | Prisma validate passed                          | ✅     |
+| Migration Checksum  | SHA-256 recorded                                | ✅     |
 
 ---
 
 ## 9. Post-Migration Status
 
 ### 9.1 Database Status
+
 - **Database**: ctea_dev (PostgreSQL 14)
 - **Tables**: 74/74 ✅
 - **Enums**: 24/24 ✅
@@ -375,11 +418,13 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 - **Foreign Keys**: All migrated ✅
 
 ### 9.2 Schema Status
+
 - **Validation**: ✅ Passed
 - **Client Generation**: ✅ Successful
 - **Migration**: ✅ Applied
 
 ### 9.3 Compliance Status
+
 - **M3.4-GLOBAL-STANDARD-001**: ✅ Fully Compliant
 - **M3.4-GLOBAL-COMP-002A**: ✅ Fully Compliant
 
@@ -388,12 +433,14 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 ## 10. Known Issues & Limitations
 
 ### 10.1 Resolved Issues
+
 1. ✅ Prisma 7.x datasource URL configuration (moved to prisma.config.ts)
 2. ✅ Enum field indexing (removed as per Prisma limitations)
 3. ✅ Primary key syntax errors (fixed duplicate closing braces)
 4. ✅ Missing primary keys (fixed BigInt? → BigInt @id @default(autoincrement()))
 
 ### 10.2 Current Limitations
+
 - **Relations**: Some complex relations need manual definition
 - **Indexes**: Partial indexes require manual SQL
 - **Triggers**: No triggers migrated (not in original schema)
@@ -403,11 +450,13 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 ## 11. Next Steps
 
 ### 11.1 Immediate Actions
+
 1. ✅ Generate AUDIT_CHAIN_VERIFICATION.md
 2. ✅ Copy PRISMA_SCHEMA_FINAL.prisma
 3. ✅ Register audit event M3.4-GLOBAL-COMP-002A-PH3-INIT
 
 ### 11.2 Phase 4 Preparation
+
 1. Implement SHA-256 audit chain logic
 2. Create audit chain verification script
 3. Test audit log insertion and chain validation
@@ -417,10 +466,12 @@ sudo -u postgres psql -d ctea_dev -c "\d organizations"
 ## 12. Migration Checksum
 
 ### 12.1 Migration File
+
 - **Path**: `prisma/migrations/20260112124722_init_schema/migration.sql`
 - **SHA-256**: `390dc21de1f1c3b7a5eefa5f3c209548d4723be389378046ab08a49009240f38`
 
 ### 12.2 Verification Command
+
 ```bash
 sha256sum prisma/migrations/20260112124722_init_schema/migration.sql
 ```

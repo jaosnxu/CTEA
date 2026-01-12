@@ -1,6 +1,6 @@
 /**
  * AI 翻译录入组件
- * 
+ *
  * 集成 DeepSeek AI 翻译引擎：
  * - 输入中文原文，自动翻译为俄语/英语
  * - 显示翻译置信度
@@ -13,7 +13,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -30,11 +36,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { 
-  Bot, 
-  Sparkles, 
-  RefreshCw, 
-  Save, 
+import {
+  Bot,
+  Sparkles,
+  RefreshCw,
+  Save,
   CheckCircle,
   AlertCircle,
   Loader2,
@@ -60,30 +66,36 @@ interface AITranslationInputProps {
   onSuccess?: () => void;
 }
 
-export default function AITranslationInput({ open, onClose, onSuccess }: AITranslationInputProps) {
+export default function AITranslationInput({
+  open,
+  onClose,
+  onSuccess,
+}: AITranslationInputProps) {
   // 表单状态
   const [key, setKey] = useState("");
   const [category, setCategory] = useState("general");
   const [textZh, setTextZh] = useState("");
   const [context, setContext] = useState("");
-  
+
   // 翻译结果状态
   const [textRu, setTextRu] = useState("");
   const [textEn, setTextEn] = useState("");
   const [confidence, setConfidence] = useState<number | null>(null);
-  
+
   // 加载状态
   const [isTranslating, setIsTranslating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isTranslated, setIsTranslated] = useState(false);
-  const [aiStatus, setAiStatus] = useState<"unknown" | "available" | "unavailable">("unknown");
+  const [aiStatus, setAiStatus] = useState<
+    "unknown" | "available" | "unavailable"
+  >("unknown");
 
   // 检查 AI 状态
   const checkAIStatus = async () => {
     try {
-      const response = await fetch('/api/trpc/translation.checkAIStatus', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/trpc/translation.checkAIStatus", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
       });
       if (response.ok) {
         const data = await response.json();
@@ -103,19 +115,19 @@ export default function AITranslationInput({ open, onClose, onSuccess }: AITrans
 
     setIsTranslating(true);
     try {
-      const response = await fetch('/api/trpc/translation.aiTranslate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/trpc/translation.aiTranslate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           json: {
             textZh: textZh.trim(),
             context: context.trim() || undefined,
-          }
+          },
         }),
       });
 
       if (!response.ok) {
-        throw new Error('翻译请求失败');
+        throw new Error("翻译请求失败");
       }
 
       const data = await response.json();
@@ -130,10 +142,10 @@ export default function AITranslationInput({ open, onClose, onSuccess }: AITrans
           description: `置信度: ${result.confidence}%`,
         });
       } else {
-        throw new Error(result?.error || '翻译失败');
+        throw new Error(result?.error || "翻译失败");
       }
     } catch (error) {
-      console.error('Translation error:', error);
+      console.error("Translation error:", error);
       toast.error("翻译失败", {
         description: error instanceof Error ? error.message : "请稍后重试",
       });
@@ -159,21 +171,21 @@ export default function AITranslationInput({ open, onClose, onSuccess }: AITrans
 
     setIsSaving(true);
     try {
-      const response = await fetch('/api/trpc/translation.createWithAI', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/trpc/translation.createWithAI", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           json: {
             key: key.trim(),
             category,
             textZh: textZh.trim(),
             context: context.trim() || undefined,
-          }
+          },
         }),
       });
 
       if (!response.ok) {
-        throw new Error('保存请求失败');
+        throw new Error("保存请求失败");
       }
 
       const data = await response.json();
@@ -188,10 +200,10 @@ export default function AITranslationInput({ open, onClose, onSuccess }: AITrans
         onSuccess?.();
         onClose();
       } else {
-        throw new Error('保存失败');
+        throw new Error("保存失败");
       }
     } catch (error) {
-      console.error('Save error:', error);
+      console.error("Save error:", error);
       toast.error("保存失败", {
         description: error instanceof Error ? error.message : "请稍后重试",
       });
@@ -221,7 +233,7 @@ export default function AITranslationInput({ open, onClose, onSuccess }: AITrans
   };
 
   return (
-    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={open} onOpenChange={open => !open && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -242,7 +254,7 @@ export default function AITranslationInput({ open, onClose, onSuccess }: AITrans
                 id="key"
                 placeholder="例如: menu.category.drinks"
                 value={key}
-                onChange={(e) => setKey(e.target.value)}
+                onChange={e => setKey(e.target.value)}
               />
             </div>
             <div className="space-y-2">
@@ -252,7 +264,7 @@ export default function AITranslationInput({ open, onClose, onSuccess }: AITrans
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((cat) => (
+                  {CATEGORIES.map(cat => (
                     <SelectItem key={cat.value} value={cat.value}>
                       {cat.label} ({cat.labelZh})
                     </SelectItem>
@@ -269,7 +281,7 @@ export default function AITranslationInput({ open, onClose, onSuccess }: AITrans
               id="textZh"
               placeholder="输入需要翻译的中文文本..."
               value={textZh}
-              onChange={(e) => {
+              onChange={e => {
                 setTextZh(e.target.value);
                 setIsTranslated(false);
               }}
@@ -284,7 +296,7 @@ export default function AITranslationInput({ open, onClose, onSuccess }: AITrans
               id="context"
               placeholder="例如: 菜单分类名称、按钮文本、通知消息..."
               value={context}
-              onChange={(e) => setContext(e.target.value)}
+              onChange={e => setContext(e.target.value)}
             />
             <p className="text-xs text-gray-500">
               提供上下文可以帮助 AI 生成更准确的翻译
@@ -333,11 +345,13 @@ export default function AITranslationInput({ open, onClose, onSuccess }: AITrans
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     🇷🇺 俄语 (Русский)
-                    {isTranslated && <CheckCircle className="w-3 h-3 text-green-500" />}
+                    {isTranslated && (
+                      <CheckCircle className="w-3 h-3 text-green-500" />
+                    )}
                   </Label>
                   <Textarea
                     value={textRu}
-                    onChange={(e) => setTextRu(e.target.value)}
+                    onChange={e => setTextRu(e.target.value)}
                     placeholder="俄语翻译..."
                     rows={2}
                     className="bg-white"
@@ -348,11 +362,13 @@ export default function AITranslationInput({ open, onClose, onSuccess }: AITrans
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     🇬🇧 英语 (English)
-                    {isTranslated && <CheckCircle className="w-3 h-3 text-green-500" />}
+                    {isTranslated && (
+                      <CheckCircle className="w-3 h-3 text-green-500" />
+                    )}
                   </Label>
                   <Textarea
                     value={textEn}
-                    onChange={(e) => setTextEn(e.target.value)}
+                    onChange={e => setTextEn(e.target.value)}
                     placeholder="英语翻译..."
                     rows={2}
                     className="bg-white"
@@ -367,7 +383,9 @@ export default function AITranslationInput({ open, onClose, onSuccess }: AITrans
                     onClick={handleTranslate}
                     disabled={isTranslating}
                   >
-                    <RefreshCw className={`w-3 h-3 mr-1 ${isTranslating ? 'animate-spin' : ''}`} />
+                    <RefreshCw
+                      className={`w-3 h-3 mr-1 ${isTranslating ? "animate-spin" : ""}`}
+                    />
                     重新翻译
                   </Button>
                 </div>
@@ -382,7 +400,8 @@ export default function AITranslationInput({ open, onClose, onSuccess }: AITrans
               <div>
                 <p className="font-medium">注意</p>
                 <p className="text-xs mt-1">
-                  AI 翻译结果将保存为"待审核"状态，需要管理员审核后才会发布到前端。
+                  AI
+                  翻译结果将保存为"待审核"状态，需要管理员审核后才会发布到前端。
                   您可以在保存前手动修改翻译结果。
                 </p>
               </div>
@@ -396,7 +415,9 @@ export default function AITranslationInput({ open, onClose, onSuccess }: AITrans
           </Button>
           <Button
             onClick={handleSave}
-            disabled={isSaving || !key.trim() || !textZh.trim() || !textRu.trim()}
+            disabled={
+              isSaving || !key.trim() || !textZh.trim() || !textRu.trim()
+            }
           >
             {isSaving ? (
               <>

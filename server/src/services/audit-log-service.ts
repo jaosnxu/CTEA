@@ -1,8 +1,8 @@
 /**
  * Audit Log Service
- * 
+ *
  * Implements SHA-256 chain-based audit logging as per M3.4-GLOBAL-COMP-002
- * 
+ *
  * Features:
  * - SHA-256 chain validation
  * - Event ID generation
@@ -10,9 +10,9 @@
  * - Immutable append-only logging
  */
 
-import { PrismaClient, AuditAction, OperatorType } from '@prisma/client';
-import crypto from 'crypto';
-import { getPrismaClient } from '../db/prisma';
+import { PrismaClient, AuditAction, OperatorType } from "@prisma/client";
+import crypto from "crypto";
+import { getPrismaClient } from "../db/prisma";
 
 export interface CreateAuditLogInput {
   orgId?: string;
@@ -54,8 +54,8 @@ export class AuditLogService {
     try {
       // Get the last audit log record to get previous hash
       const lastRecord = await this.prisma.auditLog.findFirst({
-        orderBy: { id: 'desc' },
-        select: { sha256Hash: true }
+        orderBy: { id: "desc" },
+        select: { sha256Hash: true },
       });
 
       const previousHash = lastRecord?.sha256Hash || null;
@@ -70,7 +70,7 @@ export class AuditLogService {
         action: input.action,
         diffAfter: input.diffAfter,
         previousHash,
-        createdAt
+        createdAt,
       });
 
       // Insert audit log record
@@ -91,13 +91,15 @@ export class AuditLogService {
           eventId,
           previousHash,
           sha256Hash,
-          createdAt
-        }
+          createdAt,
+        },
       });
 
-      console.log(`✅ Audit log created: ${eventId} (table: ${input.tableName}, record: ${input.recordId})`);
+      console.log(
+        `✅ Audit log created: ${eventId} (table: ${input.tableName}, record: ${input.recordId})`
+      );
     } catch (error) {
-      console.error('❌ Failed to create audit log:', error);
+      console.error("❌ Failed to create audit log:", error);
       // Don't throw error to prevent breaking main business logic
       // Audit logging should be non-blocking
     }
@@ -112,8 +114,10 @@ export class AuditLogService {
       return `EVT-${requestId}`;
     }
 
-    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const sequence = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const sequence = Math.floor(Math.random() * 1000000)
+      .toString()
+      .padStart(6, "0");
     return `EVT-${date}-${sequence}`;
   }
 
@@ -135,14 +139,14 @@ export class AuditLogService {
       recordId: data.recordId,
       action: data.action,
       diffAfter: data.diffAfter || null,
-      previousHash: data.previousHash || 'GENESIS',
-      createdAt: data.createdAt.toISOString()
+      previousHash: data.previousHash || "GENESIS",
+      createdAt: data.createdAt.toISOString(),
     };
 
     const hashString = JSON.stringify(hashInput);
-    const hash = crypto.createHash('sha256');
+    const hash = crypto.createHash("sha256");
     hash.update(hashString);
-    return hash.digest('hex');
+    return hash.digest("hex");
   }
 
   /**
@@ -156,7 +160,7 @@ export class AuditLogService {
     const result: AuditChainValidationResult = {
       isValid: true,
       totalRecords: 0,
-      errorRecords: []
+      errorRecords: [],
     };
 
     try {
@@ -178,7 +182,7 @@ export class AuditLogService {
       // Fetch all audit logs in order
       const records = await this.prisma.auditLog.findMany({
         where,
-        orderBy: { id: 'asc' }
+        orderBy: { id: "asc" },
       });
 
       result.totalRecords = records.length;
@@ -192,19 +196,19 @@ export class AuditLogService {
           result.errorRecords.push({
             id: record.id,
             eventId: record.eventId,
-            error: `Previous hash mismatch: expected ${previousHash}, got ${record.previousHash}`
+            error: `Previous hash mismatch: expected ${previousHash}, got ${record.previousHash}`,
           });
         }
 
         // Recalculate and verify current hash
         const calculatedHash = this.calculateHash({
-          eventId: record.eventId || '',
+          eventId: record.eventId || "",
           tableName: record.tableName,
           recordId: record.recordId,
           action: record.action,
           diffAfter: record.diffAfter as object,
           previousHash: record.previousHash,
-          createdAt: record.createdAt
+          createdAt: record.createdAt,
         });
 
         if (calculatedHash !== record.sha256Hash) {
@@ -212,7 +216,7 @@ export class AuditLogService {
           result.errorRecords.push({
             id: record.id,
             eventId: record.eventId,
-            error: `Hash mismatch: expected ${calculatedHash}, got ${record.sha256Hash}`
+            error: `Hash mismatch: expected ${calculatedHash}, got ${record.sha256Hash}`,
           });
         }
 
@@ -221,7 +225,7 @@ export class AuditLogService {
 
       return result;
     } catch (error) {
-      console.error('❌ Failed to validate audit chain:', error);
+      console.error("❌ Failed to validate audit chain:", error);
       throw error;
     }
   }
@@ -229,27 +233,33 @@ export class AuditLogService {
   /**
    * Get audit logs for a specific record
    */
-  async getAuditLogsForRecord(tableName: string, recordId: string): Promise<any[]> {
+  async getAuditLogsForRecord(
+    tableName: string,
+    recordId: string
+  ): Promise<any[]> {
     return this.prisma.auditLog.findMany({
       where: {
         tableName,
-        recordId
+        recordId,
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
   }
 
   /**
    * Get audit logs for a specific organization
    */
-  async getAuditLogsForOrg(orgId: string, options?: {
-    limit?: number;
-    offset?: number;
-    fromDate?: Date;
-    toDate?: Date;
-  }): Promise<any[]> {
+  async getAuditLogsForOrg(
+    orgId: string,
+    options?: {
+      limit?: number;
+      offset?: number;
+      fromDate?: Date;
+      toDate?: Date;
+    }
+  ): Promise<any[]> {
     const where: any = { orgId };
-    
+
     if (options?.fromDate || options?.toDate) {
       where.createdAt = {};
       if (options.fromDate) {
@@ -262,28 +272,31 @@ export class AuditLogService {
 
     return this.prisma.auditLog.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: options?.limit || 100,
-      skip: options?.offset || 0
+      skip: options?.offset || 0,
     });
   }
 
   /**
    * Register a special audit event (like M3.4-GLOBAL-COMP-002A-PH3-INIT)
    */
-  async registerAuditEvent(eventId: string, data: {
-    tableName: string;
-    recordId: string;
-    action: AuditAction;
-    diffAfter?: object;
-    operatorType?: OperatorType;
-    operatorName?: string;
-    reason?: string;
-  }): Promise<void> {
+  async registerAuditEvent(
+    eventId: string,
+    data: {
+      tableName: string;
+      recordId: string;
+      action: AuditAction;
+      diffAfter?: object;
+      operatorType?: OperatorType;
+      operatorName?: string;
+      reason?: string;
+    }
+  ): Promise<void> {
     // Get the last audit log record
     const lastRecord = await this.prisma.auditLog.findFirst({
-      orderBy: { id: 'desc' },
-      select: { sha256Hash: true }
+      orderBy: { id: "desc" },
+      select: { sha256Hash: true },
     });
 
     const previousHash = lastRecord?.sha256Hash || null;
@@ -297,7 +310,7 @@ export class AuditLogService {
       action: data.action,
       diffAfter: data.diffAfter,
       previousHash,
-      createdAt
+      createdAt,
     });
 
     // Insert audit log record
@@ -307,14 +320,14 @@ export class AuditLogService {
         recordId: data.recordId,
         action: data.action,
         diffAfter: data.diffAfter as any,
-        operatorType: data.operatorType || 'SYSTEM',
-        operatorName: data.operatorName || 'TEA Internal Audit Team',
+        operatorType: data.operatorType || "SYSTEM",
+        operatorName: data.operatorName || "TEA Internal Audit Team",
         reason: data.reason,
         eventId,
         previousHash,
         sha256Hash,
-        createdAt
-      }
+        createdAt,
+      },
     });
 
     console.log(`✅ Audit event registered: ${eventId}`);

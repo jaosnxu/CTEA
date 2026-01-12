@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { X, Minus, Plus } from "lucide-react";
-import { Dialog, DialogContent, DialogTitle, DialogPortal, DialogOverlay } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogPortal,
+  DialogOverlay,
+} from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useApp } from "@/contexts/AppContext";
@@ -31,20 +37,31 @@ interface ProductSpecModalProps {
   type: "drink" | "mall";
 }
 
-export default function ProductSpecModal({ open, onClose, product, type }: ProductSpecModalProps) {
+export default function ProductSpecModal({
+  open,
+  onClose,
+  product,
+  type,
+}: ProductSpecModalProps) {
   const { t } = useLanguage();
   const { addToDrinkCart, addToMallCart } = useApp();
-  
+
   // Drink options
-  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0]?.name || "Стандарт");
-  const [selectedTemp, setSelectedTemp] = useState(product.temperatures?.[0] || "Холодный");
+  const [selectedSize, setSelectedSize] = useState(
+    product.sizes?.[0]?.name || "Стандарт"
+  );
+  const [selectedTemp, setSelectedTemp] = useState(
+    product.temperatures?.[0] || "Холодный"
+  );
   const [selectedSweetness, setSelectedSweetness] = useState("Стандарт");
   const [selectedToppings, setSelectedToppings] = useState<string[]>([]);
-  
+
   // Mall options
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || "");
-  const [selectedProductSize, setSelectedProductSize] = useState(product.productSizes?.[0] || "");
-  
+  const [selectedProductSize, setSelectedProductSize] = useState(
+    product.productSizes?.[0] || ""
+  );
+
   const [quantity, setQuantity] = useState(0);
 
   // Reset state when product changes
@@ -70,14 +87,14 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
 
   const calculateTotalPrice = () => {
     let total = product.price;
-    
+
     if (type === "drink") {
       // Add size price
       const sizeOption = product.sizes?.find(s => s.name === selectedSize);
       if (sizeOption) {
         total = sizeOption.price;
       }
-      
+
       // Add toppings price
       selectedToppings.forEach(toppingName => {
         const topping = product.toppings?.find(t => t.name === toppingName);
@@ -86,26 +103,26 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
         }
       });
     }
-    
+
     return total * (quantity || 1);
   };
 
   const handleAddToCart = () => {
     const finalQuantity = quantity || 1;
-    
+
     if (type === "drink") {
       // 基础规格（不包含小料）
       const specs = [selectedSize, selectedTemp, selectedSweetness].join("、");
-      
+
       // 小料信息单独传递
       const toppings = selectedToppings.map(toppingName => {
         const topping = product.toppings?.find(t => t.name === toppingName);
         return {
           name: toppingName,
-          price: topping?.price || 0
+          price: topping?.price || 0,
         };
       });
-      
+
       // 计算单价（基础价格 + 小料价格）
       let unitPrice = product.price;
       const sizeOption = product.sizes?.find(s => s.name === selectedSize);
@@ -114,17 +131,19 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
       }
       const toppingsPrice = toppings.reduce((sum, t) => sum + t.price, 0);
       const finalPrice = unitPrice + toppingsPrice;
-      
+
       addToDrinkCart({
         productId: product.id,
         specs,
         toppings: toppings.length > 0 ? toppings : undefined,
         price: finalPrice,
-        quantity: finalQuantity
+        quantity: finalQuantity,
       });
     } else {
-      const specs = [selectedColor, selectedProductSize].filter(Boolean).join("、");
-      
+      const specs = [selectedColor, selectedProductSize]
+        .filter(Boolean)
+        .join("、");
+
       addToMallCart({
         productId: product.id,
         name: product.name,
@@ -132,7 +151,7 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
         price: product.price,
         desc: product.description || "",
         specs,
-        quantity: finalQuantity
+        quantity: finalQuantity,
       });
     }
 
@@ -153,8 +172,12 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
   };
 
   // 分离冷热温度选项
-  const coldTemps = product.temperatures?.filter(t => t.includes("Холодный") || t === "Комнатная") || [];
-  const hotTemps = product.temperatures?.filter(t => t === "Горячий" || t === "Тёплый") || [];
+  const coldTemps =
+    product.temperatures?.filter(
+      t => t.includes("Холодный") || t === "Комнатная"
+    ) || [];
+  const hotTemps =
+    product.temperatures?.filter(t => t === "Горячий" || t === "Тёплый") || [];
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -177,9 +200,11 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
                 {/* Size */}
                 {product.sizes && product.sizes.length > 0 && (
                   <div>
-                    <h3 className="font-medium text-xs mb-2">{t("components_productspecmodal_份量")}</h3>
+                    <h3 className="font-medium text-xs mb-2">
+                      {t("components_productspecmodal_份量")}
+                    </h3>
                     <div className="flex gap-2">
-                      {product.sizes.map((size) => (
+                      {product.sizes.map(size => (
                         <button
                           key={size.name}
                           onClick={() => setSelectedSize(size.name)}
@@ -190,7 +215,9 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
                           }`}
                         >
                           <div className="text-xs">{size.name}</div>
-                          <div className={`text-xs font-medium ${selectedSize === size.name ? "text-[#FF6B00]" : "text-gray-900"}`}>
+                          <div
+                            className={`text-xs font-medium ${selectedSize === size.name ? "text-[#FF6B00]" : "text-gray-900"}`}
+                          >
                             {formatCurrency(size.price)}
                           </div>
                         </button>
@@ -202,9 +229,11 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
                 {/* Toppings */}
                 {product.toppings && product.toppings.length > 0 && (
                   <div>
-                    <h3 className="font-medium text-xs mb-2">{t("components_productspecmodal_小料")}</h3>
+                    <h3 className="font-medium text-xs mb-2">
+                      {t("components_productspecmodal_小料")}
+                    </h3>
                     <div className="grid grid-cols-4 gap-2">
-                      {product.toppings.map((topping) => (
+                      {product.toppings.map(topping => (
                         <button
                           key={topping.name}
                           onClick={() => toggleTopping(topping.name)}
@@ -224,9 +253,11 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
                 {/* Temperature - 分离冷热 */}
                 {product.temperatures && product.temperatures.length > 0 && (
                   <div>
-                    <h3 className="font-medium text-xs mb-2">{t("components_productspecmodal_温度")}</h3>
+                    <h3 className="font-medium text-xs mb-2">
+                      {t("components_productspecmodal_温度")}
+                    </h3>
                     <div className="grid grid-cols-4 gap-2">
-                      {product.temperatures.map((temp) => (
+                      {product.temperatures.map(temp => (
                         <button
                           key={temp}
                           onClick={() => setSelectedTemp(temp)}
@@ -244,7 +275,7 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
                       {/* 保留原来的冷热分离逻辑，但隐藏 */}
                       {hotTemps.length > 0 && (
                         <div className="grid grid-cols-4 gap-2">
-                          {hotTemps.map((temp) => (
+                          {hotTemps.map(temp => (
                             <button
                               key={temp}
                               onClick={() => setSelectedTemp(temp)}
@@ -266,9 +297,11 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
                 {/* Sweetness */}
                 {product.sweetness && product.sweetness.length > 0 && (
                   <div>
-                    <h3 className="font-medium text-xs mb-2">{t("components_productspecmodal_甜度")}</h3>
+                    <h3 className="font-medium text-xs mb-2">
+                      {t("components_productspecmodal_甜度")}
+                    </h3>
                     <div className="grid grid-cols-4 gap-2">
-                      {product.sweetness.map((sweet) => (
+                      {product.sweetness.map(sweet => (
                         <button
                           key={sweet}
                           onClick={() => setSelectedSweetness(sweet)}
@@ -293,9 +326,11 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
                 {/* Colors */}
                 {product.colors && product.colors.length > 0 && (
                   <div>
-                    <h3 className="font-medium text-sm mb-3">{t("components_productspecmodal_颜色")}</h3>
+                    <h3 className="font-medium text-sm mb-3">
+                      {t("components_productspecmodal_颜色")}
+                    </h3>
                     <div className="flex gap-3">
-                      {product.colors.map((color) => (
+                      {product.colors.map(color => (
                         <button
                           key={color}
                           onClick={() => setSelectedColor(color)}
@@ -315,9 +350,11 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
                 {/* Sizes */}
                 {product.productSizes && product.productSizes.length > 0 && (
                   <div>
-                    <h3 className="font-medium text-sm mb-3">{t("components_productspecmodal_尺码")}</h3>
+                    <h3 className="font-medium text-sm mb-3">
+                      {t("components_productspecmodal_尺码")}
+                    </h3>
                     <div className="flex gap-3">
-                      {product.productSizes.map((size) => (
+                      {product.productSizes.map(size => (
                         <button
                           key={size}
                           onClick={() => setSelectedProductSize(size)}
@@ -348,7 +385,9 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
           <div className="flex items-center justify-between gap-4">
             {/* Price */}
             <div className="flex items-baseline gap-1">
-              <span className="text-[#FF6B00] text-2xl font-bold">{formatCurrency(calculateTotalPrice())}</span>
+              <span className="text-[#FF6B00] text-2xl font-bold">
+                {formatCurrency(calculateTotalPrice())}
+              </span>
             </div>
 
             {/* Add to Cart or Quantity Control */}
@@ -367,7 +406,9 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
                 >
                   <Minus size={14} />
                 </button>
-                <span className="text-base font-medium w-6 text-center">{quantity}</span>
+                <span className="text-base font-medium w-6 text-center">
+                  {quantity}
+                </span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
                   className="w-8 h-8 rounded-full bg-[#FFD100] flex items-center justify-center hover:bg-[#FFD100]/90 transition-colors"
@@ -384,9 +425,8 @@ export default function ProductSpecModal({ open, onClose, product, type }: Produ
             )}
           </div>
         </div>
-
       </DialogContent>
-      
+
       {/* Close Button - Fixed position at bottom center of screen */}
       {open && (
         <button

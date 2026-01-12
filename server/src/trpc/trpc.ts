@@ -1,16 +1,16 @@
 /**
  * CHUTEA tRPC 初始化配置
- * 
+ *
  * 包含：
  * - tRPC 实例初始化
  * - 中间件（审计日志、RBAC 权限）
  * - Procedure 定义
  */
 
-import { initTRPC, TRPCError } from '@trpc/server';
-import { Context } from './context';
-import superjson from 'superjson';
-import { getAuditService } from '../services/audit-service';
+import { initTRPC, TRPCError } from "@trpc/server";
+import { Context } from "./context";
+import superjson from "superjson";
+import { getAuditService } from "../services/audit-service";
 
 /**
  * 初始化 tRPC
@@ -36,17 +36,17 @@ const auditMiddleware = t.middleware(async ({ ctx, next, path, type }) => {
     const auditService = getAuditService();
     await auditService.createAuditLog({
       orgId: ctx.userSession?.orgId || undefined,
-      tableName: 'api_calls',
+      tableName: "api_calls",
       recordId: ctx.requestId,
-      action: 'INSERT',
+      action: "INSERT",
       diffAfter: {
         path: `/${path}`,
         method: type,
-        status: 'success',
+        status: "success",
         duration: Date.now() - startTime,
       },
       operatorId: ctx.userSession?.userId,
-      operatorType: ctx.userSession?.role as any || 'SYSTEM',
+      operatorType: (ctx.userSession?.role as any) || "SYSTEM",
       ipAddress: ctx.auditTrail.ipAddress,
       userAgent: ctx.auditTrail.userAgent,
       requestId: ctx.requestId,
@@ -58,18 +58,18 @@ const auditMiddleware = t.middleware(async ({ ctx, next, path, type }) => {
     const auditService = getAuditService();
     await auditService.createAuditLog({
       orgId: ctx.userSession?.orgId || undefined,
-      tableName: 'api_calls',
+      tableName: "api_calls",
       recordId: ctx.requestId,
-      action: 'INSERT',
+      action: "INSERT",
       diffAfter: {
         path: `/${path}`,
         method: type,
-        status: 'error',
+        status: "error",
         duration: Date.now() - startTime,
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
       },
       operatorId: ctx.userSession?.userId,
-      operatorType: ctx.userSession?.role as any || 'SYSTEM',
+      operatorType: (ctx.userSession?.role as any) || "SYSTEM",
       ipAddress: ctx.auditTrail.ipAddress,
       userAgent: ctx.auditTrail.userAgent,
       requestId: ctx.requestId,
@@ -85,8 +85,8 @@ const auditMiddleware = t.middleware(async ({ ctx, next, path, type }) => {
 const authMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!ctx.userSession) {
     throw new TRPCError({
-      code: 'UNAUTHORIZED',
-      message: 'Authentication required',
+      code: "UNAUTHORIZED",
+      message: "Authentication required",
     });
   }
 
@@ -105,15 +105,15 @@ function createPermissionMiddleware(requiredPermissions: string[]) {
   return t.middleware(async ({ ctx, next }) => {
     if (!ctx.userSession) {
       throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'Authentication required',
+        code: "UNAUTHORIZED",
+        message: "Authentication required",
       });
     }
 
     if (!ctx.rbacScope.hasAllPermissions(requiredPermissions)) {
       throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: `Missing required permissions: ${requiredPermissions.join(', ')}`,
+        code: "FORBIDDEN",
+        message: `Missing required permissions: ${requiredPermissions.join(", ")}`,
       });
     }
 
@@ -126,9 +126,14 @@ function createPermissionMiddleware(requiredPermissions: string[]) {
  */
 export const router = t.router;
 export const publicProcedure = t.procedure.use(auditMiddleware);
-export const protectedProcedure = t.procedure.use(auditMiddleware).use(authMiddleware);
+export const protectedProcedure = t.procedure
+  .use(auditMiddleware)
+  .use(authMiddleware);
 export const createPermissionProcedure = (permissions: string[]) =>
-  t.procedure.use(auditMiddleware).use(authMiddleware).use(createPermissionMiddleware(permissions));
+  t.procedure
+    .use(auditMiddleware)
+    .use(authMiddleware)
+    .use(createPermissionMiddleware(permissions));
 
 /**
  * 合并路由工具

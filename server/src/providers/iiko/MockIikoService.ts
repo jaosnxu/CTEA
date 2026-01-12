@@ -1,6 +1,6 @@
 /**
  * MockIikoService - iiko 模拟实现
- * 
+ *
  * 用途：内测版开发，模拟 iiko 环境
  * 特点：
  * 1. 严格按照 iiko 官方字段格式返回数据
@@ -20,7 +20,7 @@ import {
   IikoSyncSalesResponse,
   IikoSalesData,
   IikoModifier,
-} from './IikoProvider.interface';
+} from "./IikoProvider.interface";
 
 /**
  * 内存存储（模拟数据库）
@@ -48,57 +48,57 @@ export class MockIikoService implements IikoProvider {
     // 返回符合 iiko 格式的菜单数据
     return [
       {
-        id: 'iiko-001',
-        name: '经典奶茶',
-        description: '精选红茶搭配新鲜牛奶，香浓顺滑',
+        id: "iiko-001",
+        name: "经典奶茶",
+        description: "精选红茶搭配新鲜牛奶，香浓顺滑",
         price: 180,
-        cost: 65,  // 成本价（用于毛利分析）
-        category: '经典系列',
-        imageUrl: '/images/products/classic_milk_tea.png',
+        cost: 65, // 成本价（用于毛利分析）
+        category: "经典系列",
+        imageUrl: "/images/products/classic_milk_tea.png",
         available: true,
         modifiers: this.getStandardModifiers(),
       },
       {
-        id: 'iiko-002',
-        name: '珍珠奶茶',
-        description: 'Q弹珍珠搭配香醇奶茶，经典组合',
+        id: "iiko-002",
+        name: "珍珠奶茶",
+        description: "Q弹珍珠搭配香醇奶茶，经典组合",
         price: 200,
         cost: 72,
-        category: '经典系列',
-        imageUrl: '/images/products/pearl_milk_tea.png',
+        category: "经典系列",
+        imageUrl: "/images/products/pearl_milk_tea.png",
         available: true,
         modifiers: this.getStandardModifiers(),
       },
       {
-        id: 'iiko-003',
-        name: '芒果波波茶',
-        description: '新鲜芒果果肉搭配爆珠，清爽香甜',
+        id: "iiko-003",
+        name: "芒果波波茶",
+        description: "新鲜芒果果肉搭配爆珠，清爽香甜",
         price: 220,
         cost: 85,
-        category: '水果系列',
-        imageUrl: '/images/products/mango_boba_tea.png',
+        category: "水果系列",
+        imageUrl: "/images/products/mango_boba_tea.png",
         available: true,
         modifiers: this.getStandardModifiers(),
       },
       {
-        id: 'iiko-004',
-        name: '草莓奶昔',
-        description: '新鲜草莓打碎，绵密顺滑',
+        id: "iiko-004",
+        name: "草莓奶昔",
+        description: "新鲜草莓打碎，绵密顺滑",
         price: 240,
         cost: 92,
-        category: '水果系列',
-        imageUrl: '/images/products/strawberry_smoothie.png',
+        category: "水果系列",
+        imageUrl: "/images/products/strawberry_smoothie.png",
         available: true,
         modifiers: this.getStandardModifiers(),
       },
       {
-        id: 'iiko-005',
-        name: '抹茶拿铁',
-        description: '日本进口抹茶粉，浓郁香醇',
+        id: "iiko-005",
+        name: "抹茶拿铁",
+        description: "日本进口抹茶粉，浓郁香醇",
         price: 230,
         cost: 88,
-        category: '特色系列',
-        imageUrl: '/images/products/matcha_latte.png',
+        category: "特色系列",
+        imageUrl: "/images/products/matcha_latte.png",
         available: true,
         modifiers: this.getStandardModifiers(),
       },
@@ -108,7 +108,9 @@ export class MockIikoService implements IikoProvider {
   /**
    * 创建订单（模拟 iiko 订单创建）
    */
-  async createOrder(request: IikoCreateOrderRequest): Promise<IikoCreateOrderResponse> {
+  async createOrder(
+    request: IikoCreateOrderRequest
+  ): Promise<IikoCreateOrderResponse> {
     // 模拟网络延迟
     await this.delay(200);
 
@@ -124,7 +126,9 @@ export class MockIikoService implements IikoProvider {
       updatedAt: new Date(),
     });
 
-    console.log(`[MockIikoService] 订单创建成功: ${orderId}, 提货码: ${request.pickupCode}`);
+    console.log(
+      `[MockIikoService] 订单创建成功: ${orderId}, 提货码: ${request.pickupCode}`
+    );
 
     return {
       success: true,
@@ -155,12 +159,14 @@ export class MockIikoService implements IikoProvider {
   /**
    * 同步销售数据
    */
-  async syncSales(request: IikoSyncSalesRequest): Promise<IikoSyncSalesResponse> {
+  async syncSales(
+    request: IikoSyncSalesRequest
+  ): Promise<IikoSyncSalesResponse> {
     await this.delay(300);
 
     // 筛选指定门店和时间范围的订单
     const salesData: IikoSalesData[] = [];
-    
+
     this.mockOrders.forEach((order, orderId) => {
       if (
         order.request.storeId === request.storeId &&
@@ -181,7 +187,9 @@ export class MockIikoService implements IikoProvider {
       }
     });
 
-    console.log(`[MockIikoService] 销售数据同步: 门店 ${request.storeId}, 营业日 ${request.businessDate}, 订单数 ${salesData.length}`);
+    console.log(
+      `[MockIikoService] 销售数据同步: 门店 ${request.storeId}, 营业日 ${request.businessDate}, 订单数 ${salesData.length}`
+    );
 
     return {
       success: true,
@@ -192,7 +200,10 @@ export class MockIikoService implements IikoProvider {
   /**
    * 更新订单状态（用于 POS 确认）
    */
-  async updateOrderStatus(orderId: string, status: IikoOrderStatus): Promise<boolean> {
+  async updateOrderStatus(
+    orderId: string,
+    status: IikoOrderStatus
+  ): Promise<boolean> {
     await this.delay(100);
 
     const order = this.mockOrders.get(orderId);
@@ -204,7 +215,9 @@ export class MockIikoService implements IikoProvider {
     order.status = status;
     order.updatedAt = new Date();
 
-    console.log(`[MockIikoService] 订单状态更新: ${orderId}, 新状态: ${status}`);
+    console.log(
+      `[MockIikoService] 订单状态更新: ${orderId}, 新状态: ${status}`
+    );
 
     return true;
   }
@@ -215,51 +228,51 @@ export class MockIikoService implements IikoProvider {
   private getStandardModifiers(): IikoModifier[] {
     return [
       {
-        id: 'mod-temperature',
-        name: '温度',
-        type: 'temperature',
+        id: "mod-temperature",
+        name: "温度",
+        type: "temperature",
         required: true,
         options: [
-          { id: 'temp-hot', name: '热', price: 0 },
-          { id: 'temp-warm', name: '温', price: 0 },
-          { id: 'temp-cold', name: '冷', price: 0 },
-          { id: 'temp-ice', name: '冰', price: 0 },
+          { id: "temp-hot", name: "热", price: 0 },
+          { id: "temp-warm", name: "温", price: 0 },
+          { id: "temp-cold", name: "冷", price: 0 },
+          { id: "temp-ice", name: "冰", price: 0 },
         ],
       },
       {
-        id: 'mod-sweetness',
-        name: '甜度',
-        type: 'sweetness',
+        id: "mod-sweetness",
+        name: "甜度",
+        type: "sweetness",
         required: true,
         options: [
-          { id: 'sweet-normal', name: '标准甜', price: 0 },
-          { id: 'sweet-less', name: '少甜', price: 0 },
-          { id: 'sweet-half', name: '半糖', price: 0 },
-          { id: 'sweet-none', name: '无糖', price: 0 },
+          { id: "sweet-normal", name: "标准甜", price: 0 },
+          { id: "sweet-less", name: "少甜", price: 0 },
+          { id: "sweet-half", name: "半糖", price: 0 },
+          { id: "sweet-none", name: "无糖", price: 0 },
         ],
       },
       {
-        id: 'mod-topping',
-        name: '小料',
-        type: 'topping',
+        id: "mod-topping",
+        name: "小料",
+        type: "topping",
         required: false,
         maxQuantity: 3,
         options: [
-          { id: 'topping-pearl', name: '珍珠', price: 10 },
-          { id: 'topping-coconut', name: '椰果', price: 10 },
-          { id: 'topping-pudding', name: '布丁', price: 15 },
-          { id: 'topping-red-bean', name: '红豆', price: 12 },
-          { id: 'topping-grass-jelly', name: '仙草', price: 10 },
+          { id: "topping-pearl", name: "珍珠", price: 10 },
+          { id: "topping-coconut", name: "椰果", price: 10 },
+          { id: "topping-pudding", name: "布丁", price: 15 },
+          { id: "topping-red-bean", name: "红豆", price: 12 },
+          { id: "topping-grass-jelly", name: "仙草", price: 10 },
         ],
       },
       {
-        id: 'mod-size',
-        name: '份量',
-        type: 'size',
+        id: "mod-size",
+        name: "份量",
+        type: "size",
         required: true,
         options: [
-          { id: 'size-medium', name: '中杯', price: 0 },
-          { id: 'size-large', name: '大杯', price: 20 },
+          { id: "size-medium", name: "中杯", price: 0 },
+          { id: "size-large", name: "大杯", price: 20 },
         ],
       },
     ];
@@ -269,12 +282,12 @@ export class MockIikoService implements IikoProvider {
    * 模拟网络延迟
    */
   private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**
    * 同步菜单并检查价格变动（价格熔断逻辑）
-   * 
+   *
    * @param storeId 门店 ID
    * @param newMenu 新菜单数据
    * @returns 同步结果
@@ -293,7 +306,7 @@ export class MockIikoService implements IikoProvider {
 
     // 遵循价格变动检查
     for (const newItem of newMenu) {
-      const cachedItem = cachedMenu.find((item) => item.id === newItem.id);
+      const cachedItem = cachedMenu.find(item => item.id === newItem.id);
 
       if (cachedItem) {
         // 计算价格变动百分比
@@ -310,7 +323,9 @@ export class MockIikoService implements IikoProvider {
           // 不同步该商品
           continue;
         } else {
-          console.log(`[SYNC_INFO] Price change within threshold (${priceChangePercent.toFixed(2)}%) for Item_ID: ${newItem.id} (${newItem.name}), old price: ${oldPrice}, new price: ${newPrice}, sync allowed.`);
+          console.log(
+            `[SYNC_INFO] Price change within threshold (${priceChangePercent.toFixed(2)}%) for Item_ID: ${newItem.id} (${newItem.name}), old price: ${oldPrice}, new price: ${newPrice}, sync allowed.`
+          );
         }
       }
 
@@ -321,7 +336,9 @@ export class MockIikoService implements IikoProvider {
     // 更新缓存
     this.menuCache.set(storeId, newMenu);
 
-    console.log(`[SYNC_SUMMARY] Store: ${storeId}, Total items: ${newMenu.length}, Synced: ${syncedItems}, Warnings: ${warnings.length}`);
+    console.log(
+      `[SYNC_SUMMARY] Store: ${storeId}, Total items: ${newMenu.length}, Synced: ${syncedItems}, Warnings: ${warnings.length}`
+    );
 
     return {
       success: warnings.length === 0,
@@ -343,6 +360,6 @@ export class MockIikoService implements IikoProvider {
   public clearAllOrders(): void {
     this.mockOrders.clear();
     this.orderCounter = 1000;
-    console.log('[MockIikoService] 所有订单已清空');
+    console.log("[MockIikoService] 所有订单已清空");
   }
 }

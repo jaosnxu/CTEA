@@ -7,10 +7,13 @@ interface ProductReviewsProps {
   productName: string;
 }
 
-export default function ProductReviews({ productId, productName }: ProductReviewsProps) {
+export default function ProductReviews({
+  productId,
+  productName,
+}: ProductReviewsProps) {
   const { t } = useLanguage();
   const { reviews } = useApp();
-  
+
   // 筛选当前商品的评价（通过订单关联）
   const { orders } = useApp();
   const productReviews = reviews.filter(review => {
@@ -29,7 +32,9 @@ export default function ProductReviews({ productId, productName }: ProductReview
   }
 
   // 计算平均评分
-  const averageRating = productReviews.reduce((sum, review) => sum + review.rating, 0) / productReviews.length;
+  const averageRating =
+    productReviews.reduce((sum, review) => sum + review.rating, 0) /
+    productReviews.length;
   const roundedRating = Math.round(averageRating * 10) / 10;
 
   return (
@@ -38,21 +43,27 @@ export default function ProductReviews({ productId, productName }: ProductReview
         <h3 className="font-bold text-lg">用户评价</h3>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((star) => (
+            {[1, 2, 3, 4, 5].map(star => (
               <Star
                 key={star}
                 size={16}
-                className={star <= Math.round(averageRating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
+                className={
+                  star <= Math.round(averageRating)
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "text-gray-300"
+                }
               />
             ))}
           </div>
           <span className="text-sm font-bold">{roundedRating}</span>
-          <span className="text-sm text-gray-500">({productReviews.length}条评价)</span>
+          <span className="text-sm text-gray-500">
+            ({productReviews.length}条评价)
+          </span>
         </div>
       </div>
 
       <div className="space-y-4 max-h-96 overflow-y-auto">
-        {productReviews.map((review) => (
+        {productReviews.map(review => (
           <div key={review.id} className="bg-gray-50 rounded-lg p-3">
             {/* 用户信息和评分 */}
             <div className="flex items-center justify-between mb-2">
@@ -60,14 +71,20 @@ export default function ProductReviews({ productId, productName }: ProductReview
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                   <User size={16} className="text-primary" />
                 </div>
-                <span className="text-sm font-medium">用户{review.id.slice(0, 6)}</span>
+                <span className="text-sm font-medium">
+                  用户{review.id.slice(0, 6)}
+                </span>
               </div>
               <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
+                {[1, 2, 3, 4, 5].map(star => (
                   <Star
                     key={star}
                     size={14}
-                    className={star <= review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
+                    className={
+                      star <= review.rating
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
+                    }
                   />
                 ))}
               </div>
@@ -87,7 +104,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
                     src={image}
                     alt={`Фото отзыва ${idx + 1}`}
                     className="w-20 h-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => window.open(image, '_blank')}
+                    onClick={() => window.open(image, "_blank")}
                   />
                 ))}
               </div>
@@ -95,7 +112,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
 
             {/* 评价时间 */}
             <div className="text-xs text-gray-400 mt-2">
-              {new Date(review.createdAt).toLocaleDateString('zh-CN')}
+              {new Date(review.createdAt).toLocaleDateString("zh-CN")}
             </div>
           </div>
         ))}

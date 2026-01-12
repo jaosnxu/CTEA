@@ -15,13 +15,13 @@ interface TransferGiftCardModalProps {
   onTransfer: (to: string, message: string) => void;
 }
 
-export default function TransferGiftCardModal({ 
-  open, 
-  onClose, 
-  cardId, 
-  cardCode, 
+export default function TransferGiftCardModal({
+  open,
+  onClose,
+  cardId,
+  cardCode,
   balance,
-  onTransfer 
+  onTransfer,
 }: TransferGiftCardModalProps) {
   const { t } = useLanguage();
   const [recipientPhone, setRecipientPhone] = useState("");
@@ -34,7 +34,7 @@ export default function TransferGiftCardModal({
       alert("请输入正确的手机号");
       return;
     }
-    
+
     onTransfer(recipientPhone, message);
     setRecipientPhone("");
     setMessage("");
@@ -62,7 +62,9 @@ export default function TransferGiftCardModal({
               <span className="text-sm opacity-90">卡号</span>
               <span className="text-sm font-mono">{cardCode}</span>
             </div>
-            <div className="text-3xl font-bold">{formatCurrency(balance.toFixed(2))}</div>
+            <div className="text-3xl font-bold">
+              {formatCurrency(balance.toFixed(2))}
+            </div>
             <div className="text-sm opacity-90 mt-1">当前余额</div>
           </div>
 
@@ -75,7 +77,7 @@ export default function TransferGiftCardModal({
               type="tel"
               placeholder="Введите номер телефона получателя"
               value={recipientPhone}
-              onChange={(e) => setRecipientPhone(e.target.value)}
+              onChange={e => setRecipientPhone(e.target.value)}
               maxLength={11}
               className="w-full"
             />
@@ -92,7 +94,7 @@ export default function TransferGiftCardModal({
             <Textarea
               placeholder="Напишите пожелание или сообщение..."
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={e => setMessage(e.target.value)}
               rows={4}
               maxLength={200}
               className="w-full resize-none"
@@ -105,10 +107,14 @@ export default function TransferGiftCardModal({
 
           {/* 温馨提示 */}
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-orange-800 mb-2">温馨提示</h3>
+            <h3 className="text-sm font-medium text-orange-800 mb-2">
+              温馨提示
+            </h3>
             <ul className="text-xs text-orange-700 space-y-1">
               <li>• 转送后礼品卡将立即从您的账户移除</li>
-              <li>• Получатель увидит карту в разделе «Мои подарочные карты»</li>
+              <li>
+                • Получатель увидит карту в разделе «Мои подарочные карты»
+              </li>
               <li>• 转送操作不可撤销，请确认接收方信息</li>
             </ul>
           </div>
@@ -116,11 +122,7 @@ export default function TransferGiftCardModal({
 
         {/* Footer */}
         <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex gap-3">
-          <Button
-            onClick={onClose}
-            variant="outline"
-            className="flex-1"
-          >
+          <Button onClick={onClose} variant="outline" className="flex-1">
             取消
           </Button>
           <Button

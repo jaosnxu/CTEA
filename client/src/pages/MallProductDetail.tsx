@@ -1,6 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
-import { ChevronLeft, ShoppingCart, Heart, Share2, Star, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ShoppingCart,
+  Heart,
+  Share2,
+  Star,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { useApp } from "@/contexts/AppContext";
@@ -10,12 +17,66 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 // Магазин产品数据（与 Mall.tsx 保持一致）
 const MALL_PRODUCTS = [
-  { id: "m1", brand: "CHUTEA x NIKE", name: "Air Force 1 'Tea Leaf' Коллаб", price: 12999, sold: "1.2k", image: "/images/products/mall_sneaker.jpg", tag: "Коллаб", desc: "Лимитированные кроссовки CHUTEA x NIKE" },
-  { id: "m2", brand: "CHUTEA", name: "Классический худи с логотипом", price: 4500, sold: "856", image: "/images/products/mall_hoodie.jpg", tag: "Новинки", desc: "100% хлопок, комфортный и дышащий" },
-  { id: "m3", brand: "CHUTEA", name: "Керамический чайный набор премиум", price: 8900, sold: "342", image: "/images/products/mall_teaset.jpg", tag: "", desc: "Изысканный керамический чайный набор" },
-  { id: "m4", brand: "CHUTEA", name: "Эко-сумка тоут", price: 1200, sold: "2.1k", image: "/images/products/mall_tote.jpg", tag: "Популярное", desc: "Экологичный материал, вместительный дизайн" },
-  { id: "m5", brand: "CHUTEA", name: "Стакан с двойными стенками 500мл", price: 1800, sold: "900", image: "/images/products/mall_tumbler.jpg", tag: "", desc: "Двойные стенки, сохраняет температуру" },
-  { id: "m6", brand: "CHUTEA", name: "Подарочная карта {formatCurrency(5000)}", price: 5000, sold: "156", image: "/images/products/mall_giftcard.jpg", tag: "", desc: "Отличный подарок, универсальный" },
+  {
+    id: "m1",
+    brand: "CHUTEA x NIKE",
+    name: "Air Force 1 'Tea Leaf' Коллаб",
+    price: 12999,
+    sold: "1.2k",
+    image: "/images/products/mall_sneaker.jpg",
+    tag: "Коллаб",
+    desc: "Лимитированные кроссовки CHUTEA x NIKE",
+  },
+  {
+    id: "m2",
+    brand: "CHUTEA",
+    name: "Классический худи с логотипом",
+    price: 4500,
+    sold: "856",
+    image: "/images/products/mall_hoodie.jpg",
+    tag: "Новинки",
+    desc: "100% хлопок, комфортный и дышащий",
+  },
+  {
+    id: "m3",
+    brand: "CHUTEA",
+    name: "Керамический чайный набор премиум",
+    price: 8900,
+    sold: "342",
+    image: "/images/products/mall_teaset.jpg",
+    tag: "",
+    desc: "Изысканный керамический чайный набор",
+  },
+  {
+    id: "m4",
+    brand: "CHUTEA",
+    name: "Эко-сумка тоут",
+    price: 1200,
+    sold: "2.1k",
+    image: "/images/products/mall_tote.jpg",
+    tag: "Популярное",
+    desc: "Экологичный материал, вместительный дизайн",
+  },
+  {
+    id: "m5",
+    brand: "CHUTEA",
+    name: "Стакан с двойными стенками 500мл",
+    price: 1800,
+    sold: "900",
+    image: "/images/products/mall_tumbler.jpg",
+    tag: "",
+    desc: "Двойные стенки, сохраняет температуру",
+  },
+  {
+    id: "m6",
+    brand: "CHUTEA",
+    name: "Подарочная карта {formatCurrency(5000)}",
+    price: 5000,
+    sold: "156",
+    image: "/images/products/mall_giftcard.jpg",
+    tag: "",
+    desc: "Отличный подарок, универсальный",
+  },
 ];
 
 // 模拟评论数据
@@ -28,7 +89,7 @@ const MOCK_REVIEWS = [
     date: "2025-01-05",
     content: "Отличное качество, цвет соответствует, быстрая доставка!",
     images: ["/images/products/mall_sneaker.jpg"],
-    specs: "Чёрный / L"
+    specs: "Чёрный / L",
   },
   {
     id: 2,
@@ -38,7 +99,7 @@ const MOCK_REVIEWS = [
     date: "2025-01-03",
     content: "Очень нравится, уже второй раз покупаю, рекомендую!",
     images: [],
-    specs: "Белый / M"
+    specs: "Белый / M",
   },
   {
     id: 3,
@@ -46,9 +107,13 @@ const MOCK_REVIEWS = [
     avatar: "👤",
     rating: 4,
     date: "2025-01-01",
-    content: "В целом хорошо, но размер немного большой, берите на размер меньше",
-    images: ["/images/products/mall_sneaker.jpg", "/images/products/mall_hoodie.jpg"],
-    specs: "Серый / XL"
+    content:
+      "В целом хорошо, но размер немного большой, берите на размер меньше",
+    images: [
+      "/images/products/mall_sneaker.jpg",
+      "/images/products/mall_hoodie.jpg",
+    ],
+    specs: "Серый / XL",
   },
 ];
 
@@ -62,17 +127,26 @@ const MOCK_PURCHASES = [
 export default function MallProductDetail() {
   const [, params] = useRoute("/mall/:id");
   const [, setLocation] = useLocation();
-  const { addToMallCart, addToFavorites, removeFromFavorites, isFavorite: checkIsFavorite } = useApp();
+  const {
+    addToMallCart,
+    addToFavorites,
+    removeFromFavorites,
+    isFavorite: checkIsFavorite,
+  } = useApp();
   const { t } = useLanguage();
-  
+
   const product = MALL_PRODUCTS.find(p => p.id === params?.id);
-  
+
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
-  const [imageLoaded, setImageLoaded] = useState<{ [key: number]: boolean }>({});
-  const [activeTab, setActiveTab] = useState<"details" | "reviews" | "params">("details");
+  const [imageLoaded, setImageLoaded] = useState<{ [key: number]: boolean }>(
+    {}
+  );
+  const [activeTab, setActiveTab] = useState<"details" | "reviews" | "params">(
+    "details"
+  );
 
   // 滑动手势相关
   const touchStartX = useRef(0);
@@ -89,18 +163,16 @@ export default function MallProductDetail() {
   if (!product) return null;
 
   // 模拟多图数据（实际应从产品数据中获取）
-  const images = [
-    product.image,
-    product.image,
-    product.image,
-  ];
+  const images = [product.image, product.image, product.image];
 
   // 模拟Параметры数据
   const colors = ["Чёрный", "Белый", "Серый"];
   const sizes = ["S", "M", "L", "XL"];
 
   // 计算平均评分
-  const averageRating = (MOCK_REVIEWS.reduce((sum, r) => sum + r.rating, 0) / MOCK_REVIEWS.length).toFixed(1);
+  const averageRating = (
+    MOCK_REVIEWS.reduce((sum, r) => sum + r.rating, 0) / MOCK_REVIEWS.length
+  ).toFixed(1);
 
   // 处理滑动手势
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -117,9 +189,9 @@ export default function MallProductDetail() {
 
     if (Math.abs(diff) > threshold) {
       if (diff > 0) {
-        setSelectedImage((prev) => (prev + 1) % images.length);
+        setSelectedImage(prev => (prev + 1) % images.length);
       } else {
-        setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
+        setSelectedImage(prev => (prev - 1 + images.length) % images.length);
       }
     }
   };
@@ -129,7 +201,7 @@ export default function MallProductDetail() {
       toast.error("Выберите цвет и размер");
       return;
     }
-    
+
     addToMallCart({
       productId: product.id,
       name: product.name,
@@ -138,7 +210,7 @@ export default function MallProductDetail() {
       quantity,
       specs: `${selectedColor} / ${selectedSize}`,
     });
-    
+
     // toast.success("УжеВ корзину");
   };
 
@@ -147,7 +219,7 @@ export default function MallProductDetail() {
       toast.error("Выберите цвет и размер");
       return;
     }
-    
+
     addToMallCart({
       productId: product.id,
       name: product.name,
@@ -156,7 +228,7 @@ export default function MallProductDetail() {
       quantity,
       specs: `${selectedColor} / ${selectedSize}`,
     });
-    
+
     setLocation("/checkout?source=mall");
   };
 
@@ -165,7 +237,7 @@ export default function MallProductDetail() {
       <div className="flex flex-col h-full bg-white">
         {/* 顶部导航栏 */}
         <div className="flex-none bg-white px-4 py-3 flex items-center justify-between border-b border-gray-100 z-10">
-          <button 
+          <button
             onClick={() => setLocation("/mall")}
             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 active:scale-95 transition-all"
           >
@@ -175,7 +247,7 @@ export default function MallProductDetail() {
             <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 active:scale-95 transition-all">
               <Share2 size={20} />
             </button>
-            <button 
+            <button
               onClick={() => {
                 if (!product) return;
                 if (checkIsFavorite(product.id)) {
@@ -188,19 +260,23 @@ export default function MallProductDetail() {
                     price: product.price,
                     image: product.image,
                     type: "mall",
-                    addedAt: Date.now()
+                    addedAt: Date.now(),
                   });
                   toast.success("Добавлено в избранное");
                 }
               }}
               className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 active:scale-95 transition-all"
             >
-              <Heart 
-                size={20} 
-                className={product && checkIsFavorite(product.id) ? "fill-red-500 text-red-500" : ""} 
+              <Heart
+                size={20}
+                className={
+                  product && checkIsFavorite(product.id)
+                    ? "fill-red-500 text-red-500"
+                    : ""
+                }
               />
             </button>
-            <button 
+            <button
               onClick={() => setLocation("/mall-checkout")}
               className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 active:scale-95 transition-all"
             >
@@ -212,7 +288,7 @@ export default function MallProductDetail() {
         {/* 可滚动内容区域 */}
         <div className="flex-1 overflow-y-auto">
           {/* 图片轮播区域 */}
-          <div 
+          <div
             ref={carouselRef}
             className="relative bg-gray-50 touch-pan-y"
             onTouchStart={handleTouchStart}
@@ -225,26 +301,28 @@ export default function MallProductDetail() {
                   <div className="w-16 h-16 border-4 border-gray-300 border-t-gray-400 rounded-full animate-spin" />
                 </div>
               )}
-              
-              <img 
-                src={images[selectedImage]} 
+
+              <img
+                src={images[selectedImage]}
                 alt={product.name}
                 className={`w-full h-full object-cover transition-opacity duration-300 ${
-                  imageLoaded[selectedImage] ? 'opacity-100' : 'opacity-0'
+                  imageLoaded[selectedImage] ? "opacity-100" : "opacity-0"
                 }`}
-                onLoad={() => setImageLoaded(prev => ({ ...prev, [selectedImage]: true }))}
+                onLoad={() =>
+                  setImageLoaded(prev => ({ ...prev, [selectedImage]: true }))
+                }
                 loading="lazy"
               />
             </div>
-            
+
             <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5">
               {images.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={`h-1.5 rounded-full transition-all ${
-                    selectedImage === index 
-                      ? "w-6 bg-black" 
+                    selectedImage === index
+                      ? "w-6 bg-black"
                       : "w-1.5 bg-black/30"
                   }`}
                 />
@@ -261,11 +339,19 @@ export default function MallProductDetail() {
             {/* 价格和标题 */}
             <div>
               <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-3xl font-bold text-black">{formatCurrency(product.price)}</span>
-                <span className="text-sm text-gray-400">Продано {product.sold}</span>
+                <span className="text-3xl font-bold text-black">
+                  {formatCurrency(product.price)}
+                </span>
+                <span className="text-sm text-gray-400">
+                  Продано {product.sold}
+                </span>
               </div>
-              <h1 className="text-xl font-bold text-black mb-1">{product.name}</h1>
-              <p className="text-sm text-gray-500">{product.desc || "Официальный товар CHUTEA"}</p>
+              <h1 className="text-xl font-bold text-black mb-1">
+                {product.name}
+              </h1>
+              <p className="text-sm text-gray-500">
+                {product.desc || "Официальный товар CHUTEA"}
+              </p>
             </div>
 
             {/* 评分和购买记录 */}
@@ -273,10 +359,13 @@ export default function MallProductDetail() {
               <div className="flex items-center gap-1">
                 <Star size={16} className="fill-yellow-400 text-yellow-400" />
                 <span className="text-sm font-bold">{averageRating}</span>
-                <span className="text-sm text-gray-400">({MOCK_REVIEWS.length}  отзывов)</span>
+                <span className="text-sm text-gray-400">
+                  ({MOCK_REVIEWS.length} отзывов)
+                </span>
               </div>
               <div className="text-sm text-gray-400">
-                {MOCK_PURCHASES[0].user} 等 {MOCK_PURCHASES.length}  человек только что купили
+                {MOCK_PURCHASES[0].user} 等 {MOCK_PURCHASES.length} человек
+                только что купили
               </div>
             </div>
 
@@ -284,7 +373,7 @@ export default function MallProductDetail() {
             <div>
               <div className="text-sm font-medium text-black mb-3">Цвет</div>
               <div className="flex gap-2">
-                {colors.map((color) => (
+                {colors.map(color => (
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
@@ -304,7 +393,7 @@ export default function MallProductDetail() {
             <div>
               <div className="text-sm font-medium text-black mb-3">Размер</div>
               <div className="flex gap-2">
-                {sizes.map((size) => (
+                {sizes.map(size => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
@@ -322,7 +411,9 @@ export default function MallProductDetail() {
 
             {/* Количество选择 */}
             <div>
-              <div className="text-sm font-medium text-black mb-3">Количество</div>
+              <div className="text-sm font-medium text-black mb-3">
+                Количество
+              </div>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -330,7 +421,9 @@ export default function MallProductDetail() {
                 >
                   -
                 </button>
-                <span className="text-lg font-medium w-12 text-center">{quantity}</span>
+                <span className="text-lg font-medium w-12 text-center">
+                  {quantity}
+                </span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
                   className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center text-lg font-medium hover:bg-gray-50 active:scale-95 transition-all"
@@ -371,7 +464,8 @@ export default function MallProductDetail() {
                     activeTab === "reviews" ? "text-black" : "text-gray-400"
                   }`}
                 >
-                  {t("pages_mallproductdetail_用户评价")} ({MOCK_REVIEWS.length})
+                  {t("pages_mallproductdetail_用户评价")} ({MOCK_REVIEWS.length}
+                  )
                   {activeTab === "reviews" && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black" />
                   )}
@@ -384,16 +478,25 @@ export default function MallProductDetail() {
                   <div className="space-y-6">
                     {/* 产品介绍 */}
                     <div>
-                      <h3 className="text-base font-semibold mb-3">{t("pages_mallproductdetail_产品介绍")}</h3>
+                      <h3 className="text-base font-semibold mb-3">
+                        {t("pages_mallproductdetail_产品介绍")}
+                      </h3>
                       <div className="space-y-2 text-sm text-gray-600">
-                        <p>{product.desc || "Официальный товар CHUTEA, гарантия качества."}</p>
-                        <p>这款产品采用优质材料精心制作，经过严格的质量检验，确保每一шт产品都符合高标准。Нет论是День常Использовать还是送礼，都是您的理想选择。</p>
+                        <p>
+                          {product.desc ||
+                            "Официальный товар CHUTEA, гарантия качества."}
+                        </p>
+                        <p>
+                          这款产品采用优质材料精心制作，经过严格的质量检验，确保每一шт产品都符合高标准。Нет论是День常Использовать还是送礼，都是您的理想选择。
+                        </p>
                       </div>
                     </div>
-                    
+
                     {/* 产品特点 */}
                     <div>
-                      <h3 className="text-base font-semibold mb-3">{t("pages_mallproductdetail_产品特点")}</h3>
+                      <h3 className="text-base font-semibold mb-3">
+                        {t("pages_mallproductdetail_产品特点")}
+                      </h3>
                       <div className="space-y-2 text-sm text-gray-600">
                         <p>• 优质材料：精选上乘材料，舒适耐用</p>
                         <p>• Классический设计：CHUTEA 品牌 Logo，时尚百搭</p>
@@ -402,19 +505,30 @@ export default function MallProductDetail() {
                         <p>• 多种选择：多种Цвет和Размер可选，满足不同需求</p>
                       </div>
                     </div>
-                    
+
                     {/* 品牌故事 */}
                     <div>
-                      <h3 className="text-base font-semibold mb-3">{t("pages_mallproductdetail_品牌故事")}</h3>
+                      <h3 className="text-base font-semibold mb-3">
+                        {t("pages_mallproductdetail_品牌故事")}
+                      </h3>
                       <div className="space-y-2 text-sm text-gray-600">
-                        <p>CHUTEA 是一个源自中国的现代чай饮品牌，致力于将传统чай文化与现代生活方式完美融合。我们不仅提供优质的чай饮产品，还通过Неделя边产品将品牌理念融入您的День常生活。</p>
-                        <p>每一款 CHUTEA 产品都经过精心设计，融入了我们对品质生活的理解和追求。选择 CHUTEA，就是选择一种态度，一种生活方式。</p>
+                        <p>
+                          CHUTEA
+                          是一个源自中国的现代чай饮品牌，致力于将传统чай文化与现代生活方式完美融合。我们不仅提供优质的чай饮产品，还通过Неделя边产品将品牌理念融入您的День常生活。
+                        </p>
+                        <p>
+                          每一款 CHUTEA
+                          产品都经过精心设计，融入了我们对品质生活的理解和追求。选择
+                          CHUTEA，就是选择一种态度，一种生活方式。
+                        </p>
                       </div>
                     </div>
-                    
+
                     {/* Использовать说明 */}
                     <div>
-                      <h3 className="text-base font-semibold mb-3">{t("pages_mallproductdetail_использовать说明")}</h3>
+                      <h3 className="text-base font-semibold mb-3">
+                        {t("pages_mallproductdetail_использовать说明")}
+                      </h3>
                       <div className="space-y-2 text-sm text-gray-600">
                         <p>1. 首次Использовать前请清洗干净</p>
                         <p>2. 避免长时间暴露在阳光下</p>
@@ -422,10 +536,12 @@ export default function MallProductDetail() {
                         <p>4. 如有问题请联系客服，我们将竞诚为您服务</p>
                       </div>
                     </div>
-                    
+
                     {/* 售后服务 */}
                     <div className="bg-teal-50 rounded-lg p-4">
-                      <h3 className="text-base font-semibold mb-2 text-teal-900">售后服务</h3>
+                      <h3 className="text-base font-semibold mb-2 text-teal-900">
+                        售后服务
+                      </h3>
                       <div className="space-y-1 text-sm text-teal-700">
                         <p>• 7天Нет理由退换货</p>
                         <p>• 正品保证，假一赔十</p>
@@ -440,7 +556,9 @@ export default function MallProductDetail() {
                   <div className="space-y-3">
                     <div className="flex justify-between py-2 border-b border-gray-50">
                       <span className="text-sm text-gray-500">品牌</span>
-                      <span className="text-sm font-medium">{product.brand}</span>
+                      <span className="text-sm font-medium">
+                        {product.brand}
+                      </span>
                     </div>
                     <div className="flex justify-between py-2 border-b border-gray-50">
                       <span className="text-sm text-gray-500">材质</span>
@@ -462,12 +580,14 @@ export default function MallProductDetail() {
                     {/* 评分概览 */}
                     <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-6">
                       <div className="text-center">
-                        <div className="text-3xl font-bold mb-1">{averageRating}</div>
+                        <div className="text-3xl font-bold mb-1">
+                          {averageRating}
+                        </div>
                         <div className="flex items-center gap-0.5 mb-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star 
-                              key={star} 
-                              size={14} 
+                          {[1, 2, 3, 4, 5].map(star => (
+                            <Star
+                              key={star}
+                              size={14}
                               className={`${
                                 star <= Math.round(parseFloat(averageRating))
                                   ? "fill-yellow-400 text-yellow-400"
@@ -476,22 +596,34 @@ export default function MallProductDetail() {
                             />
                           ))}
                         </div>
-                        <div className="text-xs text-gray-500">{MOCK_REVIEWS.length}  отзывов</div>
+                        <div className="text-xs text-gray-500">
+                          {MOCK_REVIEWS.length} отзывов
+                        </div>
                       </div>
                       <div className="flex-1 space-y-1">
-                        {[5, 4, 3, 2, 1].map((rating) => {
-                          const count = MOCK_REVIEWS.filter(r => r.rating === rating).length;
-                          const percentage = (count / MOCK_REVIEWS.length) * 100;
+                        {[5, 4, 3, 2, 1].map(rating => {
+                          const count = MOCK_REVIEWS.filter(
+                            r => r.rating === rating
+                          ).length;
+                          const percentage =
+                            (count / MOCK_REVIEWS.length) * 100;
                           return (
-                            <div key={rating} className="flex items-center gap-2 text-xs">
-                              <span className="text-gray-500 w-8">{rating}星</span>
+                            <div
+                              key={rating}
+                              className="flex items-center gap-2 text-xs"
+                            >
+                              <span className="text-gray-500 w-8">
+                                {rating}星
+                              </span>
                               <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div 
+                                <div
                                   className="h-full bg-yellow-400 rounded-full"
                                   style={{ width: `${percentage}%` }}
                                 />
                               </div>
-                              <span className="text-gray-500 w-8 text-right">{count}</span>
+                              <span className="text-gray-500 w-8 text-right">
+                                {count}
+                              </span>
                             </div>
                           );
                         })}
@@ -499,22 +631,29 @@ export default function MallProductDetail() {
                     </div>
 
                     {/* 评论列表 */}
-                    {MOCK_REVIEWS.map((review) => (
-                      <div key={review.id} className="border-b border-gray-100 pb-4">
+                    {MOCK_REVIEWS.map(review => (
+                      <div
+                        key={review.id}
+                        className="border-b border-gray-100 pb-4"
+                      >
                         <div className="flex items-start gap-3 mb-2">
                           <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xl">
                             {review.avatar}
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-sm font-medium">{review.user}</span>
-                              <span className="text-xs text-gray-400">{review.date}</span>
+                              <span className="text-sm font-medium">
+                                {review.user}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                {review.date}
+                              </span>
                             </div>
                             <div className="flex items-center gap-0.5 mb-2">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star 
-                                  key={star} 
-                                  size={12} 
+                              {[1, 2, 3, 4, 5].map(star => (
+                                <Star
+                                  key={star}
+                                  size={12}
                                   className={`${
                                     star <= review.rating
                                       ? "fill-yellow-400 text-yellow-400"
@@ -523,20 +662,24 @@ export default function MallProductDetail() {
                                 />
                               ))}
                             </div>
-                            <p className="text-sm text-gray-700 mb-2">{review.content}</p>
+                            <p className="text-sm text-gray-700 mb-2">
+                              {review.content}
+                            </p>
                             {review.images.length > 0 && (
                               <div className="flex gap-2 mb-2">
                                 {review.images.map((img, idx) => (
-                                  <img 
+                                  <img
                                     key={idx}
-                                    src={img} 
+                                    src={img}
                                     alt="Фото отзыва"
                                     className="w-20 h-20 rounded-lg object-cover"
                                   />
                                 ))}
                               </div>
                             )}
-                            <div className="text-xs text-gray-400">Параметры：{review.specs}</div>
+                            <div className="text-xs text-gray-400">
+                              Параметры：{review.specs}
+                            </div>
                           </div>
                         </div>
                       </div>

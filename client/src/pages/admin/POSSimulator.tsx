@@ -1,8 +1,8 @@
 /**
  * POS Simulator - 模拟收银后台
- * 
+ *
  * 用途：在没有 iiko 插шт的情况下，手动闭环"提货核销"流程
- * 
+ *
  * 功能：
  * 1. 显示ОжидаетПодтвердить заказ列表
  * 2. 点击"Подтвердить заказУже好"按钮 → 后端Статус机变更
@@ -10,11 +10,11 @@
  * 4. 验证叫号系统的实时性和稳定性
  */
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Clock, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Clock, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import { formatCurrency } from "@/lib/i18n";
 
 interface Order {
@@ -22,7 +22,7 @@ interface Order {
   pickupCode: string;
   storeId: string;
   storeName: string;
-  status: 'pending' | 'preparing' | 'ready' | 'completed' | 'cancelled';
+  status: "pending" | "preparing" | "ready" | "completed" | "cancelled";
   items: {
     name: string;
     quantity: number;
@@ -36,13 +36,13 @@ interface Order {
 export default function POSSimulator() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedStore, setSelectedStore] = useState('store-001');
+  const [selectedStore, setSelectedStore] = useState("store-001");
 
   // 模拟门店列表
   const stores = [
-    { id: 'store-001', name: 'Красная площадь, Москва' },
-    { id: 'store-002', name: 'Санкт-Петербург, Нева' },
-    { id: 'store-003', name: 'Казань, Кремль' },
+    { id: "store-001", name: "Красная площадь, Москва" },
+    { id: "store-002", name: "Санкт-Петербург, Нева" },
+    { id: "store-003", name: "Казань, Кремль" },
   ];
 
   // 加载Список заказов
@@ -57,35 +57,47 @@ export default function POSSimulator() {
       // 模拟数据（临时）
       setOrders([
         {
-          id: 'order-001',
-          pickupCode: 'T1234',
-          storeId: 'store-001',
-          storeName: 'Красная площадь, Москва',
-          status: 'pending',
+          id: "order-001",
+          pickupCode: "T1234",
+          storeId: "store-001",
+          storeName: "Красная площадь, Москва",
+          status: "pending",
           items: [
-            { name: 'Классический чай', quantity: 2, specs: 'Холодный/Стандарт сахара/Тапиока/Большой' },
-            { name: 'Манго боба', quantity: 1, specs: 'Холодный/Меньше сахара/Кокос/Средний' },
+            {
+              name: "Классический чай",
+              quantity: 2,
+              specs: "Холодный/Стандарт сахара/Тапиока/Большой",
+            },
+            {
+              name: "Манго боба",
+              quantity: 1,
+              specs: "Холодный/Меньше сахара/Кокос/Средний",
+            },
           ],
           totalAmount: 580,
           createdAt: new Date(Date.now() - 5 * 60 * 1000),
-          customerName: 'Иван Петров',
+          customerName: "Иван Петров",
         },
         {
-          id: 'order-002',
-          pickupCode: 'T1235',
-          storeId: 'store-001',
-          storeName: 'Красная площадь, Москва',
-          status: 'preparing',
+          id: "order-002",
+          pickupCode: "T1235",
+          storeId: "store-001",
+          storeName: "Красная площадь, Москва",
+          status: "preparing",
           items: [
-            { name: 'Матча латте', quantity: 1, specs: 'Горячий/Половина/Пудинг/Большой' },
+            {
+              name: "Матча латте",
+              quantity: 1,
+              specs: "Горячий/Половина/Пудинг/Большой",
+            },
           ],
           totalAmount: 250,
           createdAt: new Date(Date.now() - 3 * 60 * 1000),
-          customerName: 'Мария Сидорова',
+          customerName: "Мария Сидорова",
         },
       ]);
     } catch (error) {
-      console.error('Ошибка загрузки заказов:', error);
+      console.error("Ошибка загрузки заказов:", error);
     } finally {
       setLoading(false);
     }
@@ -96,15 +108,19 @@ export default function POSSimulator() {
     try {
       // TODO: 调用后端 API 更新Статус заказа
       // await fetch(`/api/pos/orders/${orderId}/start`, { method: 'POST' });
-      
+
       console.log(`[POS] Начать приготовление: ${orderId}`);
-      
+
       // 更新本地Статус
-      setOrders(prev => prev.map(order =>
-        order.id === orderId ? { ...order, status: 'preparing' as const } : order
-      ));
+      setOrders(prev =>
+        prev.map(order =>
+          order.id === orderId
+            ? { ...order, status: "preparing" as const }
+            : order
+        )
+      );
     } catch (error) {
-      console.error('Ошибка обновления статуса:', error);
+      console.error("Ошибка обновления статуса:", error);
     }
   };
 
@@ -113,49 +129,54 @@ export default function POSSimulator() {
     try {
       // TODO: 调用后端 API 更新Статус заказа
       // await fetch(`/api/pos/orders/${orderId}/ready`, { method: 'POST' });
-      
+
       console.log(`[POS] Заказ завершён: ${orderId}, 提货: ${pickupCode}`);
       console.log(`[POS] WebSocket уведомление: 叫号屏显示 ${pickupCode}`);
-      
+
       // 更新本地Статус
-      setOrders(prev => prev.map(order =>
-        order.id === orderId ? { ...order, status: 'ready' as const } : order
-      ));
+      setOrders(prev =>
+        prev.map(order =>
+          order.id === orderId ? { ...order, status: "ready" as const } : order
+        )
+      );
 
       // 模拟 WebSocket 推送（实际会由后端触发）
       // socket.emit('order:ready', { orderId, pickupCode });
     } catch (error) {
-      console.error('Ошибка обновления статуса:', error);
+      console.error("Ошибка обновления статуса:", error);
     }
   };
 
   // Отмена订заказов
   const handleCancelOrder = async (orderId: string) => {
-    if (!confirm('Вы уверены, что хотите отменить этот заказ?')) {
+    if (!confirm("Вы уверены, что хотите отменить этот заказ?")) {
       return;
     }
 
     try {
       // TODO: 调用后端 API Отмена订заказов
       // await fetch(`/api/pos/orders/${orderId}/cancel`, { method: 'POST' });
-      
+
       console.log(`[POS] Заказ отменён: ${orderId}`);
-      
+
       // 更新本地Статус
       setOrders(prev => prev.filter(order => order.id !== orderId));
     } catch (error) {
-      console.error('Ошибка отмены:', error);
+      console.error("Ошибка отмены:", error);
     }
   };
 
   // 获取Статус徽章
-  const getStatusBadge = (status: Order['status']) => {
+  const getStatusBadge = (status: Order["status"]) => {
     const statusMap = {
-      pending: { label: 'Ожидает приготовления', variant: 'secondary' as const },
-      preparing: { label: 'Готовится', variant: 'default' as const },
-      ready: { label: 'Ожидает получения', variant: 'default' as const },
-      completed: { label: 'Готово', variant: 'outline' as const },
-      cancelled: { label: 'Отменён', variant: 'destructive' as const },
+      pending: {
+        label: "Ожидает приготовления",
+        variant: "secondary" as const,
+      },
+      preparing: { label: "Готовится", variant: "default" as const },
+      ready: { label: "Ожидает получения", variant: "default" as const },
+      completed: { label: "Готово", variant: "outline" as const },
+      cancelled: { label: "Отменён", variant: "destructive" as const },
     };
 
     const config = statusMap[status];
@@ -166,16 +187,19 @@ export default function POSSimulator() {
   const formatTime = (date: Date) => {
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000 / 60);
-    
-    if (diff < 1) return 'Только что';
+
+    if (diff < 1) return "Только что";
     if (diff < 60) return `${diff} мин назад`;
-    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString("zh-CN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   // 初始加载
   useEffect(() => {
     loadOrders();
-    
+
     // 每 10 秒自动Обновить
     const interval = setInterval(loadOrders, 10000);
     return () => clearInterval(interval);
@@ -188,18 +212,22 @@ export default function POSSimulator() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">模拟收银后台</h1>
-            <p className="text-sm text-gray-500 mt-1">POS Simulator - 内测版订заказов管理</p>
+            <p className="text-sm text-gray-500 mt-1">
+              POS Simulator - 内测版订заказов管理
+            </p>
           </div>
-          
+
           <div className="flex items-center gap-4">
             {/* 门店选择 */}
             <select
               value={selectedStore}
-              onChange={(e) => setSelectedStore(e.target.value)}
+              onChange={e => setSelectedStore(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {stores.map(store => (
-                <option key={store.id} value={store.id}>{store.name}</option>
+                <option key={store.id} value={store.id}>
+                  {store.name}
+                </option>
               ))}
             </select>
 
@@ -210,7 +238,9 @@ export default function POSSimulator() {
               variant="outline"
               size="sm"
             >
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`}
+              />
               Обновить
             </Button>
           </div>
@@ -230,7 +260,9 @@ export default function POSSimulator() {
                 <div className="flex items-center gap-4">
                   {/* 提货 */}
                   <div className="text-center">
-                    <div className="text-xs text-gray-500 mb-1">Код получения</div>
+                    <div className="text-xs text-gray-500 mb-1">
+                      Код получения
+                    </div>
                     <div className="text-3xl font-bold text-primary tracking-wider">
                       {order.pickupCode}
                     </div>
@@ -239,7 +271,9 @@ export default function POSSimulator() {
                   {/* 订заказов信息 */}
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-lg">订заказов #{order.id}</span>
+                      <span className="font-semibold text-lg">
+                        订заказов #{order.id}
+                      </span>
                       {getStatusBadge(order.status)}
                     </div>
                     <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -256,7 +290,7 @@ export default function POSSimulator() {
 
                 {/* Действия按钮 */}
                 <div className="flex items-center gap-2">
-                  {order.status === 'pending' && (
+                  {order.status === "pending" && (
                     <>
                       <Button
                         onClick={() => handleStartPreparing(order.id)}
@@ -277,9 +311,11 @@ export default function POSSimulator() {
                     </>
                   )}
 
-                  {order.status === 'preparing' && (
+                  {order.status === "preparing" && (
                     <Button
-                      onClick={() => handleOrderReady(order.id, order.pickupCode)}
+                      onClick={() =>
+                        handleOrderReady(order.id, order.pickupCode)
+                      }
                       variant="default"
                       size="lg"
                       className="bg-green-600 hover:bg-green-700"
@@ -289,8 +325,11 @@ export default function POSSimulator() {
                     </Button>
                   )}
 
-                  {order.status === 'ready' && (
-                    <Badge variant="default" className="bg-green-600 text-white px-4 py-2">
+                  {order.status === "ready" && (
+                    <Badge
+                      variant="default"
+                      className="bg-green-600 text-white px-4 py-2"
+                    >
                       等Ожидает顾客取货
                     </Badge>
                   )}
@@ -299,13 +338,20 @@ export default function POSSimulator() {
 
               {/* Товары */}
               <div className="border-t pt-4">
-                <div className="text-sm font-semibold text-gray-700 mb-2">Товары</div>
+                <div className="text-sm font-semibold text-gray-700 mb-2">
+                  Товары
+                </div>
                 <div className="space-y-2">
                   {order.items.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between text-sm">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between text-sm"
+                    >
                       <div>
                         <span className="font-medium">{item.name}</span>
-                        <span className="text-gray-500 ml-2">x{item.quantity}</span>
+                        <span className="text-gray-500 ml-2">
+                          x{item.quantity}
+                        </span>
                       </div>
                       <div className="text-gray-500 text-xs">{item.specs}</div>
                     </div>
@@ -313,7 +359,9 @@ export default function POSSimulator() {
                 </div>
                 <div className="mt-4 pt-4 border-t flex items-center justify-between">
                   <span className="font-semibold">Всего金额</span>
-                  <span className="text-xl font-bold text-primary">{formatCurrency(order.totalAmount)}</span>
+                  <span className="text-xl font-bold text-primary">
+                    {formatCurrency(order.totalAmount)}
+                  </span>
                 </div>
               </div>
             </Card>
@@ -327,10 +375,15 @@ export default function POSSimulator() {
           <div className="text-sm text-blue-800">
             <strong>内测模式说明：</strong>
             <ul className="list-disc list-inside mt-2 space-y-1">
-              <li>Нажмите "Заказ готов" для отправки уведомления через WebSocket, номер заказа отобразится на экране</li>
+              <li>
+                Нажмите "Заказ готов" для отправки уведомления через WebSocket,
+                номер заказа отобразится на экране
+              </li>
               <li>用户端（TMA）会收到Статус заказа变更通知</li>
               <li>所有Действия都会记录到数据库，用于后续数据分析</li>
-              <li>后期接入真实 iiko 环境后，此页面将由 iikoFront 插шт自动替代</li>
+              <li>
+                后期接入真实 iiko 环境后，此页面将由 iikoFront 插шт自动替代
+              </li>
             </ul>
           </div>
         </Card>

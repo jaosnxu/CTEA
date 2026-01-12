@@ -1,6 +1,6 @@
 /**
  * 翻译管理 API 路由
- * 
+ *
  * 实现【系统负责人中心化模式】：
  * - 仅管理员可以发布/取消发布翻译
  * - 普通用户只能读取已发布的翻译
@@ -9,14 +9,19 @@
 
 import { z } from "zod";
 import { eq, and, desc, sql } from "drizzle-orm";
-import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import {
+  adminProcedure,
+  protectedProcedure,
+  publicProcedure,
+  router,
+} from "./_core/trpc";
 import { getDb } from "./db";
 import { translations, translationAuditLog } from "../drizzle/schema";
-import { 
-  translateText, 
-  translateBatch, 
+import {
+  translateText,
+  translateBatch,
   checkDeepSeekAvailability,
-  TEA_TERMINOLOGY 
+  TEA_TERMINOLOGY,
 } from "./src/services/deepseek-translation";
 
 /**
@@ -73,7 +78,9 @@ async function logAuditAction(
     action: params.action,
     operatorId: params.operatorId,
     operatorRole: params.operatorRole,
-    previousValue: params.previousValue ? JSON.stringify(params.previousValue) : null,
+    previousValue: params.previousValue
+      ? JSON.stringify(params.previousValue)
+      : null,
     newValue: params.newValue ? JSON.stringify(params.newValue) : null,
     note: params.note ?? null,
     ipAddress: params.ipAddress ?? null,
@@ -86,10 +93,14 @@ export const translationRouter = router({
    * 前端加载翻译字典时调用
    */
   getPublished: publicProcedure
-    .input(z.object({
-      language: z.enum(["zh", "ru", "en"]).optional(),
-      category: z.string().optional(),
-    }).optional())
+    .input(
+      z
+        .object({
+          language: z.enum(["zh", "ru", "en"]).optional(),
+          category: z.string().optional(),
+        })
+        .optional()
+    )
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) {
@@ -118,12 +129,16 @@ export const translationRouter = router({
    * 获取待审核翻译列表（仅管理员）
    */
   getPending: adminProcedure
-    .input(z.object({
-      category: z.string().optional(),
-      source: z.string().optional(),
-      page: z.number().default(1),
-      pageSize: z.number().default(20),
-    }).optional())
+    .input(
+      z
+        .object({
+          category: z.string().optional(),
+          source: z.string().optional(),
+          page: z.number().default(1),
+          pageSize: z.number().default(20),
+        })
+        .optional()
+    )
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) {
@@ -161,13 +176,17 @@ export const translationRouter = router({
    * 获取所有翻译列表（仅管理员）
    */
   getAll: adminProcedure
-    .input(z.object({
-      category: z.string().optional(),
-      isPublished: z.boolean().optional(),
-      search: z.string().optional(),
-      page: z.number().default(1),
-      pageSize: z.number().default(20),
-    }).optional())
+    .input(
+      z
+        .object({
+          category: z.string().optional(),
+          isPublished: z.boolean().optional(),
+          search: z.string().optional(),
+          page: z.number().default(1),
+          pageSize: z.number().default(20),
+        })
+        .optional()
+    )
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) {
@@ -181,13 +200,16 @@ export const translationRouter = router({
       // 构建查询条件
       const conditions = [];
       if (input?.isPublished !== undefined) {
-        conditions.push(eq(translations.isPublished, input.isPublished ? "true" : "false"));
+        conditions.push(
+          eq(translations.isPublished, input.isPublished ? "true" : "false")
+        );
       }
       if (input?.category) {
         conditions.push(eq(translations.category, input.category));
       }
 
-      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+      const whereClause =
+        conditions.length > 0 ? and(...conditions) : undefined;
 
       const items = await db
         .select()
@@ -214,18 +236,22 @@ export const translationRouter = router({
    * 创建翻译条目（仅管理员）
    */
   create: adminProcedure
-    .input(z.object({
-      key: z.string().min(1).max(255),
-      category: z.string().default("general"),
-      textZh: z.string().min(1),
-      textRu: z.string().optional(),
-      textEn: z.string().optional(),
-      source: z.enum(["ai_generated", "manual", "imported"]).default("manual"),
-      aiConfidence: z.number().min(0).max(100).optional(),
-      context: z.string().optional(),
-      entityType: z.string().optional(),
-      entityId: z.number().optional(),
-    }))
+    .input(
+      z.object({
+        key: z.string().min(1).max(255),
+        category: z.string().default("general"),
+        textZh: z.string().min(1),
+        textRu: z.string().optional(),
+        textEn: z.string().optional(),
+        source: z
+          .enum(["ai_generated", "manual", "imported"])
+          .default("manual"),
+        aiConfidence: z.number().min(0).max(100).optional(),
+        context: z.string().optional(),
+        entityType: z.string().optional(),
+        entityId: z.number().optional(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) {
@@ -269,15 +295,17 @@ export const translationRouter = router({
    * 更新翻译条目（仅管理员）
    */
   update: adminProcedure
-    .input(z.object({
-      id: z.number(),
-      textZh: z.string().optional(),
-      textRu: z.string().optional(),
-      textEn: z.string().optional(),
-      category: z.string().optional(),
-      context: z.string().optional(),
-      reviewNote: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        id: z.number(),
+        textZh: z.string().optional(),
+        textRu: z.string().optional(),
+        textEn: z.string().optional(),
+        category: z.string().optional(),
+        context: z.string().optional(),
+        reviewNote: z.string().optional(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) {
@@ -302,7 +330,8 @@ export const translationRouter = router({
       if (input.textEn !== undefined) updateData.textEn = input.textEn;
       if (input.category !== undefined) updateData.category = input.category;
       if (input.context !== undefined) updateData.context = input.context;
-      if (input.reviewNote !== undefined) updateData.reviewNote = input.reviewNote;
+      if (input.reviewNote !== undefined)
+        updateData.reviewNote = input.reviewNote;
 
       await db
         .update(translations)
@@ -327,10 +356,12 @@ export const translationRouter = router({
    * 核心审核功能
    */
   publish: adminProcedure
-    .input(z.object({
-      id: z.number(),
-      reviewNote: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        id: z.number(),
+        reviewNote: z.string().optional(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) {
@@ -377,10 +408,12 @@ export const translationRouter = router({
    * 批量发布翻译（仅管理员）
    */
   publishBatch: adminProcedure
-    .input(z.object({
-      ids: z.array(z.number()),
-      reviewNote: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        ids: z.array(z.number()),
+        reviewNote: z.string().optional(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) {
@@ -415,10 +448,12 @@ export const translationRouter = router({
    * 取消发布翻译（仅管理员）
    */
   unpublish: adminProcedure
-    .input(z.object({
-      id: z.number(),
-      reviewNote: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        id: z.number(),
+        reviewNote: z.string().optional(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) {
@@ -449,10 +484,12 @@ export const translationRouter = router({
    * 拒绝翻译（仅管理员）
    */
   reject: adminProcedure
-    .input(z.object({
-      id: z.number(),
-      reviewNote: z.string().min(1, "拒绝原因不能为空"),
-    }))
+    .input(
+      z.object({
+        id: z.number(),
+        reviewNote: z.string().min(1, "拒绝原因不能为空"),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) {
@@ -481,11 +518,15 @@ export const translationRouter = router({
    * 获取审核日志（仅管理员）
    */
   getAuditLog: adminProcedure
-    .input(z.object({
-      translationId: z.number().optional(),
-      page: z.number().default(1),
-      pageSize: z.number().default(50),
-    }).optional())
+    .input(
+      z
+        .object({
+          translationId: z.number().optional(),
+          page: z.number().default(1),
+          pageSize: z.number().default(50),
+        })
+        .optional()
+    )
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) {
@@ -574,10 +615,12 @@ export const translationRouter = router({
    * 输入中文，返回俄语和英语翻译
    */
   aiTranslate: adminProcedure
-    .input(z.object({
-      textZh: z.string().min(1, "中文原文不能为空"),
-      context: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        textZh: z.string().min(1, "中文原文不能为空"),
+        context: z.string().optional(),
+      })
+    )
     .mutation(async ({ input }) => {
       const result = await translateText(input.textZh, input.context);
       return result;
@@ -587,13 +630,17 @@ export const translationRouter = router({
    * AI 批量翻译（仅管理员）
    */
   aiTranslateBatch: adminProcedure
-    .input(z.object({
-      items: z.array(z.object({
-        key: z.string(),
-        textZh: z.string(),
-        context: z.string().optional(),
-      })),
-    }))
+    .input(
+      z.object({
+        items: z.array(
+          z.object({
+            key: z.string(),
+            textZh: z.string(),
+            context: z.string().optional(),
+          })
+        ),
+      })
+    )
     .mutation(async ({ input }) => {
       const result = await translateBatch(input.items);
       return result;
@@ -604,14 +651,16 @@ export const translationRouter = router({
    * 输入中文，自动调用 DeepSeek 翻译后保存到数据库
    */
   createWithAI: adminProcedure
-    .input(z.object({
-      key: z.string().min(1).max(255),
-      category: z.string().default("general"),
-      textZh: z.string().min(1),
-      context: z.string().optional(),
-      entityType: z.string().optional(),
-      entityId: z.number().optional(),
-    }))
+    .input(
+      z.object({
+        key: z.string().min(1).max(255),
+        category: z.string().default("general"),
+        textZh: z.string().min(1),
+        context: z.string().optional(),
+        entityType: z.string().optional(),
+        entityId: z.number().optional(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) {
@@ -619,7 +668,10 @@ export const translationRouter = router({
       }
 
       // 调用 DeepSeek AI 翻译
-      const translationResult = await translateText(input.textZh, input.context);
+      const translationResult = await translateText(
+        input.textZh,
+        input.context
+      );
 
       if (!translationResult.success) {
         throw new Error(`AI 翻译失败: ${translationResult.error}`);
@@ -673,10 +725,12 @@ export const translationRouter = router({
    * 重新 AI 翻译已有条目（仅管理员）
    */
   retranslate: adminProcedure
-    .input(z.object({
-      id: z.number(),
-      context: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        id: z.number(),
+        context: z.string().optional(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) {

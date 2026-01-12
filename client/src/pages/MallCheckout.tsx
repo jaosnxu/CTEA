@@ -10,59 +10,84 @@ import { formatCurrency } from "@/lib/i18n";
 export default function MallCheckout() {
   const [, setLocation] = useLocation();
   const { mallCart, clearMallCart, coupons } = useApp();
-  
+
   // 模拟数据（实际应从 context 或 API 获取）
   const addresses = [
-    { id: "1", name: "Иван Петров", phone: "+7 (999) 123-45-67", address: "ул. Красная площадь, д. 123, Москва", isDefault: true },
-    { id: "2", name: "Мария Сидорова", phone: "+7 (999) 765-43-21", address: "пр. Ленина, д. 45, Москва", isDefault: false }
+    {
+      id: "1",
+      name: "Иван Петров",
+      phone: "+7 (999) 123-45-67",
+      address: "ул. Красная площадь, д. 123, Москва",
+      isDefault: true,
+    },
+    {
+      id: "2",
+      name: "Мария Сидорова",
+      phone: "+7 (999) 765-43-21",
+      address: "пр. Ленина, д. 45, Москва",
+      isDefault: false,
+    },
   ];
-  
+
   const paymentMethods = [
     { id: "1", name: "Visa", icon: "💳", cardNumber: "**** **** **** 1234" },
-    { id: "2", name: "Mastercard", icon: "💳", cardNumber: "**** **** **** 5678" },
+    {
+      id: "2",
+      name: "Mastercard",
+      icon: "💳",
+      cardNumber: "**** **** **** 5678",
+    },
     { id: "3", name: "WeChat Pay", icon: "💲" },
-    { id: "4", name: "Alipay", icon: "💵" }
+    { id: "4", name: "Alipay", icon: "💵" },
   ];
-  
-  const [selectedAddress, setSelectedAddress] = useState(addresses[0]?.id || "");
-  const [selectedPayment, setSelectedPayment] = useState(paymentMethods[0]?.id || "");
+
+  const [selectedAddress, setSelectedAddress] = useState(
+    addresses[0]?.id || ""
+  );
+  const [selectedPayment, setSelectedPayment] = useState(
+    paymentMethods[0]?.id || ""
+  );
   const [selectedCoupon, setSelectedCoupon] = useState<string>("");
-  const [deliveryMethod, setDeliveryMethod] = useState<"standard" | "express">("standard");
+  const [deliveryMethod, setDeliveryMethod] = useState<"standard" | "express">(
+    "standard"
+  );
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  
+
   useEffect(() => {
     if (mallCart.length === 0) {
       // toast.error("购物车为空"); // 用户要求Отмена通知
       setLocation("/mall");
     }
   }, [mallCart, setLocation]);
-  
+
   if (mallCart.length === 0) return null;
-  
+
   // 计算ТоварыВсего价
   const subtotal = mallCart.reduce((sum, item) => {
     return sum + item.price * item.quantity;
   }, 0);
-  
+
   // 配送费
   const deliveryFee = deliveryMethod === "express" ? 20 : 10;
-  
+
   // Скидка券抵扣
-  const couponDiscount = selectedCoupon ? (coupons.find(c => c.id === selectedCoupon)?.discount || 0) : 0;
-  
+  const couponDiscount = selectedCoupon
+    ? coupons.find(c => c.id === selectedCoupon)?.discount || 0
+    : 0;
+
   // 最终Всего价
   const total = Math.max(0, subtotal + deliveryFee - couponDiscount);
-  
+
   const handleSubmitOrder = async () => {
     if (!selectedAddress) {
       toast.error("Выберите адрес");
       return;
     }
-    
+
     // 打开Способ оплаты选择弹窗
     setShowPaymentModal(true);
   };
-  
+
   const handlePaymentSelect = (method: string) => {
     toast.loading("Переход на страницу оплаты...", { duration: 2000 });
     setTimeout(() => {
@@ -71,9 +96,11 @@ export default function MallCheckout() {
       setLocation("/orders");
     }, 2000);
   };
-  
-  const availableCoupons = coupons.filter(c => c.available && c.minAmount <= subtotal);
-  
+
+  const availableCoupons = coupons.filter(
+    c => c.available && c.minAmount <= subtotal
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
@@ -86,7 +113,7 @@ export default function MallCheckout() {
         </button>
         <h1 className="font-bold text-lg">Подтвердить заказ</h1>
       </div>
-      
+
       <div className="p-4 space-y-4">
         {/* Адрес доставки */}
         <div className="bg-white rounded-xl p-4">
@@ -99,7 +126,7 @@ export default function MallCheckout() {
               管理地址
             </button>
           </div>
-          
+
           {addresses.length === 0 ? (
             <button
               onClick={() => setLocation("/addresses")}
@@ -125,7 +152,9 @@ export default function MallCheckout() {
                         <span className="font-medium">{addr.name}</span>
                         <span className="text-gray-600">{addr.phone}</span>
                         {addr.isDefault && (
-                          <span className="text-xs bg-teal-500 text-white px-2 py-0.5 rounded">默认</span>
+                          <span className="text-xs bg-teal-500 text-white px-2 py-0.5 rounded">
+                            默认
+                          </span>
                         )}
                       </div>
                       <p className="text-sm text-gray-600">{addr.address}</p>
@@ -136,7 +165,7 @@ export default function MallCheckout() {
             </div>
           )}
         </div>
-        
+
         {/* Способ доставки */}
         <div className="bg-white rounded-xl p-4">
           <h2 className="font-semibold mb-3 flex items-center gap-2">
@@ -157,7 +186,9 @@ export default function MallCheckout() {
                   <div className="font-medium">标准配送</div>
                   <div className="text-sm text-gray-600">预计3-5天送达</div>
                 </div>
-                <div className="text-teal-600 font-medium">{formatCurrency(10)}</div>
+                <div className="text-teal-600 font-medium">
+                  {formatCurrency(10)}
+                </div>
               </div>
             </div>
             <div
@@ -173,12 +204,14 @@ export default function MallCheckout() {
                   <div className="font-medium">极速配送</div>
                   <div className="text-sm text-gray-600">预计1-2天送达</div>
                 </div>
-                <div className="text-teal-600 font-medium">{formatCurrency(20)}</div>
+                <div className="text-teal-600 font-medium">
+                  {formatCurrency(20)}
+                </div>
               </div>
             </div>
           </div>
         </div>
-        
+
         {/* Товары */}
         <div className="bg-white rounded-xl p-4">
           <h2 className="font-semibold mb-3">Товары</h2>
@@ -194,15 +227,19 @@ export default function MallCheckout() {
                   <h3 className="font-medium text-sm mb-1">{item.name}</h3>
                   <p className="text-xs text-gray-500 mb-1">{item.specs}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-teal-600 font-medium">{formatCurrency(item.price)}</span>
-                    <span className="text-gray-600 text-sm">x{item.quantity}</span>
+                    <span className="text-teal-600 font-medium">
+                      {formatCurrency(item.price)}
+                    </span>
+                    <span className="text-gray-600 text-sm">
+                      x{item.quantity}
+                    </span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
-        
+
         {/* Скидка券 */}
         <div className="bg-white rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
@@ -214,7 +251,7 @@ export default function MallCheckout() {
               {availableCoupons.length}张可用
             </span>
           </div>
-          
+
           {availableCoupons.length === 0 ? (
             <div className="text-center py-4 text-gray-500 text-sm">
               暂Нет可用Скидка券
@@ -224,7 +261,11 @@ export default function MallCheckout() {
               {availableCoupons.map(coupon => (
                 <div
                   key={coupon.id}
-                  onClick={() => setSelectedCoupon(selectedCoupon === coupon.id ? "" : coupon.id)}
+                  onClick={() =>
+                    setSelectedCoupon(
+                      selectedCoupon === coupon.id ? "" : coupon.id
+                    )
+                  }
                   className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
                     selectedCoupon === coupon.id
                       ? "border-teal-500 bg-teal-50"
@@ -236,11 +277,10 @@ export default function MallCheckout() {
                       <div className="font-medium text-teal-600 mb-1">
                         {formatCurrency(coupon.discount)}
                       </div>
-                      <div className="text-sm text-gray-600">
-                        {coupon.name}
-                      </div>
+                      <div className="text-sm text-gray-600">{coupon.name}</div>
                       <div className="text-xs text-gray-500 mt-1">
-                        满{formatCurrency(coupon.minAmount)}可用 · 有效期至{coupon.validUntil}
+                        满{formatCurrency(coupon.minAmount)}可用 · 有效期至
+                        {coupon.validUntil}
                       </div>
                     </div>
                   </div>
@@ -249,7 +289,7 @@ export default function MallCheckout() {
             </div>
           )}
         </div>
-        
+
         {/* Способ оплаты */}
         <div className="bg-white rounded-xl p-4">
           <h2 className="font-semibold mb-3 flex items-center gap-2">
@@ -284,7 +324,7 @@ export default function MallCheckout() {
             ))}
           </div>
         </div>
-        
+
         {/* 价格明细 */}
         <div className="bg-white rounded-xl p-4">
           <h2 className="font-semibold mb-3">价格明细</h2>
@@ -312,7 +352,7 @@ export default function MallCheckout() {
           </div>
         </div>
       </div>
-      
+
       {/* 底部提交按钮 */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
         <div className="flex items-center justify-between mb-3">
@@ -330,7 +370,7 @@ export default function MallCheckout() {
           </Button>
         </div>
       </div>
-      
+
       {/* 俄罗斯Оплата弹窗 */}
       <RussianPaymentModal
         isOpen={showPaymentModal}

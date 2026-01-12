@@ -22,7 +22,7 @@ const STORES: Store[] = [
     distance: 1.2,
     hours: "09:00 - 22:00",
     phone: "+7 495 123 4567",
-    status: "open"
+    status: "open",
   },
   {
     id: "2",
@@ -31,7 +31,7 @@ const STORES: Store[] = [
     distance: 2.5,
     hours: "10:00 - 21:00",
     phone: "+7 495 234 5678",
-    status: "open"
+    status: "open",
   },
   {
     id: "3",
@@ -40,7 +40,7 @@ const STORES: Store[] = [
     distance: 4.8,
     hours: "08:00 - 23:00",
     phone: "+7 495 345 6789",
-    status: "open"
+    status: "open",
   },
   {
     id: "4",
@@ -49,7 +49,7 @@ const STORES: Store[] = [
     distance: 28.5,
     hours: "24 часа",
     phone: "+7 495 456 7890",
-    status: "open"
+    status: "open",
   },
   {
     id: "5",
@@ -58,8 +58,8 @@ const STORES: Store[] = [
     distance: 3.2,
     hours: "09:00 - 22:00",
     phone: "+7 495 567 8901",
-    status: "closed"
-  }
+    status: "closed",
+  },
 ];
 
 export default function StoreList() {
@@ -117,8 +117,12 @@ export default function StoreList() {
           <Navigation size={20} className="text-primary" />
         </div>
         <div className="flex-1">
-          <div className="font-bold text-sm">{t("pages_storelist_当前位置")}</div>
-          <div className="text-xs text-muted-foreground">{t("pages_storelist_莫斯科市中心")}</div>
+          <div className="font-bold text-sm">
+            {t("pages_storelist_当前位置")}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {t("pages_storelist_莫斯科市中心")}
+          </div>
         </div>
         <Button variant="outline" size="sm" className="text-xs">
           {t("pages_storelist_重新定位")}
@@ -126,7 +130,7 @@ export default function StoreList() {
       </div>
 
       <div className="p-4 space-y-3">
-        {sortedStores.map((store) => (
+        {sortedStores.map(store => (
           <div
             key={store.id}
             onClick={() => handleSelectStore(store.id)}
@@ -145,7 +149,9 @@ export default function StoreList() {
                         : "bg-gray-100 text-gray-600"
                     }`}
                   >
-                    {store.status === "open" ? t("pages_storelist_营业中") : t("pages_storelist_已打烊")}
+                    {store.status === "open"
+                      ? t("pages_storelist_营业中")
+                      : t("pages_storelist_已打烊")}
                   </span>
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
@@ -154,8 +160,13 @@ export default function StoreList() {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-primary font-bold text-sm">{store.distance} {t("pages_storelist_公里")}</div>
-                <div className="text-xs text-muted-foreground">{t("pages_storelist_约")} {Math.ceil(store.distance * 5)} {t("pages_storelist_分钟")}</div>
+                <div className="text-primary font-bold text-sm">
+                  {store.distance} {t("pages_storelist_公里")}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t("pages_storelist_约")} {Math.ceil(store.distance * 5)}{" "}
+                  {t("pages_storelist_分钟")}
+                </div>
               </div>
             </div>
 
@@ -174,9 +185,12 @@ export default function StoreList() {
                 variant="ghost"
                 size="sm"
                 className="text-xs text-primary h-7"
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
-                  window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(store.address)}`, "_blank");
+                  window.open(
+                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(store.address)}`,
+                    "_blank"
+                  );
                 }}
               >
                 {t("pages_storelist_导航")}

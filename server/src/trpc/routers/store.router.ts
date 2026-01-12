@@ -1,17 +1,22 @@
 /**
  * CHUTEA tRPC Router - Store Management
- * 
+ *
  * 门店状态管理模块
  * - 门店列表查询
  * - 门店状态更新（含事务与审计）
  * - 门店配置管理
  */
 
-import { z } from 'zod';
-import { router, publicProcedure, protectedProcedure, createPermissionProcedure } from '../trpc';
-import { TRPCError } from '@trpc/server';
-import { getAuditService } from '../../services/audit-service';
-import { mapRoleToOperatorType } from '../../utils/role-mapper';
+import { z } from "zod";
+import {
+  router,
+  publicProcedure,
+  protectedProcedure,
+  createPermissionProcedure,
+} from "../trpc";
+import { TRPCError } from "@trpc/server";
+import { getAuditService } from "../../services/audit-service";
+import { mapRoleToOperatorType } from "../../utils/role-mapper";
 
 /**
  * Store Router
@@ -24,7 +29,7 @@ export const storeRouter = router({
     .input(
       z.object({
         orgId: z.string().optional(),
-        status: z.enum(['active', 'inactive', 'maintenance']).optional(),
+        status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]).optional(),
         page: z.number().min(1).default(1),
         pageSize: z.number().min(1).max(100).default(20),
       })
@@ -35,8 +40,8 @@ export const storeRouter = router({
       // RBAC 权限检查
       if (orgId && !ctx.rbacScope.canAccessOrg(orgId)) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have permission to access this organization',
+          code: "FORBIDDEN",
+          message: "You do not have permission to access this organization",
         });
       }
 
@@ -57,7 +62,7 @@ export const storeRouter = router({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           include: {
             organization: {
               select: {
@@ -101,16 +106,16 @@ export const storeRouter = router({
 
       if (!store) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Store not found',
+          code: "NOT_FOUND",
+          message: "Store not found",
         });
       }
 
       // RBAC 权限检查
       if (!ctx.rbacScope.canAccessStore(store.id)) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have permission to access this store',
+          code: "FORBIDDEN",
+          message: "You do not have permission to access this store",
         });
       }
 
@@ -120,11 +125,11 @@ export const storeRouter = router({
   /**
    * 更新门店状态（含事务与审计）
    */
-  updateStatus: createPermissionProcedure(['store:update'])
+  updateStatus: createPermissionProcedure(["store:update"])
     .input(
       z.object({
         id: z.string(),
-        status: z.enum(['active', 'inactive', 'maintenance']),
+        status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]),
         reason: z.string().optional(),
       })
     )
@@ -138,16 +143,16 @@ export const storeRouter = router({
 
       if (!store) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Store not found',
+          code: "NOT_FOUND",
+          message: "Store not found",
         });
       }
 
       // RBAC 权限检查
       if (!ctx.rbacScope.canAccessStore(id)) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have permission to update this store',
+          code: "FORBIDDEN",
+          message: "You do not have permission to update this store",
         });
       }
 
@@ -155,7 +160,7 @@ export const storeRouter = router({
       const oldStatus = store.status;
 
       // 更新门店状态（事务）
-      const updatedStore = await ctx.prisma.$transaction(async (tx) => {
+      const updatedStore = await ctx.prisma.$transaction(async tx => {
         // 更新门店状态
         const updated = await tx.store.update({
           where: { id },
@@ -169,9 +174,9 @@ export const storeRouter = router({
         // 记录审计日志
         const auditService = getAuditService();
         await auditService.logAction({
-          tableName: 'stores',
+          tableName: "stores",
           recordId: id,
-          action: 'UPDATE',
+          action: "UPDATE",
           changes: {
             status: { old: oldStatus, new: status },
             reason,
@@ -196,27 +201,29 @@ export const storeRouter = router({
   /**
    * 创建门店
    */
-  create: createPermissionProcedure(['store:create'])
+  create: createPermissionProcedure(["store:create"])
     .input(
       z.object({
         orgId: z.string(),
+        code: z.string().min(1).max(50),
         name: z.string().min(1).max(200),
         address: z.string().optional(),
         phone: z.string().optional(),
-        status: z.enum(['active', 'inactive', 'maintenance']).default('active'),
+        status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]).default("ACTIVE"),
       })
     )
     .mutation(async ({ ctx, input }) => {
       // RBAC 权限检查
       if (!ctx.rbacScope.canAccessOrg(input.orgId)) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have permission to create stores in this organization',
+          code: "FORBIDDEN",
+          message:
+            "You do not have permission to create stores in this organization",
         });
       }
 
       // 创建门店（事务）
-      const store = await ctx.prisma.$transaction(async (tx) => {
+      const store = await ctx.prisma.$transaction(async tx => {
         // 创建门店
         const newStore = await tx.store.create({
           data: {
@@ -231,9 +238,9 @@ export const storeRouter = router({
         // 记录审计日志
         const auditService = getAuditService();
         await auditService.logAction({
-          tableName: 'stores',
+          tableName: "stores",
           recordId: newStore.id,
-          action: 'INSERT',
+          action: "INSERT",
           changes: input,
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
@@ -255,7 +262,7 @@ export const storeRouter = router({
   /**
    * 更新门店信息
    */
-  update: createPermissionProcedure(['store:update'])
+  update: createPermissionProcedure(["store:update"])
     .input(
       z.object({
         id: z.string(),
@@ -274,21 +281,21 @@ export const storeRouter = router({
 
       if (!store) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Store not found',
+          code: "NOT_FOUND",
+          message: "Store not found",
         });
       }
 
       // RBAC 权限检查
       if (!ctx.rbacScope.canAccessStore(id)) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have permission to update this store',
+          code: "FORBIDDEN",
+          message: "You do not have permission to update this store",
         });
       }
 
       // 更新门店信息（事务）
-      const updatedStore = await ctx.prisma.$transaction(async (tx) => {
+      const updatedStore = await ctx.prisma.$transaction(async tx => {
         // 更新门店
         const updated = await tx.store.update({
           where: { id },
@@ -302,9 +309,9 @@ export const storeRouter = router({
         // 记录审计日志
         const auditService = getAuditService();
         await auditService.logAction({
-          tableName: 'stores',
+          tableName: "stores",
           recordId: id,
-          action: 'UPDATE',
+          action: "UPDATE",
           changes: data,
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
@@ -326,7 +333,7 @@ export const storeRouter = router({
   /**
    * 删除门店（软删除）
    */
-  delete: createPermissionProcedure(['store:delete'])
+  delete: createPermissionProcedure(["store:delete"])
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { id } = input;
@@ -338,26 +345,26 @@ export const storeRouter = router({
 
       if (!store) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Store not found',
+          code: "NOT_FOUND",
+          message: "Store not found",
         });
       }
 
       // RBAC 权限检查
       if (!ctx.rbacScope.canAccessStore(id)) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have permission to delete this store',
+          code: "FORBIDDEN",
+          message: "You do not have permission to delete this store",
         });
       }
 
       // 软删除门店（事务）
-      await ctx.prisma.$transaction(async (tx) => {
+      await ctx.prisma.$transaction(async tx => {
         // 更新状态为 inactive
         await tx.store.update({
           where: { id },
           data: {
-            status: 'inactive',
+            status: "INACTIVE",
             updatedAt: new Date(),
             updatedBy: ctx.userSession!.userId,
           },
@@ -366,10 +373,10 @@ export const storeRouter = router({
         // 记录审计日志
         const auditService = getAuditService();
         await auditService.logAction({
-          tableName: 'stores',
+          tableName: "stores",
           recordId: id,
-          action: 'DELETE',
-          changes: { status: 'inactive' },
+          action: "DELETE",
+          changes: { status: "INACTIVE" },
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
           operatorName: null,

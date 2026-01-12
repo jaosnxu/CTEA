@@ -1,6 +1,6 @@
 /**
  * 翻译管理工作台
- * 
+ *
  * 实现【系统负责人中心化模式】：
  * - 展示待审核俄语翻译列表
  * - 管理员审核发布功能
@@ -41,11 +41,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Search, 
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  Search,
   RefreshCw,
   Eye,
   Edit,
@@ -220,11 +220,16 @@ const MOCK_STATS = {
 export default function TranslationManager() {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("pending");
-  const [pendingTranslations, setPendingTranslations] = useState<Translation[]>(MOCK_PENDING_TRANSLATIONS);
-  const [publishedTranslations, setPublishedTranslations] = useState<Translation[]>(MOCK_PUBLISHED_TRANSLATIONS);
+  const [pendingTranslations, setPendingTranslations] = useState<Translation[]>(
+    MOCK_PENDING_TRANSLATIONS
+  );
+  const [publishedTranslations, setPublishedTranslations] = useState<
+    Translation[]
+  >(MOCK_PUBLISHED_TRANSLATIONS);
   const [stats, setStats] = useState(MOCK_STATS);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTranslation, setSelectedTranslation] = useState<Translation | null>(null);
+  const [selectedTranslation, setSelectedTranslation] =
+    useState<Translation | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
@@ -232,7 +237,9 @@ export default function TranslationManager() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isAIInputOpen, setIsAIInputOpen] = useState(false);
-  const [aiStatus, setAiStatus] = useState<"unknown" | "available" | "unavailable">("unknown");
+  const [aiStatus, setAiStatus] = useState<
+    "unknown" | "available" | "unavailable"
+  >("unknown");
 
   // 获取分类标签颜色
   const getCategoryColor = (category: string) => {
@@ -269,7 +276,7 @@ export default function TranslationManager() {
     setIsLoading(true);
     // 模拟 API 调用
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     const translation = pendingTranslations.find(t => t.id === id);
     if (translation) {
       const published = {
@@ -287,7 +294,7 @@ export default function TranslationManager() {
         pending: prev.pending - 1,
       }));
     }
-    
+
     setIsLoading(false);
     setIsPublishDialogOpen(false);
     setReviewNote("");
@@ -298,8 +305,10 @@ export default function TranslationManager() {
   const handleBatchPublish = async () => {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const toPublish = pendingTranslations.filter(t => selectedIds.includes(t.id));
+
+    const toPublish = pendingTranslations.filter(t =>
+      selectedIds.includes(t.id)
+    );
     const published = toPublish.map(t => ({
       ...t,
       isPublished: "true" as const,
@@ -307,15 +316,17 @@ export default function TranslationManager() {
       publishedAt: new Date().toISOString(),
       reviewNote: "批量审核通过",
     }));
-    
-    setPendingTranslations(prev => prev.filter(t => !selectedIds.includes(t.id)));
+
+    setPendingTranslations(prev =>
+      prev.filter(t => !selectedIds.includes(t.id))
+    );
     setPublishedTranslations(prev => [...published, ...prev]);
     setStats(prev => ({
       ...prev,
       published: prev.published + selectedIds.length,
       pending: prev.pending - selectedIds.length,
     }));
-    
+
     setSelectedIds([]);
     setIsLoading(false);
   };
@@ -324,11 +335,11 @@ export default function TranslationManager() {
   const handleReject = async (id: number) => {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500));
-    
-    setPendingTranslations(prev => 
-      prev.map(t => t.id === id ? { ...t, reviewNote } : t)
+
+    setPendingTranslations(prev =>
+      prev.map(t => (t.id === id ? { ...t, reviewNote } : t))
     );
-    
+
     setIsLoading(false);
     setIsRejectDialogOpen(false);
     setReviewNote("");
@@ -337,7 +348,7 @@ export default function TranslationManager() {
 
   // 切换选中状态
   const toggleSelect = (id: number) => {
-    setSelectedIds(prev => 
+    setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
@@ -352,16 +363,18 @@ export default function TranslationManager() {
   };
 
   // 过滤翻译
-  const filteredPending = pendingTranslations.filter(t => 
-    t.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.textZh.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (t.textRu && t.textRu.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredPending = pendingTranslations.filter(
+    t =>
+      t.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.textZh.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (t.textRu && t.textRu.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const filteredPublished = publishedTranslations.filter(t => 
-    t.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.textZh.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (t.textRu && t.textRu.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredPublished = publishedTranslations.filter(
+    t =>
+      t.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.textZh.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (t.textRu && t.textRu.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -381,31 +394,41 @@ export default function TranslationManager() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         <Card className="bg-white">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {stats.total}
+            </div>
             <div className="text-xs text-gray-500">Всего</div>
           </CardContent>
         </Card>
         <Card className="bg-white">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{stats.published}</div>
+            <div className="text-2xl font-bold text-green-600">
+              {stats.published}
+            </div>
             <div className="text-xs text-gray-500">Опубликовано</div>
           </CardContent>
         </Card>
         <Card className="bg-white">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+            <div className="text-2xl font-bold text-yellow-600">
+              {stats.pending}
+            </div>
             <div className="text-xs text-gray-500">На проверке</div>
           </CardContent>
         </Card>
         <Card className="bg-white">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.aiGenerated}</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {stats.aiGenerated}
+            </div>
             <div className="text-xs text-gray-500">AI перевод</div>
           </CardContent>
         </Card>
         <Card className="bg-white">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600">{stats.manual}</div>
+            <div className="text-2xl font-bold text-purple-600">
+              {stats.manual}
+            </div>
             <div className="text-xs text-gray-500">Ручной</div>
           </CardContent>
         </Card>
@@ -418,14 +441,14 @@ export default function TranslationManager() {
           <Input
             placeholder="Поиск по ключу или тексту..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className="pl-10"
           />
         </div>
         <Button variant="outline" size="icon">
           <RefreshCw className="w-4 h-4" />
         </Button>
-        <Button 
+        <Button
           onClick={() => setIsAIInputOpen(true)}
           className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
         >
@@ -440,12 +463,16 @@ export default function TranslationManager() {
           <TabsTrigger value="pending" className="flex items-center gap-2">
             <Clock className="w-4 h-4" />
             На проверке
-            <Badge variant="secondary" className="ml-1">{filteredPending.length}</Badge>
+            <Badge variant="secondary" className="ml-1">
+              {filteredPending.length}
+            </Badge>
           </TabsTrigger>
           <TabsTrigger value="published" className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4" />
             Опубликовано
-            <Badge variant="secondary" className="ml-1">{filteredPublished.length}</Badge>
+            <Badge variant="secondary" className="ml-1">
+              {filteredPublished.length}
+            </Badge>
           </TabsTrigger>
         </TabsList>
 
@@ -456,8 +483,8 @@ export default function TranslationManager() {
               <span className="text-sm text-blue-800">
                 Выбрано: {selectedIds.length} элементов
               </span>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 onClick={handleBatchPublish}
                 disabled={isLoading}
               >
@@ -473,7 +500,10 @@ export default function TranslationManager() {
                   <TableHead className="w-10">
                     <input
                       type="checkbox"
-                      checked={selectedIds.length === pendingTranslations.length && pendingTranslations.length > 0}
+                      checked={
+                        selectedIds.length === pendingTranslations.length &&
+                        pendingTranslations.length > 0
+                      }
                       onChange={toggleSelectAll}
                       className="rounded"
                     />
@@ -486,7 +516,7 @@ export default function TranslationManager() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPending.map((translation) => (
+                {filteredPending.map(translation => (
                   <TableRow key={translation.id}>
                     <TableCell>
                       <input
@@ -498,8 +528,12 @@ export default function TranslationManager() {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1">
-                        <code className="text-xs bg-gray-100 px-1 rounded">{translation.key}</code>
-                        <Badge className={`text-[10px] w-fit ${getCategoryColor(translation.category)}`}>
+                        <code className="text-xs bg-gray-100 px-1 rounded">
+                          {translation.key}
+                        </code>
+                        <Badge
+                          className={`text-[10px] w-fit ${getCategoryColor(translation.category)}`}
+                        >
                           {translation.category}
                         </Badge>
                       </div>
@@ -508,13 +542,17 @@ export default function TranslationManager() {
                       {translation.textZh}
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate text-sm">
-                      {translation.textRu || <span className="text-gray-400">—</span>}
+                      {translation.textRu || (
+                        <span className="text-gray-400">—</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         {getSourceIcon(translation.source)}
                         {translation.aiConfidence !== null && (
-                          <span className={`text-xs ${getConfidenceColor(translation.aiConfidence)}`}>
+                          <span
+                            className={`text-xs ${getConfidenceColor(translation.aiConfidence)}`}
+                          >
                             {translation.aiConfidence}%
                           </span>
                         )}
@@ -561,7 +599,10 @@ export default function TranslationManager() {
                 ))}
                 {filteredPending.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                    <TableCell
+                      colSpan={6}
+                      className="text-center py-8 text-gray-500"
+                    >
                       Нет переводов на проверке
                     </TableCell>
                   </TableRow>
@@ -586,12 +627,16 @@ export default function TranslationManager() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPublished.map((translation) => (
+                {filteredPublished.map(translation => (
                   <TableRow key={translation.id}>
                     <TableCell>
                       <div className="flex flex-col gap-1">
-                        <code className="text-xs bg-gray-100 px-1 rounded">{translation.key}</code>
-                        <Badge className={`text-[10px] w-fit ${getCategoryColor(translation.category)}`}>
+                        <code className="text-xs bg-gray-100 px-1 rounded">
+                          {translation.key}
+                        </code>
+                        <Badge
+                          className={`text-[10px] w-fit ${getCategoryColor(translation.category)}`}
+                        >
                           {translation.category}
                         </Badge>
                       </div>
@@ -600,7 +645,9 @@ export default function TranslationManager() {
                       {translation.textZh}
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate text-sm">
-                      {translation.textRu || <span className="text-gray-400">—</span>}
+                      {translation.textRu || (
+                        <span className="text-gray-400">—</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
@@ -608,9 +655,11 @@ export default function TranslationManager() {
                       </div>
                     </TableCell>
                     <TableCell className="text-xs text-gray-500">
-                      {translation.publishedAt 
-                        ? new Date(translation.publishedAt).toLocaleDateString('ru-RU')
-                        : '—'}
+                      {translation.publishedAt
+                        ? new Date(translation.publishedAt).toLocaleDateString(
+                            "ru-RU"
+                          )
+                        : "—"}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
@@ -625,11 +674,7 @@ export default function TranslationManager() {
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                        >
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
                           <Edit className="w-4 h-4" />
                         </Button>
                       </div>
@@ -638,7 +683,10 @@ export default function TranslationManager() {
                 ))}
                 {filteredPublished.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                    <TableCell
+                      colSpan={6}
+                      className="text-center py-8 text-gray-500"
+                    >
                       Нет опубликованных переводов
                     </TableCell>
                   </TableRow>
@@ -666,7 +714,9 @@ export default function TranslationManager() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-gray-500">Категория</label>
-                  <Badge className={getCategoryColor(selectedTranslation.category)}>
+                  <Badge
+                    className={getCategoryColor(selectedTranslation.category)}
+                  >
                     {selectedTranslation.category}
                   </Badge>
                 </div>
@@ -675,10 +725,14 @@ export default function TranslationManager() {
                   <div className="flex items-center gap-2">
                     {getSourceIcon(selectedTranslation.source)}
                     <span className="text-sm">
-                      {selectedTranslation.source === "ai_generated" ? "AI" : "Ручной"}
+                      {selectedTranslation.source === "ai_generated"
+                        ? "AI"
+                        : "Ручной"}
                     </span>
                     {selectedTranslation.aiConfidence !== null && (
-                      <span className={`text-sm ${getConfidenceColor(selectedTranslation.aiConfidence)}`}>
+                      <span
+                        className={`text-sm ${getConfidenceColor(selectedTranslation.aiConfidence)}`}
+                      >
                         ({selectedTranslation.aiConfidence}%)
                       </span>
                     )}
@@ -686,7 +740,9 @@ export default function TranslationManager() {
                 </div>
               </div>
               <div>
-                <label className="text-xs text-gray-500">Китайский (原文)</label>
+                <label className="text-xs text-gray-500">
+                  Китайский (原文)
+                </label>
                 <div className="bg-gray-50 p-3 rounded text-sm">
                   {selectedTranslation.textZh}
                 </div>
@@ -694,13 +750,17 @@ export default function TranslationManager() {
               <div>
                 <label className="text-xs text-gray-500">Русский</label>
                 <div className="bg-blue-50 p-3 rounded text-sm">
-                  {selectedTranslation.textRu || <span className="text-gray-400">Не переведено</span>}
+                  {selectedTranslation.textRu || (
+                    <span className="text-gray-400">Не переведено</span>
+                  )}
                 </div>
               </div>
               <div>
                 <label className="text-xs text-gray-500">English</label>
                 <div className="bg-green-50 p-3 rounded text-sm">
-                  {selectedTranslation.textEn || <span className="text-gray-400">Not translated</span>}
+                  {selectedTranslation.textEn || (
+                    <span className="text-gray-400">Not translated</span>
+                  )}
                 </div>
               </div>
               {selectedTranslation.context && (
@@ -717,7 +777,10 @@ export default function TranslationManager() {
       </Dialog>
 
       {/* 发布确认弹窗 */}
-      <AlertDialog open={isPublishDialogOpen} onOpenChange={setIsPublishDialogOpen}>
+      <AlertDialog
+        open={isPublishDialogOpen}
+        onOpenChange={setIsPublishDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -725,7 +788,8 @@ export default function TranslationManager() {
               Опубликовать перевод?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              После публикации перевод станет доступен для всех пользователей приложения.
+              После публикации перевод станет доступен для всех пользователей
+              приложения.
             </AlertDialogDescription>
           </AlertDialogHeader>
           {selectedTranslation && (
@@ -735,13 +799,15 @@ export default function TranslationManager() {
                 <code className="text-sm">{selectedTranslation.key}</code>
               </div>
               <div className="bg-blue-50 p-3 rounded">
-                <div className="text-xs text-gray-500 mb-1">Русский перевод</div>
+                <div className="text-xs text-gray-500 mb-1">
+                  Русский перевод
+                </div>
                 <div className="text-sm">{selectedTranslation.textRu}</div>
               </div>
               <Textarea
                 placeholder="Примечание к проверке (необязательно)"
                 value={reviewNote}
-                onChange={(e) => setReviewNote(e.target.value)}
+                onChange={e => setReviewNote(e.target.value)}
                 className="mt-2"
               />
             </div>
@@ -749,7 +815,9 @@ export default function TranslationManager() {
           <AlertDialogFooter>
             <AlertDialogCancel>Отмена</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => selectedTranslation && handlePublish(selectedTranslation.id)}
+              onClick={() =>
+                selectedTranslation && handlePublish(selectedTranslation.id)
+              }
               disabled={isLoading}
               className="bg-green-600 hover:bg-green-700"
             >
@@ -760,7 +828,10 @@ export default function TranslationManager() {
       </AlertDialog>
 
       {/* 拒绝确认弹窗 */}
-      <AlertDialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+      <AlertDialog
+        open={isRejectDialogOpen}
+        onOpenChange={setIsRejectDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -774,13 +845,15 @@ export default function TranslationManager() {
           {selectedTranslation && (
             <div className="my-4 space-y-2">
               <div className="bg-gray-50 p-3 rounded">
-                <div className="text-xs text-gray-500 mb-1">Русский перевод</div>
+                <div className="text-xs text-gray-500 mb-1">
+                  Русский перевод
+                </div>
                 <div className="text-sm">{selectedTranslation.textRu}</div>
               </div>
               <Textarea
                 placeholder="Причина отклонения (обязательно)"
                 value={reviewNote}
-                onChange={(e) => setReviewNote(e.target.value)}
+                onChange={e => setReviewNote(e.target.value)}
                 className="mt-2"
                 required
               />
@@ -789,7 +862,9 @@ export default function TranslationManager() {
           <AlertDialogFooter>
             <AlertDialogCancel>Отмена</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => selectedTranslation && handleReject(selectedTranslation.id)}
+              onClick={() =>
+                selectedTranslation && handleReject(selectedTranslation.id)
+              }
               disabled={isLoading || !reviewNote.trim()}
               className="bg-red-600 hover:bg-red-700"
             >

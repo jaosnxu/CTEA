@@ -1,17 +1,17 @@
 /**
  * CHUTEA tRPC Router - RBAC Management
- * 
+ *
  * 权限矩阵与角色校验模块
  * - 角色管理
  * - 权限规则管理
  * - 用户权限查询
  */
 
-import { z } from 'zod';
-import { router, protectedProcedure, createPermissionProcedure } from '../trpc';
-import { TRPCError } from '@trpc/server';
-import { getAuditService } from '../../services/audit-service';
-import { mapRoleToOperatorType } from '../../utils/role-mapper';
+import { z } from "zod";
+import { router, protectedProcedure, createPermissionProcedure } from "../trpc";
+import { TRPCError } from "@trpc/server";
+import { getAuditService } from "../../services/audit-service";
+import { mapRoleToOperatorType } from "../../utils/role-mapper";
 
 /**
  * RBAC Router
@@ -24,39 +24,39 @@ export const rbacRouter = router({
     // 定义 6 级 RBAC 角色
     const roles = [
       {
-        id: 'super_admin',
-        name: 'Super Admin',
-        description: 'System super administrator with full access',
+        id: "super_admin",
+        name: "Super Admin",
+        description: "System super administrator with full access",
         level: 1,
       },
       {
-        id: 'org_admin',
-        name: 'Organization Admin',
-        description: 'Organization administrator',
+        id: "org_admin",
+        name: "Organization Admin",
+        description: "Organization administrator",
         level: 2,
       },
       {
-        id: 'region_admin',
-        name: 'Region Admin',
-        description: 'Regional administrator',
+        id: "region_admin",
+        name: "Region Admin",
+        description: "Regional administrator",
         level: 3,
       },
       {
-        id: 'store_admin',
-        name: 'Store Admin',
-        description: 'Store administrator',
+        id: "store_admin",
+        name: "Store Admin",
+        description: "Store administrator",
         level: 4,
       },
       {
-        id: 'store_staff',
-        name: 'Store Staff',
-        description: 'Store staff member',
+        id: "store_staff",
+        name: "Store Staff",
+        description: "Store staff member",
         level: 5,
       },
       {
-        id: 'user',
-        name: 'User',
-        description: 'Regular user',
+        id: "user",
+        name: "User",
+        description: "Regular user",
         level: 6,
       },
     ];
@@ -67,7 +67,7 @@ export const rbacRouter = router({
   /**
    * 获取权限规则列表
    */
-  getPermissionRules: createPermissionProcedure(['rbac:view'])
+  getPermissionRules: createPermissionProcedure(["rbac:view"])
     .input(
       z.object({
         role: z.string().optional(),
@@ -90,7 +90,7 @@ export const rbacRouter = router({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
         }),
         ctx.prisma.permissionRule.count({ where }),
       ]);
@@ -109,19 +109,19 @@ export const rbacRouter = router({
   /**
    * 创建权限规则
    */
-  createPermissionRule: createPermissionProcedure(['rbac:manage'])
+  createPermissionRule: createPermissionProcedure(["rbac:manage"])
     .input(
       z.object({
         role: z.string(),
         resource: z.string(),
         action: z.string(),
-        effect: z.enum(['allow', 'deny']),
-        conditions: z.record(z.any()).optional(),
+        isAllowed: z.boolean().default(true),
+        conditions: z.record(z.string(), z.any()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       // 创建权限规则（事务）
-      const rule = await ctx.prisma.$transaction(async (tx) => {
+      const rule = await ctx.prisma.$transaction(async tx => {
         // 创建权限规则
         const newRule = await tx.permissionRule.create({
           data: {
@@ -136,9 +136,9 @@ export const rbacRouter = router({
         // 记录审计日志
         const auditService = getAuditService();
         await auditService.logAction({
-          tableName: 'permission_rules',
+          tableName: "permission_rules",
           recordId: newRule.id,
-          action: 'INSERT',
+          action: "INSERT",
           changes: input,
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
@@ -160,12 +160,12 @@ export const rbacRouter = router({
   /**
    * 更新权限规则
    */
-  updatePermissionRule: createPermissionProcedure(['rbac:manage'])
+  updatePermissionRule: createPermissionProcedure(["rbac:manage"])
     .input(
       z.object({
         id: z.string(),
-        effect: z.enum(['allow', 'deny']).optional(),
-        conditions: z.record(z.any()).optional(),
+        isAllowed: z.boolean().optional(),
+        conditions: z.record(z.string(), z.any()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -178,13 +178,13 @@ export const rbacRouter = router({
 
       if (!rule) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Permission rule not found',
+          code: "NOT_FOUND",
+          message: "Permission rule not found",
         });
       }
 
       // 更新权限规则（事务）
-      const updatedRule = await ctx.prisma.$transaction(async (tx) => {
+      const updatedRule = await ctx.prisma.$transaction(async tx => {
         // 更新权限规则
         const updated = await tx.permissionRule.update({
           where: { id },
@@ -198,9 +198,9 @@ export const rbacRouter = router({
         // 记录审计日志
         const auditService = getAuditService();
         await auditService.logAction({
-          tableName: 'permission_rules',
+          tableName: "permission_rules",
           recordId: id,
-          action: 'UPDATE',
+          action: "UPDATE",
           changes: data,
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
@@ -222,7 +222,7 @@ export const rbacRouter = router({
   /**
    * 删除权限规则
    */
-  deletePermissionRule: createPermissionProcedure(['rbac:manage'])
+  deletePermissionRule: createPermissionProcedure(["rbac:manage"])
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { id } = input;
@@ -234,13 +234,13 @@ export const rbacRouter = router({
 
       if (!rule) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Permission rule not found',
+          code: "NOT_FOUND",
+          message: "Permission rule not found",
         });
       }
 
       // 删除权限规则（事务）
-      await ctx.prisma.$transaction(async (tx) => {
+      await ctx.prisma.$transaction(async tx => {
         // 删除权限规则
         await tx.permissionRule.delete({
           where: { id },
@@ -249,9 +249,9 @@ export const rbacRouter = router({
         // 记录审计日志
         const auditService = getAuditService();
         await auditService.logAction({
-          tableName: 'permission_rules',
+          tableName: "permission_rules",
           recordId: id,
-          action: 'DELETE',
+          action: "DELETE",
           changes: { deleted: true },
           operatorId: ctx.userSession!.userId,
           operatorType: mapRoleToOperatorType(ctx.userSession!.role),
@@ -276,10 +276,13 @@ export const rbacRouter = router({
       const userId = input.userId || ctx.userSession!.userId;
 
       // RBAC 权限检查（只能查看自己的权限，除非是管理员）
-      if (userId !== ctx.userSession!.userId && ctx.userSession!.role !== 'super_admin') {
+      if (
+        userId !== ctx.userSession!.userId &&
+        ctx.userSession!.role !== "super_admin"
+      ) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have permission to view other users permissions',
+          code: "FORBIDDEN",
+          message: "You do not have permission to view other users permissions",
         });
       }
 
@@ -290,8 +293,8 @@ export const rbacRouter = router({
 
       if (!user) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'User not found',
+          code: "NOT_FOUND",
+          message: "User not found",
         });
       }
 
@@ -299,12 +302,12 @@ export const rbacRouter = router({
       const rules = await ctx.prisma.permissionRule.findMany({
         where: {
           role: user.role,
-          effect: 'allow',
+          isAllowed: true,
         },
       });
 
       // 提取权限列表
-      const permissions = rules.map((rule) => `${rule.resource}:${rule.action}`);
+      const permissions = rules.map(rule => `${rule.resource}:${rule.action}`);
 
       return {
         userId: user.id,
@@ -329,7 +332,7 @@ export const rbacRouter = router({
       const { permission } = input;
 
       // 解析权限
-      const [resource, action] = permission.split(':');
+      const [resource, action] = permission.split(":");
 
       // 查询用户信息
       const user = await ctx.prisma.adminUser.findUnique({
@@ -338,16 +341,16 @@ export const rbacRouter = router({
 
       if (!user) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'User not found',
+          code: "NOT_FOUND",
+          message: "User not found",
         });
       }
 
       // Super admin 拥有所有权限
-      if (user.role === 'super_admin') {
+      if (user.role === "HQ_ADMIN") {
         return {
           hasPermission: true,
-          reason: 'Super admin has all permissions',
+          reason: "Super admin has all permissions",
         };
       }
 
@@ -363,13 +366,13 @@ export const rbacRouter = router({
       if (!rule) {
         return {
           hasPermission: false,
-          reason: 'No permission rule found',
+          reason: "No permission rule found",
         };
       }
 
       return {
-        hasPermission: rule.effect === 'allow',
-        reason: rule.effect === 'allow' ? 'Permission granted' : 'Permission denied',
+        hasPermission: rule.isAllowed,
+        reason: rule.isAllowed ? "Permission granted" : "Permission denied",
         rule,
       };
     }),
@@ -377,10 +380,10 @@ export const rbacRouter = router({
   /**
    * 获取 RBAC 矩阵
    */
-  getMatrix: createPermissionProcedure(['rbac:view']).query(async ({ ctx }) => {
+  getMatrix: createPermissionProcedure(["rbac:view"]).query(async ({ ctx }) => {
     // 查询所有权限规则
     const rules = await ctx.prisma.permissionRule.findMany({
-      orderBy: [{ role: 'asc' }, { resource: 'asc' }, { action: 'asc' }],
+      orderBy: [{ role: "asc" }, { resource: "asc" }, { action: "asc" }],
     });
 
     // 按角色分组
@@ -392,14 +395,21 @@ export const rbacRouter = router({
       matrix[rule.role].push({
         resource: rule.resource,
         action: rule.action,
-        effect: rule.effect,
+        isAllowed: rule.isAllowed,
         conditions: rule.conditions,
       });
     }
 
     return {
       matrix,
-      roles: ['super_admin', 'org_admin', 'region_admin', 'store_admin', 'store_staff', 'user'],
+      roles: [
+        "HQ_ADMIN",
+        "HQ_OPERATOR",
+        "ORG_ADMIN",
+        "ORG_OPERATOR",
+        "STORE_MANAGER",
+        "STORE_STAFF",
+      ],
     };
   }),
 });
