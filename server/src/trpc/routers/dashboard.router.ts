@@ -8,7 +8,7 @@
  * - Store statistics
  */
 
-import { router, publicProcedure } from "../../../_core/trpc";
+import { router, publicProcedure } from "../trpc";
 import { getPrismaClient } from "../../db/prisma";
 
 /**
