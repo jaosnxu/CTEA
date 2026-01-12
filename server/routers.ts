@@ -8,6 +8,7 @@ import { auditRouter } from "./src/trpc/routers/audit.router";
 import { rbacRouter } from "./src/trpc/routers/rbac.router";
 import { memberRouter } from "./src/trpc/routers/member.router";
 import { orderRouter } from "./src/trpc/routers/order.router";
+import { dashboardRouter } from "./src/trpc/routers/dashboard.router";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -32,6 +33,7 @@ export const appRouter = router({
   rbac: rbacRouter,
   member: memberRouter,
   order: orderRouter,
+  dashboard: dashboardRouter,
 });
 
 export type AppRouter = typeof appRouter;
