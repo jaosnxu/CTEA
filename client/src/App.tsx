@@ -116,6 +116,10 @@ function Router() {
         component={OrganizationSettings}
       />
       <Route path="/admin/bi" component={BIAnalysisHub} />
+      {/* AI routes - redirect to BI Analysis Hub */}
+      <Route path="/admin/ai/cockpit" component={BIAnalysisHub} />
+      <Route path="/admin/ai/reports" component={BIAnalysisHub} />
+      <Route path="/admin/ai/customer-service" component={BIAnalysisHub} />
       <Route path="/admin" component={Dashboard} />
       {/* Final fallback route */}
       <Route component={NotFound} />
