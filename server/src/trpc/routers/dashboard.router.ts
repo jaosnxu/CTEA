@@ -8,8 +8,8 @@
  * - Store statistics
  */
 
-import { z } from "zod";
-import { router, publicProcedure } from "../trpc";
+import { router, publicProcedure } from "../../../_core/trpc";
+import { getPrismaClient } from "../../db/prisma";
 
 /**
  * Dashboard Router - Provides real statistics for admin dashboard
@@ -18,17 +18,19 @@ export const dashboardRouter = router({
   /**
    * Get financial module statistics
    */
-  getFinanceStats: publicProcedure.query(async ({ ctx }) => {
+  getFinanceStats: publicProcedure.query(async () => {
+    const prisma = getPrismaClient();
+
     // Get withdrawal requests
     const [withdrawalRequests, totalWithdrawalAmount] = await Promise.all([
-      ctx.prisma.withdrawalrequests.count(),
-      ctx.prisma.withdrawalrequests.aggregate({
+      prisma.withdrawalrequests.count(),
+      prisma.withdrawalrequests.aggregate({
         _sum: { amount: true },
       }),
     ]);
 
     // Get total orders revenue (as proxy for balance)
-    const totalRevenue = await ctx.prisma.orders.aggregate({
+    const totalRevenue = await prisma.orders.aggregate({
       where: { status: "COMPLETED" },
       _sum: { totalAmount: true },
     });
@@ -43,16 +45,17 @@ export const dashboardRouter = router({
   /**
    * Get order/operations statistics
    */
-  getOrderStats: publicProcedure.query(async ({ ctx }) => {
+  getOrderStats: publicProcedure.query(async () => {
+    const prisma = getPrismaClient();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const [totalOrders, todayOrders, ordersByStatus] = await Promise.all([
-      ctx.prisma.orders.count(),
-      ctx.prisma.orders.count({
+      prisma.orders.count(),
+      prisma.orders.count({
         where: { createdAt: { gte: today } },
       }),
-      ctx.prisma.orders.groupBy({
+      prisma.orders.groupBy({
         by: ["status"],
         _count: true,
       }),
@@ -71,14 +74,16 @@ export const dashboardRouter = router({
   /**
    * Get product statistics
    */
-  getProductStats: publicProcedure.query(async ({ ctx }) => {
+  getProductStats: publicProcedure.query(async () => {
+    const prisma = getPrismaClient();
+
     const [totalProducts, totalCategories] = await Promise.all([
-      ctx.prisma.products.count(),
-      ctx.prisma.categories.count(),
+      prisma.products.count(),
+      prisma.categories.count(),
     ]);
 
     // Get low stock products (inventory < 10)
-    const lowStockCount = await ctx.prisma.mallinventory.count({
+    const lowStockCount = await prisma.mallinventory.count({
       where: { quantity: { lt: 10 } },
     });
 
@@ -92,10 +97,12 @@ export const dashboardRouter = router({
   /**
    * Get store statistics
    */
-  getStoreStats: publicProcedure.query(async ({ ctx }) => {
+  getStoreStats: publicProcedure.query(async () => {
+    const prisma = getPrismaClient();
+
     const [totalStores, activeStores] = await Promise.all([
-      ctx.prisma.store.count(),
-      ctx.prisma.store.count({ where: { status: "ACTIVE" } }),
+      prisma.store.count(),
+      prisma.store.count({ where: { status: "ACTIVE" } }),
     ]);
 
     return {
@@ -107,7 +114,8 @@ export const dashboardRouter = router({
   /**
    * Get all dashboard statistics in one call
    */
-  getAllStats: publicProcedure.query(async ({ ctx }) => {
+  getAllStats: publicProcedure.query(async () => {
+    const prisma = getPrismaClient();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -125,27 +133,27 @@ export const dashboardRouter = router({
       totalUsers,
       auditLogsToday,
     ] = await Promise.all([
-      ctx.prisma.withdrawalrequests.count(),
-      ctx.prisma.withdrawalrequests.aggregate({
+      prisma.withdrawalrequests.count(),
+      prisma.withdrawalrequests.aggregate({
         _sum: { amount: true },
       }),
-      ctx.prisma.orders.aggregate({
+      prisma.orders.aggregate({
         where: { status: "COMPLETED" },
         _sum: { totalAmount: true },
       }),
-      ctx.prisma.orders.count(),
-      ctx.prisma.orders.count({
+      prisma.orders.count(),
+      prisma.orders.count({
         where: { createdAt: { gte: today } },
       }),
-      ctx.prisma.products.count(),
-      ctx.prisma.categories.count(),
-      ctx.prisma.mallinventory.count({
+      prisma.products.count(),
+      prisma.categories.count(),
+      prisma.mallinventory.count({
         where: { quantity: { lt: 10 } },
       }),
-      ctx.prisma.store.count(),
-      ctx.prisma.store.count({ where: { status: "ACTIVE" } }),
-      ctx.prisma.users.count(),
-      ctx.prisma.auditLog.count({
+      prisma.store.count(),
+      prisma.store.count({ where: { status: "ACTIVE" } }),
+      prisma.users.count(),
+      prisma.auditLog.count({
         where: { createdAt: { gte: today } },
       }),
     ]);
