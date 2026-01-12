@@ -11,6 +11,9 @@ import { rbacRouter } from "./routers/rbac.router";
 import { memberRouter } from "./routers/member.router";
 import { orderRouter } from "./routers/order.router";
 import { healthRouter } from "./routers/health.router";
+import { bannerRouter } from "./routers/banner.router";
+import { marketingRouter } from "./routers/marketing.router";
+import { productRouter } from "./routers/product.router";
 
 /**
  * 主 Router
@@ -22,6 +25,9 @@ export const appRouter = router({
   member: memberRouter,
   order: orderRouter,
   health: healthRouter,
+  banner: bannerRouter,
+  marketing: marketingRouter,
+  product: productRouter,
 });
 
 /**
