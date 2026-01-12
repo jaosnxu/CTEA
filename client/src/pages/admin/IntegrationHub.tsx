@@ -462,7 +462,10 @@ export default function IntegrationHub() {
       await new Promise(resolve => setTimeout(resolve, 1500));
       setApiConfigs(prev => ({
         ...prev,
-        [service]: { ...prev[service as keyof typeof prev], status: "connected" },
+        [service]: {
+          ...prev[service as keyof typeof prev],
+          status: "connected",
+        },
       }));
       showMessage("success", t.messages.testSuccess);
     } catch (error) {
@@ -553,9 +556,7 @@ export default function IntegrationHub() {
       <div className="p-6">
         <div className="mb-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              🌐 {t.title}
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900">🌐 {t.title}</h1>
             <p className="text-gray-600 mt-1">{t.subtitle}</p>
           </div>
           <div className="flex gap-2">
@@ -647,7 +648,10 @@ export default function IntegrationHub() {
                           onChange={e =>
                             setApiConfigs(prev => ({
                               ...prev,
-                              [service]: { ...prev[service], key: e.target.value },
+                              [service]: {
+                                ...prev[service],
+                                key: e.target.value,
+                              },
                             }))
                           }
                           className="w-full px-3 py-2 border rounded-lg pr-10"
@@ -666,7 +670,9 @@ export default function IntegrationHub() {
                       </div>
                       <button
                         onClick={() => testConnection(service)}
-                        disabled={testing === service || !apiConfigs[service].key}
+                        disabled={
+                          testing === service || !apiConfigs[service].key
+                        }
                         className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 flex items-center gap-2"
                       >
                         {testing === service ? (
@@ -1138,7 +1144,8 @@ export default function IntegrationHub() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-700">
                 <Globe className="w-4 h-4 inline mr-1" />
-                TV 路由: <code className="bg-blue-100 px-1 rounded">/tv/:storeId</code>
+                TV 路由:{" "}
+                <code className="bg-blue-100 px-1 rounded">/tv/:storeId</code>
               </p>
             </div>
           </div>
@@ -1202,7 +1209,10 @@ export default function IntegrationHub() {
 
               <div className="space-y-3">
                 <h4 className="font-medium text-gray-700">
-                  {t.ai.currentMode}: {aiMode === "manual" ? t.ai.modes.manual.title : t.ai.modes.auto.title}
+                  {t.ai.currentMode}:{" "}
+                  {aiMode === "manual"
+                    ? t.ai.modes.manual.title
+                    : t.ai.modes.auto.title}
                 </h4>
                 {(
                   ["scheduling", "marketing", "inventory", "pricing"] as const
