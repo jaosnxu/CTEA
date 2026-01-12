@@ -189,7 +189,7 @@ export async function detectSalesAnomalies(
     > = {};
 
     for (const order of orders) {
-      const storeKey = order.storeId;
+      const storeKey = order.storeId || "unknown";
       const dateKey = order.createdAt.toISOString().split("T")[0];
 
       if (!salesByStoreAndDate[storeKey]) {
@@ -462,6 +462,8 @@ export async function predictInventoryNeeds(
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+    // Note: Orderitems model doesn't have quantity field, so we count each item as 1 unit
+    // Also need to include order and product relations
     const orderItems = await prisma.orderitems.findMany({
       where: {
         order: {
@@ -470,9 +472,7 @@ export async function predictInventoryNeeds(
           status: { in: ["COMPLETED", "DELIVERED"] },
         },
       },
-      select: {
-        productId: true,
-        quantity: true,
+      include: {
         order: { select: { createdAt: true } },
         product: { select: { name: true } },
       },
@@ -485,12 +485,15 @@ export async function predictInventoryNeeds(
     > = {};
 
     for (const item of orderItems) {
-      const productId = item.productId;
+      const productId = item.productId || "unknown";
+      if (!item.order || !item.product) continue; // Skip items without order or product
+
       const dateKey = item.order.createdAt.toISOString().split("T")[0];
+      const rawName = item.product.name;
       const productName =
-        typeof item.product.name === "object"
-          ? (item.product.name as { zh?: string }).zh || "Unknown"
-          : String(item.product.name);
+        rawName && typeof rawName === "object"
+          ? (rawName as unknown as { zh?: string }).zh || "Unknown"
+          : String(rawName || "Unknown");
 
       if (!productSales[productId]) {
         productSales[productId] = { name: productName, dailySales: {} };
@@ -498,7 +501,8 @@ export async function predictInventoryNeeds(
       if (!productSales[productId].dailySales[dateKey]) {
         productSales[productId].dailySales[dateKey] = 0;
       }
-      productSales[productId].dailySales[dateKey] += item.quantity;
+      // Count each order item as 1 unit since quantity field doesn't exist
+      productSales[productId].dailySales[dateKey] += 1;
     }
 
     // 构建分析提示
@@ -688,12 +692,17 @@ export async function auditCrossOrgFinancials(
   orgIds: string[]
 ): Promise<CrossOrgAuditResult> {
   try {
-    // 获取各组织的积分和优惠券使用数据
+    // 获取各组织的积分和订单数据
+    // Note: Schema limitations:
+    // - PointsAccount has orgId directly (not through user relation)
+    // - Usercoupons doesn't have user relation, status, usedAt, or coupon relation
+    // - Orders doesn't have discountAmount or pointsUsed fields
     const orgsData = await Promise.all(
       orgIds.map(async orgId => {
-        const [pointsTransactions, couponUsage, orders] = await Promise.all([
+        const [pointsTransactions, couponCount, orders] = await Promise.all([
+          // PointsAccount has orgId directly
           prisma.pointsTransaction.findMany({
-            where: { account: { user: { orgId } } },
+            where: { account: { orgId } },
             select: {
               id: true,
               amount: true,
@@ -703,23 +712,14 @@ export async function auditCrossOrgFinancials(
             },
             take: 1000,
           }),
-          prisma.usercoupons.findMany({
-            where: { user: { orgId } },
-            select: {
-              id: true,
-              status: true,
-              usedAt: true,
-              coupon: { select: { code: true, type: true, value: true } },
-            },
-            take: 1000,
-          }),
+          // Usercoupons doesn't have orgId or user relation, just count all
+          prisma.usercoupons.count(),
           prisma.orders.findMany({
             where: { store: { orgId } },
             select: {
               id: true,
               totalAmount: true,
-              discountAmount: true,
-              pointsUsed: true,
+              status: true,
               createdAt: true,
             },
             take: 1000,
@@ -730,19 +730,19 @@ export async function auditCrossOrgFinancials(
           orgId,
           pointsTransactions: pointsTransactions.length,
           totalPointsEarned: pointsTransactions
-            .filter(t => t.type === "EARN")
-            .reduce((sum, t) => sum + t.amount, 0),
-          totalPointsSpent: pointsTransactions
-            .filter(t => t.type === "SPEND")
-            .reduce((sum, t) => sum + Math.abs(t.amount), 0),
-          couponUsage: couponUsage.filter(c => c.status === "USED").length,
+            .filter((t: { type: string }) => t.type === "EARN")
+            .reduce((sum: number, t: { amount: number }) => sum + t.amount, 0),
+          totalPointsRedeemed: pointsTransactions
+            .filter((t: { type: string }) => t.type === "REDEEM")
+            .reduce(
+              (sum: number, t: { amount: number }) => sum + Math.abs(t.amount),
+              0
+            ),
+          couponCount: couponCount,
           totalOrders: orders.length,
           totalRevenue: orders.reduce(
-            (sum, o) => sum + Number(o.totalAmount),
-            0
-          ),
-          totalDiscounts: orders.reduce(
-            (sum, o) => sum + Number(o.discountAmount || 0),
+            (sum: number, o: { totalAmount: unknown }) =>
+              sum + Number(o.totalAmount || 0),
             0
           ),
         };
