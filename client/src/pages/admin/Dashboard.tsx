@@ -10,12 +10,11 @@
  * REAL DATA: All statistics are fetched from database via tRPC
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { trpc } from "@/lib/trpc";
 import {
   Wallet,
   TrendingUp,
@@ -410,15 +409,48 @@ export default function Dashboard() {
   const [lang, setLang] = useState<Language>("ru");
   const [selectedPillar, setSelectedPillar] = useState<string | null>(null);
 
-  // Fetch REAL data from database via tRPC
-  const {
-    data: dashboardStats,
-    isLoading,
-    refetch,
-  } = trpc.dashboard.getAllStats.useQuery(
-    undefined,
-    { refetchInterval: 30000 } // Refresh every 30 seconds
-  );
+  // Fetch REAL data from database via REST API
+  const [dashboardStats, setDashboardStats] = useState<{
+    finance: {
+      totalBalance: number | string;
+      pendingWithdrawals: number | string;
+      withdrawalRequestCount: number;
+    };
+    orders: { totalOrders: number; todayOrders: number };
+    products: {
+      totalProducts: number;
+      totalCategories: number;
+      lowStockCount: number;
+    };
+    stores: { totalStores: number; activeStores: number };
+    system: { totalUsers: number; auditLogsToday: number };
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchDashboardStats = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/dashboard/stats");
+      if (response.ok) {
+        const data = await response.json();
+        setDashboardStats(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch dashboard stats:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const refetch = useCallback(() => {
+    fetchDashboardStats();
+  }, [fetchDashboardStats]);
+
+  useEffect(() => {
+    fetchDashboardStats();
+    const interval = setInterval(fetchDashboardStats, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, [fetchDashboardStats]);
 
   // Generate module cards with REAL data from database
   const moduleCards = useMemo(

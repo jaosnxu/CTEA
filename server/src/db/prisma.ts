@@ -5,11 +5,9 @@
  * Uses lazy initialization to ensure environment variables are loaded first
  */
 
-import * as PrismaClientPkg from "@prisma/client";
-const PrismaClient = (PrismaClientPkg as any).PrismaClient || (PrismaClientPkg as any).default?.PrismaClient;
+import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
-import * as PrismaAdapterPkg from "@prisma/adapter-pg";
-const PrismaPg = (PrismaAdapterPkg as any).PrismaPg || (PrismaAdapterPkg as any).default?.PrismaPg;
+import { PrismaPg } from "@prisma/adapter-pg";
 
 /**
  * Global Prisma Client instance
