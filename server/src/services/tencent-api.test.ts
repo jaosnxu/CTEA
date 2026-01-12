@@ -7,6 +7,8 @@
 import { describe, it, expect } from "vitest";
 import crypto from "crypto";
 
+const hasEnvVars = !!(process.env.TENCENT_SECRET_ID && process.env.TENCENT_SECRET_KEY);
+
 // 腾讯云 API 签名生成
 function generateTencentCloudSignature(
   secretId: string,
@@ -58,7 +60,7 @@ function generateTencentCloudSignature(
 }
 
 describe("腾讯云 API 密钥验证", () => {
-  it("应该能够成功调用腾讯云 API 进行身份验证", async () => {
+  it.skipIf(!hasEnvVars)("应该能够成功调用腾讯云 API 进行身份验证", async () => {
     const secretId = process.env.TENCENT_SECRET_ID;
     const secretKey = process.env.TENCENT_SECRET_KEY;
 
