@@ -203,7 +203,7 @@ function createModuleCards(
         },
       ],
       alerts: data.products.lowStockCount,
-      href: "/admin/ops/product-management",
+      href: "/admin/skus",
     },
     // AI超级中心
     {
@@ -321,7 +321,7 @@ function createModuleCards(
           trendValue: "+45%",
         },
       ],
-      href: "/admin/marketing/influencers",
+      href: "/admin/withdrawals",
     },
     // 购物中心 - REAL DATA from database
     {
