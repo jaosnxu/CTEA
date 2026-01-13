@@ -29,15 +29,15 @@ export default function AdminLoginPage() {
   }, [setLocation]);
 
   const loginMutation = trpc.member.login.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Store token and user info
       localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
       localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(data.user));
-      
+
       // Redirect to dashboard
       setLocation("/admin/dashboard");
     },
-    onError: (err) => {
+    onError: err => {
       setError(err.message || "Login failed");
       setLoading(false);
     },
@@ -45,7 +45,7 @@ export default function AdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!username.trim() || !password.trim()) {
       setError("Please enter username and password");
       return;
@@ -94,7 +94,7 @@ export default function AdminLoginPage() {
               <input
                 type="text"
                 value={username}
-                onChange={(e) => {
+                onChange={e => {
                   setUsername(e.target.value);
                   setError("");
                 }}
@@ -113,7 +113,7 @@ export default function AdminLoginPage() {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => {
+                onChange={e => {
                   setPassword(e.target.value);
                   setError("");
                 }}

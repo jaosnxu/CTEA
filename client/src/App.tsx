@@ -95,9 +95,9 @@ function Router() {
       <Route path="/admin/sdui" component={SDUIConfig} />
       <Route path="/admin/skus" component={SKUManagement} />
       <Route path="/admin/brain" component={BrainDashboard} />
-            <Route path="/admin/tenants" component={TenantManagement} />
-            <Route path="/admin/login" component={AdminLoginPage} />
-            <Route path="/admin" component={Dashboard} />
+      <Route path="/admin/tenants" component={TenantManagement} />
+      <Route path="/admin/login" component={AdminLoginPage} />
+      <Route path="/admin" component={Dashboard} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
