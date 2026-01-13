@@ -1,6 +1,6 @@
 /**
  * Dashboard REST API Route
- * 
+ *
  * Provides real-time dashboard statistics from the database
  * Uses dynamic Prisma import to avoid ESM/CommonJS compatibility issues
  */
@@ -18,7 +18,7 @@ router.get("/stats", async (_req, res) => {
     // Dynamic import to avoid ESM/CommonJS issues at startup
     const { getPrismaClient } = await import("../db/prisma");
     const prisma = getPrismaClient();
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -89,9 +89,9 @@ router.get("/stats", async (_req, res) => {
     res.json(stats);
   } catch (error) {
     console.error("[Dashboard] Error fetching stats:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Failed to fetch dashboard stats",
-      message: error instanceof Error ? error.message : "Unknown error"
+      message: error instanceof Error ? error.message : "Unknown error",
     });
   }
 });
