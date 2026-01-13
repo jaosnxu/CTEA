@@ -19,6 +19,11 @@ import sduiRouter from "../src/routes/sdui";
 import operationsRouter from "../src/routes/operations";
 import brainRouter from "../src/routes/brain";
 import tenantRouter from "../src/routes/tenant";
+import ordersRouter, { startBackgroundSync } from "../src/routes/orders";
+import dashboardRouter from "../src/routes/dashboard";
+
+// Initialize SQLite database
+import { getSqliteDb } from "../src/db/sqlite";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -48,6 +53,14 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
+  // Initialize SQLite database on startup
+  try {
+    getSqliteDb();
+    console.log("[Server] SQLite database initialized");
+  } catch (err) {
+    console.warn("[Server] SQLite initialization failed, continuing with cloud-only mode:", err);
+  }
+
   // 业务 API 路由
   app.use("/api/withdrawals", withdrawalsRouter);
   app.use("/api/telegram", telegramRouter);
@@ -57,6 +70,8 @@ async function startServer() {
   app.use("/api/operations", operationsRouter);
   app.use("/api/brain", brainRouter);
   app.use("/api/tenant", tenantRouter);
+  app.use("/api/orders", ordersRouter);
+  app.use("/api/dashboard", dashboardRouter);
 
   // tRPC API (原系统)
   app.use(
@@ -91,6 +106,9 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    
+    // Start background sync for local orders
+    startBackgroundSync();
   });
 }
 
