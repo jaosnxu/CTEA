@@ -58,7 +58,10 @@ async function startServer() {
     getSqliteDb();
     console.log("[Server] SQLite database initialized");
   } catch (err) {
-    console.warn("[Server] SQLite initialization failed, continuing with cloud-only mode:", err);
+    console.warn(
+      "[Server] SQLite initialization failed, continuing with cloud-only mode:",
+      err
+    );
   }
 
   // 业务 API 路由
@@ -106,7 +109,7 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
-    
+
     // Start background sync for local orders
     startBackgroundSync();
   });

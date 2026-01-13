@@ -1,6 +1,6 @@
 /**
  * CTEA Local SQLite Database Driver
- * 
+ *
  * Purpose: Provides local-first data persistence using better-sqlite3
  * - Creates and manages prisma/local.db
  * - Enables resilient write operations when cloud DB is unavailable
@@ -93,7 +93,8 @@ export function getSqliteDb(): Database.Database {
 
     try {
       dbInstance = new Database(DB_PATH, {
-        verbose: process.env.NODE_ENV === "development" ? console.log : undefined,
+        verbose:
+          process.env.NODE_ENV === "development" ? console.log : undefined,
       });
 
       // Enable WAL mode for better concurrent access
@@ -177,7 +178,7 @@ export function createLocalOrder(order: Omit<LocalOrder, "id">): number {
     INSERT INTO local_orders (order_number, store_id, user_id, status, total_amount, synced_to_cloud, created_by)
     VALUES (@order_number, @store_id, @user_id, @status, @total_amount, @synced_to_cloud, @created_by)
   `);
-  
+
   const result = stmt.run({
     order_number: order.order_number,
     store_id: order.store_id || null,
@@ -199,14 +200,19 @@ export function createLocalOrder(order: Omit<LocalOrder, "id">): number {
  */
 export function getUnsyncedOrders(): LocalOrder[] {
   const db = getSqliteDb();
-  const stmt = db.prepare("SELECT * FROM local_orders WHERE synced_to_cloud = 0");
+  const stmt = db.prepare(
+    "SELECT * FROM local_orders WHERE synced_to_cloud = 0"
+  );
   return stmt.all() as LocalOrder[];
 }
 
 /**
  * Mark order as synced to cloud
  */
-export function markOrderSynced(localOrderId: number, cloudOrderId: number): void {
+export function markOrderSynced(
+  localOrderId: number,
+  cloudOrderId: number
+): void {
   const db = getSqliteDb();
   const stmt = db.prepare(`
     UPDATE local_orders 
@@ -233,15 +239,22 @@ export function getLocalOrdersTotal(): { total: number; count: number } {
 /**
  * Get local orders summary by status
  */
-export function getLocalOrdersSummary(): Record<string, { total: number; count: number }> {
+export function getLocalOrdersSummary(): Record<
+  string,
+  { total: number; count: number }
+> {
   const db = getSqliteDb();
   const stmt = db.prepare(`
     SELECT status, COALESCE(SUM(total_amount), 0) as total, COUNT(*) as count 
     FROM local_orders 
     GROUP BY status
   `);
-  const rows = stmt.all() as Array<{ status: string; total: number; count: number }>;
-  
+  const rows = stmt.all() as Array<{
+    status: string;
+    total: number;
+    count: number;
+  }>;
+
   const summary: Record<string, { total: number; count: number }> = {};
   for (const row of rows) {
     summary[row.status] = { total: row.total, count: row.count };
@@ -269,7 +282,12 @@ interface SyncQueueItem {
 /**
  * Add item to sync queue
  */
-export function addToSyncQueue(tableName: string, recordId: number, operation: string, payload?: object): void {
+export function addToSyncQueue(
+  tableName: string,
+  recordId: number,
+  operation: string,
+  payload?: object
+): void {
   const db = getSqliteDb();
   const stmt = db.prepare(`
     INSERT INTO sync_queue (table_name, record_id, operation, payload)

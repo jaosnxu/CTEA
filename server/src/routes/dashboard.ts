@@ -1,6 +1,6 @@
 /**
  * CTEA Dashboard Router - Combined Statistics
- * 
+ *
  * Purpose: Aggregate data from both local SQLite and cloud PostgreSQL
  * - Reads local SQLite amounts for resilient local orders
  * - Reads cloud PostgreSQL amounts for synced orders
@@ -8,11 +8,11 @@
  */
 
 import { Router, Request, Response } from "express";
-import { 
-  getLocalOrdersTotal, 
+import {
+  getLocalOrdersTotal,
   getLocalOrdersSummary,
   getUnsyncedOrders,
-  isSqliteAvailable 
+  isSqliteAvailable,
 } from "../db/sqlite";
 import { getPrismaClient } from "../db/prisma";
 
@@ -49,7 +49,7 @@ router.get("/stats", async (req: Request, res: Response) => {
 
     try {
       const prisma = getPrismaClient();
-      
+
       // Add timeout to prevent hanging when cloud DB is unreachable
       const cloudPromise = prisma.orders.aggregate({
         _sum: { totalAmount: true },
@@ -58,12 +58,15 @@ router.get("/stats", async (req: Request, res: Response) => {
           status: { notIn: ["cancelled", "refunded"] },
         },
       });
-      
-      const timeoutPromise = new Promise((_, reject) => 
+
+      const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Cloud DB timeout")), 5000)
       );
 
-      const cloudResult = await Promise.race([cloudPromise, timeoutPromise]) as Awaited<typeof cloudPromise>;
+      const cloudResult = (await Promise.race([
+        cloudPromise,
+        timeoutPromise,
+      ])) as Awaited<typeof cloudPromise>;
 
       cloudStats = {
         total: Number(cloudResult._sum.totalAmount || 0),
@@ -71,14 +74,20 @@ router.get("/stats", async (req: Request, res: Response) => {
       };
       cloudAvailable = true;
     } catch (cloudError) {
-      console.warn("[Dashboard] Cloud PostgreSQL unavailable:", cloudError instanceof Error ? cloudError.message : cloudError);
+      console.warn(
+        "[Dashboard] Cloud PostgreSQL unavailable:",
+        cloudError instanceof Error ? cloudError.message : cloudError
+      );
     }
 
     // Calculate combined totals
     // Note: Local orders that are synced should not be double-counted
     // Only count unsynced local orders + all cloud orders
     const unsyncedOrders = sqliteAvailable ? getUnsyncedOrders() : [];
-    const unsyncedTotal = unsyncedOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+    const unsyncedTotal = unsyncedOrders.reduce(
+      (sum, o) => sum + (o.total_amount || 0),
+      0
+    );
     const unsyncedCount = unsyncedOrders.length;
 
     const combinedStats = {
@@ -111,7 +120,10 @@ router.get("/stats", async (req: Request, res: Response) => {
       success: false,
       error: {
         code: "DASHBOARD_STATS_FAILED",
-        message: error instanceof Error ? error.message : "Failed to get dashboard stats",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to get dashboard stats",
       },
     });
   }
@@ -160,17 +172,23 @@ router.get("/revenue", async (req: Request, res: Response) => {
           status: { notIn: ["cancelled", "refunded"] },
         },
       });
-      
-      const timeoutPromise = new Promise((_, reject) => 
+
+      const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Cloud DB timeout")), 5000)
       );
 
-      const cloudResult = await Promise.race([cloudPromise, timeoutPromise]) as Awaited<typeof cloudPromise>;
+      const cloudResult = (await Promise.race([
+        cloudPromise,
+        timeoutPromise,
+      ])) as Awaited<typeof cloudPromise>;
 
       cloudRevenue = Number(cloudResult._sum.totalAmount || 0);
       cloudOrderCount = cloudResult._count.id || 0;
     } catch (cloudError) {
-      console.warn("[Dashboard] Cloud revenue query failed:", cloudError instanceof Error ? cloudError.message : cloudError);
+      console.warn(
+        "[Dashboard] Cloud revenue query failed:",
+        cloudError instanceof Error ? cloudError.message : cloudError
+      );
     }
 
     // Get local revenue (all unsynced orders - we can't filter by date easily in SQLite)
@@ -220,7 +238,8 @@ router.get("/revenue", async (req: Request, res: Response) => {
       success: false,
       error: {
         code: "DASHBOARD_REVENUE_FAILED",
-        message: error instanceof Error ? error.message : "Failed to get revenue data",
+        message:
+          error instanceof Error ? error.message : "Failed to get revenue data",
       },
     });
   }
@@ -248,7 +267,7 @@ router.get("/health", async (req: Request, res: Response) => {
   try {
     const prisma = getPrismaClient();
     const healthPromise = prisma.$queryRaw`SELECT 1`;
-    const timeoutPromise = new Promise((_, reject) => 
+    const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error("Cloud DB timeout")), 3000)
     );
     await Promise.race([healthPromise, timeoutPromise]);
@@ -262,8 +281,8 @@ router.get("/health", async (req: Request, res: Response) => {
   res.status(allHealthy ? 200 : 503).json({
     success: allHealthy,
     data: health,
-    message: allHealthy 
-      ? "All systems operational" 
+    message: allHealthy
+      ? "All systems operational"
       : `Degraded: SQLite=${health.sqlite}, PostgreSQL=${health.postgresql}`,
   });
 });

@@ -1,6 +1,6 @@
 /**
  * CTEA Orders Router - Local-First Write with Async Cloud Sync
- * 
+ *
  * Architecture:
  * 1. All orders are first written to local SQLite (resilient write)
  * 2. Background process syncs to cloud PostgreSQL asynchronously
@@ -8,9 +8,9 @@
  */
 
 import { Router, Request, Response } from "express";
-import { 
-  createLocalOrder, 
-  getUnsyncedOrders, 
+import {
+  createLocalOrder,
+  getUnsyncedOrders,
   markOrderSynced,
   getLocalOrdersTotal,
   getLocalOrdersSummary,
@@ -18,7 +18,7 @@ import {
   markSyncItemProcessed,
   markSyncItemFailed,
   isSqliteAvailable,
-  LocalOrder
+  LocalOrder,
 } from "../db/sqlite";
 import { getPrismaClient } from "../db/prisma";
 
@@ -50,11 +50,16 @@ router.post("/", async (req: Request, res: Response) => {
       created_by: userId,
     });
 
-    console.log(`[Orders] Local order created: ${localOrderId} (${orderNumber})`);
+    console.log(
+      `[Orders] Local order created: ${localOrderId} (${orderNumber})`
+    );
 
     // Step 2: Attempt async cloud sync (non-blocking)
     syncOrderToCloud(localOrderId).catch(err => {
-      console.warn(`[Orders] Cloud sync deferred for order ${localOrderId}:`, err.message);
+      console.warn(
+        `[Orders] Cloud sync deferred for order ${localOrderId}:`,
+        err.message
+      );
     });
 
     res.status(201).json({
@@ -73,7 +78,8 @@ router.post("/", async (req: Request, res: Response) => {
       success: false,
       error: {
         code: "ORDER_CREATE_FAILED",
-        message: error instanceof Error ? error.message : "Failed to create order",
+        message:
+          error instanceof Error ? error.message : "Failed to create order",
       },
     });
   }
@@ -104,7 +110,10 @@ router.get("/local", async (req: Request, res: Response) => {
       success: false,
       error: {
         code: "LOCAL_ORDERS_FETCH_FAILED",
-        message: error instanceof Error ? error.message : "Failed to fetch local orders",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch local orders",
       },
     });
   }
@@ -133,7 +142,8 @@ router.get("/sync-status", async (req: Request, res: Response) => {
       success: false,
       error: {
         code: "SYNC_STATUS_FAILED",
-        message: error instanceof Error ? error.message : "Failed to get sync status",
+        message:
+          error instanceof Error ? error.message : "Failed to get sync status",
       },
     });
   }
@@ -146,7 +156,7 @@ router.get("/sync-status", async (req: Request, res: Response) => {
 router.post("/sync-now", async (req: Request, res: Response) => {
   try {
     const results = await syncAllPendingOrders();
-    
+
     res.json({
       success: true,
       data: results,
@@ -178,7 +188,9 @@ async function syncOrderToCloud(localOrderId: number): Promise<boolean> {
     const localOrder = unsyncedOrders.find(o => o.id === localOrderId);
 
     if (!localOrder) {
-      console.warn(`[Sync] Local order ${localOrderId} not found or already synced`);
+      console.warn(
+        `[Sync] Local order ${localOrderId} not found or already synced`
+      );
       return false;
     }
 
@@ -196,7 +208,9 @@ async function syncOrderToCloud(localOrderId: number): Promise<boolean> {
 
     // Mark local order as synced
     markOrderSynced(localOrderId, Number(cloudOrder.id));
-    console.log(`[Sync] Order ${localOrderId} synced to cloud as ${cloudOrder.id}`);
+    console.log(
+      `[Sync] Order ${localOrderId} synced to cloud as ${cloudOrder.id}`
+    );
 
     return true;
   } catch (error) {
@@ -208,7 +222,11 @@ async function syncOrderToCloud(localOrderId: number): Promise<boolean> {
 /**
  * Sync all pending orders to cloud
  */
-async function syncAllPendingOrders(): Promise<{ synced: number; failed: number; total: number }> {
+async function syncAllPendingOrders(): Promise<{
+  synced: number;
+  failed: number;
+  total: number;
+}> {
   const unsyncedOrders = getUnsyncedOrders();
   let synced = 0;
   let failed = 0;
@@ -244,7 +262,10 @@ async function processSyncQueue(): Promise<void> {
         }
       }
     } catch (error) {
-      markSyncItemFailed(item.id, error instanceof Error ? error.message : "Unknown error");
+      markSyncItemFailed(
+        item.id,
+        error instanceof Error ? error.message : "Unknown error"
+      );
     }
   }
 }
@@ -254,13 +275,15 @@ let syncInterval: NodeJS.Timeout | null = null;
 
 export function startBackgroundSync(): void {
   if (syncInterval) return;
-  
+
   syncInterval = setInterval(async () => {
     try {
       await processSyncQueue();
       const result = await syncAllPendingOrders();
       if (result.synced > 0 || result.failed > 0) {
-        console.log(`[BackgroundSync] Processed: ${result.synced} synced, ${result.failed} failed`);
+        console.log(
+          `[BackgroundSync] Processed: ${result.synced} synced, ${result.failed} failed`
+        );
       }
     } catch (error) {
       console.error("[BackgroundSync] Error:", error);
