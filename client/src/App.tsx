@@ -44,6 +44,7 @@ import SDUIConfig from "./pages/admin/SDUIConfig";
 import SKUManagement from "./pages/admin/SKUManagement";
 import BrainDashboard from "./pages/admin/BrainDashboard";
 import TenantManagement from "./pages/admin/TenantManagement";
+import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import CallScreen from "./pages/CallScreen";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -95,6 +96,7 @@ function Router() {
       <Route path="/admin/skus" component={SKUManagement} />
       <Route path="/admin/brain" component={BrainDashboard} />
       <Route path="/admin/tenants" component={TenantManagement} />
+      <Route path="/admin/login" component={AdminLoginPage} />
       <Route path="/admin" component={Dashboard} />
       {/* Final fallback route */}
       <Route component={NotFound} />
