@@ -10,6 +10,28 @@ import { adminAppRouter } from "../src/trpc/admin-app-router";
 import { createContext as createAdminContext } from "../src/trpc/context";
 import { serveStatic, setupVite } from "./vite";
 
+// Node.js version compatibility check
+const nodeVersion = process.versions.node;
+const majorVersion = parseInt(nodeVersion.split(".")[0], 10);
+
+if (majorVersion >= 24) {
+  console.warn(`
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  WARNING: Node.js v${nodeVersion} detected                                          ║
+║                                                                              ║
+║  Node.js v24+ has known compatibility issues with esbuild/Vite that may     ║
+║  cause "stream read error" during development server startup.               ║
+║                                                                              ║
+║  RECOMMENDED: Use Node.js v22 LTS for best compatibility.                   ║
+║                                                                              ║
+║  To switch Node.js version:                                                 ║
+║    nvm install 22 && nvm use 22                                             ║
+║    # or                                                                     ║
+║    fnm install 22 && fnm use 22                                             ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+  `);
+}
+
 // 业务 API 路由
 import withdrawalsRouter from "../src/routes/withdrawals";
 import telegramRouter from "../src/routes/telegram";
@@ -95,7 +117,28 @@ async function startServer() {
   );
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
-    await setupVite(app, server);
+    try {
+      await setupVite(app, server);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      if (
+        errorMessage.includes("stream") ||
+        errorMessage.includes("esbuild") ||
+        errorMessage.includes("EPERM")
+      ) {
+        console.error(`
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  ERROR: Vite/esbuild initialization failed                                   ║
+║                                                                              ║
+║  This is likely due to Node.js v24+ compatibility issues with esbuild.      ║
+║                                                                              ║
+║  SOLUTION: Switch to Node.js v22 LTS:                                        ║
+║    nvm install 22 && nvm use 22 && pnpm run dev                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+        `);
+      }
+      throw err;
+    }
   } else {
     serveStatic(app);
   }
