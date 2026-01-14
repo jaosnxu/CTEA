@@ -1,10 +1,15 @@
-export const ENV = {
-  appId: process.env.VITE_APP_ID ?? "",
-  cookieSecret: process.env.JWT_SECRET ?? "",
-  databaseUrl: process.env.DATABASE_URL ?? "",
-  oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
-  ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
-  isProduction: process.env.NODE_ENV === "production",
-  forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
-  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
-};
+// Import Zod for schema validation
+import { z } from 'zod';
+
+// Define the environment variables schema
+const EnvSchema = z.object({
+  NODE_ENV: z.enum(['development', 'test', 'production']),
+  PORT: z.string().regex(/^\d+$/, 'PORT must be a number'),
+  DATABASE_URL: z.string().url('DATABASE_URL must be a valid URL'),
+  API_KEY: z.string().min(1, 'API_KEY cannot be empty'),
+});
+
+// Parse and validate environment variables
+export const env = EnvSchema.parse(process.env);
+
+console.log('Environment variables validated successfully:', env);
