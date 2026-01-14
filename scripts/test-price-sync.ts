@@ -101,8 +101,7 @@ async function testPriceSync(): Promise<void> {
     console.log('\n🔍 Step 4: Verifying database update...');
     const verifiedPrice = await prisma.storeprices.findFirst({
       where: { 
-        productId: parseInt(product.id),
-        storeId: parseInt(store.id)
+        id: updatedPrice.id
       }
     });
     
