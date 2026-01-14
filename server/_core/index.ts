@@ -4,6 +4,7 @@ import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
+import { registerStandardOAuthRoutes } from "./auth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { adminAppRouter } from "../src/trpc/admin-app-router";
@@ -42,11 +43,26 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  
+  // Health check endpoint
+  app.get("/health", (req, res) => {
+    res.json({ 
+      status: "ok", 
+      timestamp: new Date().toISOString(),
+      service: "chutea-backend",
+      version: "1.0.0"
+    });
+  });
+  
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
-  // OAuth callback under /api/oauth/callback
+  
+  // OAuth callback under /api/oauth/callback (Manus OAuth)
   registerOAuthRoutes(app);
+  
+  // Standard OAuth 2.0 / OIDC routes under /oauth/callback
+  registerStandardOAuthRoutes(app);
 
   // 业务 API 路由
   app.use("/api/withdrawals", withdrawalsRouter);

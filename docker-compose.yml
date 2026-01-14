@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for local testing
+  postgres:
+    image: postgres:15-alpine
+    container_name: chutea-postgres
+    environment:
+      POSTGRES_DB: chutea_test
+      POSTGRES_USER: chutea_test
+      POSTGRES_PASSWORD: test_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chutea_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Mock OAuth server for testing
+  mock-oauth:
+    image: node:20-alpine
+    container_name: chutea-mock-oauth
+    working_dir: /app
+    volumes:
+      - ./test-utils/mock-oauth:/app
+    command: node server.js
+    ports:
+      - "9000:9000"
+    environment:
+      PORT: 9000
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9000/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Main application (port 3000)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: chutea-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mock-oauth:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://chutea_test:test_password@postgres:5432/chutea_test
+      API_KEY: test-api-key-12345
+      
+      # OAuth Configuration (pointing to mock server)
+      OAUTH_CLIENT_ID: test-client-id
+      OAUTH_CLIENT_SECRET: test-client-secret
+      OAUTH_CALLBACK_URL: http://localhost:3000/oauth/callback
+      OAUTH_TOKEN_URL: http://mock-oauth:9000/oauth/token
+      
+      # Manus OAuth Configuration (optional)
+      appId: test-app-id
+      oAuthServerUrl: http://mock-oauth:9000
+      cookieSecret: test-cookie-secret-min-32-chars-long-secure
+      ownerOpenId: test-owner-123
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Secondary app instance (port 3001) - for testing load balancing
+  app-secondary:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: chutea-app-secondary
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mock-oauth:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://chutea_test:test_password@postgres:5432/chutea_test
+      API_KEY: test-api-key-12345
+      
+      # OAuth Configuration (pointing to mock server)
+      OAUTH_CLIENT_ID: test-client-id
+      OAUTH_CLIENT_SECRET: test-client-secret
+      OAUTH_CALLBACK_URL: http://localhost:3001/oauth/callback
+      OAUTH_TOKEN_URL: http://mock-oauth:9000/oauth/token
+      
+      # Manus OAuth Configuration (optional)
+      appId: test-app-id
+      oAuthServerUrl: http://mock-oauth:9000
+      cookieSecret: test-cookie-secret-min-32-chars-long-secure
+      ownerOpenId: test-owner-123
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
