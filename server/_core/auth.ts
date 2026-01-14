@@ -66,23 +66,29 @@ function getQueryParam(req: Request, key: string): string | undefined {
 /**
  * Exchanges an authorization code for access and ID tokens
  * @param code - Authorization code from OAuth provider
+ * @param clientId - OAuth client ID
+ * @param clientSecret - OAuth client secret  
+ * @param redirectUri - OAuth callback URL
+ * @param tokenUrl - OAuth token endpoint URL
  * @returns Token response containing access token and optional ID token
  * @throws Error if token exchange fails
  */
-async function exchangeCodeForTokens(code: string): Promise<TokenResponse> {
-  if (!ENV.OAUTH_TOKEN_URL) {
-    throw new Error("OAUTH_TOKEN_URL is not configured");
-  }
-
+async function exchangeCodeForTokens(
+  code: string,
+  clientId: string,
+  clientSecret: string,
+  redirectUri: string,
+  tokenUrl: string
+): Promise<TokenResponse> {
   try {
     const response = await axios.post<TokenResponse>(
-      ENV.OAUTH_TOKEN_URL,
+      tokenUrl,
       new URLSearchParams({
         grant_type: "authorization_code",
         code,
-        client_id: ENV.OAUTH_CLIENT_ID!,
-        client_secret: ENV.OAUTH_CLIENT_SECRET!,
-        redirect_uri: ENV.OAUTH_CALLBACK_URL!,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
       }),
       {
         headers: {
@@ -125,10 +131,14 @@ function decodeIdToken(idToken: string): UserInfo {
 }
 
 /**
- * Registers OAuth callback routes with the Express app
+ * Registers standard OAuth 2.0 / OpenID Connect routes with the Express app
+ * 
+ * Note: This is separate from the existing Manus OAuth system (registerOAuthRoutes)
+ * and provides standard OAuth 2.0 / OIDC compatibility for providers like Google, VK, Telegram.
+ * 
  * @param app - Express application instance
  */
-export function registerAuthRoutes(app: Express): void {
+export function registerStandardOAuthRoutes(app: Express): void {
   /**
    * OAuth callback endpoint
    * Handles the Authorization Code Flow callback from OAuth providers
@@ -180,7 +190,13 @@ export function registerAuthRoutes(app: Express): void {
     try {
       // Exchange authorization code for tokens
       console.log("[OAuth] Exchanging code for tokens");
-      const tokenResponse = await exchangeCodeForTokens(code);
+      const tokenResponse = await exchangeCodeForTokens(
+        code,
+        ENV.OAUTH_CLIENT_ID,
+        ENV.OAUTH_CLIENT_SECRET,
+        ENV.OAUTH_CALLBACK_URL,
+        ENV.OAUTH_TOKEN_URL
+      );
 
       // Extract and validate ID token
       if (!tokenResponse.id_token) {
@@ -196,29 +212,28 @@ export function registerAuthRoutes(app: Express): void {
       console.log("[OAuth] Decoding ID token");
       const userInfo = decodeIdToken(tokenResponse.id_token);
 
-      // Validate user information
-      if (!userInfo.sub) {
-        console.error("[OAuth] Invalid user information: missing sub");
-        res.status(500).json({ 
-          error: "Invalid user information",
-          message: "User ID (sub) is missing from ID token"
-        });
-        return;
-      }
-
-      // Log successful authentication (in production, you would:
-      // 1. Create/update user in database
-      // 2. Create session token
-      // 3. Set session cookie
-      // 4. Redirect to appropriate page)
+      // Log successful authentication
       console.log("[OAuth] Successfully authenticated user:", {
         sub: userInfo.sub,
         email: userInfo.email,
         name: userInfo.name,
       });
 
-      // TODO: Implement session creation and user persistence
-      // For now, just redirect to home with success indication
+      // ⚠️ IMPORTANT: Session creation not yet implemented
+      // This endpoint currently only validates OAuth flow but does NOT:
+      // - Create or update user in database
+      // - Create session tokens
+      // - Set authentication cookies
+      // - Persist user data
+      // 
+      // To complete the implementation, you need to:
+      // 1. Import or implement user database operations
+      // 2. Call user creation/update function with userInfo
+      // 3. Generate and sign a session token
+      // 4. Set session cookie with appropriate options
+      // 5. Redirect to authenticated area of your application
+      //
+      // For now, redirecting with success indication only
       res.redirect(302, "/?oauth=success");
     } catch (error) {
       console.error("[OAuth] Callback processing failed:", error);

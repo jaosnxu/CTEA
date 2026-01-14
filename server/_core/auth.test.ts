@@ -67,10 +67,10 @@ describe("OAuth Callback Processing", () => {
       
       // Force re-import to pick up changed env
       vi.resetModules();
-      const { registerAuthRoutes } = await import("./auth");
+      const { registerStandardOAuthRoutes } = await import("./auth");
       
       const app = { get: vi.fn() } as any;
-      registerAuthRoutes(app);
+      registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
@@ -94,10 +94,10 @@ describe("OAuth Callback Processing", () => {
       delete process.env.OAUTH_CLIENT_SECRET;
       
       vi.resetModules();
-      const { registerAuthRoutes } = await import("./auth");
+      const { registerStandardOAuthRoutes } = await import("./auth");
       
       const app = { get: vi.fn() } as any;
-      registerAuthRoutes(app);
+      registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
@@ -121,10 +121,10 @@ describe("OAuth Callback Processing", () => {
       delete process.env.OAUTH_CALLBACK_URL;
       
       vi.resetModules();
-      const { registerAuthRoutes } = await import("./auth");
+      const { registerStandardOAuthRoutes } = await import("./auth");
       
       const app = { get: vi.fn() } as any;
-      registerAuthRoutes(app);
+      registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
@@ -146,10 +146,10 @@ describe("OAuth Callback Processing", () => {
 
   describe("Query Parameter Validation", () => {
     it("should return 400 when code parameter is missing", async () => {
-      const { registerAuthRoutes } = await import("./auth");
+      const { registerStandardOAuthRoutes } = await import("./auth");
       const app = { get: vi.fn() } as any;
 
-      registerAuthRoutes(app);
+      registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ state: "test-state" });
       const res = createMockResponse();
@@ -165,10 +165,10 @@ describe("OAuth Callback Processing", () => {
     });
 
     it("should return 400 when state parameter is missing", async () => {
-      const { registerAuthRoutes } = await import("./auth");
+      const { registerStandardOAuthRoutes } = await import("./auth");
       const app = { get: vi.fn() } as any;
 
-      registerAuthRoutes(app);
+      registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code" });
       const res = createMockResponse();
@@ -201,10 +201,10 @@ describe("OAuth Callback Processing", () => {
         },
       });
 
-      const { registerAuthRoutes } = await import("./auth");
+      const { registerStandardOAuthRoutes } = await import("./auth");
       const app = { get: vi.fn() } as any;
 
-      registerAuthRoutes(app);
+      registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
@@ -233,10 +233,10 @@ describe("OAuth Callback Processing", () => {
         },
       });
 
-      const { registerAuthRoutes } = await import("./auth");
+      const { registerStandardOAuthRoutes } = await import("./auth");
       const app = { get: vi.fn() } as any;
 
-      registerAuthRoutes(app);
+      registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "invalid-code", state: "test-state" });
       const res = createMockResponse();
@@ -260,10 +260,10 @@ describe("OAuth Callback Processing", () => {
         },
       });
 
-      const { registerAuthRoutes } = await import("./auth");
+      const { registerStandardOAuthRoutes } = await import("./auth");
       const app = { get: vi.fn() } as any;
 
-      registerAuthRoutes(app);
+      registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
@@ -296,10 +296,10 @@ describe("OAuth Callback Processing", () => {
         },
       });
 
-      const { registerAuthRoutes } = await import("./auth");
+      const { registerStandardOAuthRoutes } = await import("./auth");
       const app = { get: vi.fn() } as any;
 
-      registerAuthRoutes(app);
+      registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
@@ -324,10 +324,10 @@ describe("OAuth Callback Processing", () => {
         },
       });
 
-      const { registerAuthRoutes } = await import("./auth");
+      const { registerStandardOAuthRoutes } = await import("./auth");
       const app = { get: vi.fn() } as any;
 
-      registerAuthRoutes(app);
+      registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
@@ -356,10 +356,10 @@ describe("OAuth Callback Processing", () => {
         },
       });
 
-      const { registerAuthRoutes } = await import("./auth");
+      const { registerStandardOAuthRoutes } = await import("./auth");
       const app = { get: vi.fn() } as any;
 
-      registerAuthRoutes(app);
+      registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
@@ -374,10 +374,10 @@ describe("OAuth Callback Processing", () => {
     it("should handle network errors gracefully", async () => {
       mockedAxios.post.mockRejectedValueOnce(new Error("Network error"));
 
-      const { registerAuthRoutes } = await import("./auth");
+      const { registerStandardOAuthRoutes } = await import("./auth");
       const app = { get: vi.fn() } as any;
 
-      registerAuthRoutes(app);
+      registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
@@ -401,10 +401,10 @@ describe("OAuth Callback Processing", () => {
         },
       });
 
-      const { registerAuthRoutes } = await import("./auth");
+      const { registerStandardOAuthRoutes } = await import("./auth");
       const app = { get: vi.fn() } as any;
 
-      registerAuthRoutes(app);
+      registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
