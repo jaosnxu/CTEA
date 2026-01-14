@@ -170,6 +170,12 @@ async function createOrganizationAndStores() {
 async function createProducts(orgId: string) {
   console.log('\n🍵 Creating products...');
   
+  // Validate orgId
+  const orgIdInt = parseInt(orgId);
+  if (isNaN(orgIdInt)) {
+    throw new Error(`Invalid organization ID: ${orgId}. Cannot create products.`);
+  }
+  
   const productData = [
     { code: 'MILK_TEA_001', name: { en: 'Classic Milk Tea', ru: 'Классический молочный чай', zh: '经典奶茶' }, categoryId: 1 },
     { code: 'MILK_TEA_002', name: { en: 'Brown Sugar Milk Tea', ru: 'Молочный чай с коричневым сахаром', zh: '黑糖奶茶' }, categoryId: 1 },
@@ -187,7 +193,7 @@ async function createProducts(orgId: string) {
   for (const data of productData) {
     const product = await prisma.products.create({
       data: {
-        orgId: parseInt(orgId) || 1, // Convert to int or use default
+        orgId: orgIdInt,
         categoryId: data.categoryId,
         code: data.code,
         name: JSON.stringify(data.name),
@@ -203,6 +209,12 @@ async function createProducts(orgId: string) {
 async function createCoupons(orgId: string) {
   console.log('\n🎫 Creating coupons...');
   
+  // Validate orgId
+  const orgIdInt = parseInt(orgId);
+  if (isNaN(orgIdInt)) {
+    throw new Error(`Invalid organization ID: ${orgId}. Cannot create coupons.`);
+  }
+  
   const couponData = [
     { code: 'WELCOME10', campaignId: 1 },
     { code: 'SUMMER20', campaignId: 2 },
@@ -215,7 +227,7 @@ async function createCoupons(orgId: string) {
   for (const data of couponData) {
     const coupon = await prisma.coupons.create({
       data: {
-        orgId: parseInt(orgId) || 1,
+        orgId: orgIdInt,
         campaignId: data.campaignId,
         code: data.code,
       }

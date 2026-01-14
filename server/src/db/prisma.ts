@@ -27,8 +27,8 @@ export function getPrismaClient(): PrismaClient {
     
     const pool = new Pool({ 
       connectionString,
-      // Ensure password is properly parsed from connection string
-      ssl: false
+      // Use SSL in production, disable in development/test
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
     });
     const adapter = new PrismaPg(pool);
 
