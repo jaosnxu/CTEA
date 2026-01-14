@@ -4,7 +4,8 @@
  * Singleton pattern to ensure only one Prisma Client instance is created
  */
 
-import { PrismaClient } from "@prisma/client";
+import pkg from "@prisma/client";
+const { PrismaClient } = pkg;
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 

@@ -10,7 +10,9 @@
  * - Immutable append-only logging
  */
 
-import { PrismaClient, AuditAction, OperatorType } from "@prisma/client";
+import pkg from "@prisma/client";
+const { PrismaClient } = pkg;
+import type { AuditAction, OperatorType } from "@prisma/client";
 import crypto from "crypto";
 import { getPrismaClient } from "../db/prisma";
 
