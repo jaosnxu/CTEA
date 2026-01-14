@@ -20,7 +20,16 @@ let prismaInstance: PrismaClient | null = null;
 export function getPrismaClient(): PrismaClient {
   if (!prismaInstance) {
     // Prisma 7.x requires adapter for PostgreSQL
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+      throw new Error('DATABASE_URL environment variable is not set');
+    }
+    
+    const pool = new Pool({ 
+      connectionString,
+      // Use SSL in production, disable in development/test
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    });
     const adapter = new PrismaPg(pool);
 
     prismaInstance = new PrismaClient({
