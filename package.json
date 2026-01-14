@@ -12,7 +12,12 @@
     "test": "vitest run",
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
     "ui:check": "tsx scripts/check-ui-changes.ts",
-    "ui:update-fingerprint": "tsx scripts/update-ui-fingerprint.ts"
+    "ui:update-fingerprint": "tsx scripts/update-ui-fingerprint.ts",
+    "setup": "tsx scripts/setup-complete-system.ts",
+    "test:health": "tsx scripts/health-check.ts",
+    "test:price-sync": "tsx scripts/test-price-sync.ts",
+    "data:generate": "tsx scripts/setup-complete-system.ts",
+    "data:cleanup": "tsx scripts/setup-complete-system.ts --cleanup"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
