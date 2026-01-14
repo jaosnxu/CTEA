@@ -4,6 +4,33 @@
 
 This document describes the Docker Compose-based test environment for CTEA application. This environment is **FOR INTERNAL TESTING ONLY** and should not be used in production.
 
+## Known Limitations / Network & Environment Constraints
+
+⚠️ **Important Notice:**
+
+1. **Design Verification Only**: The mock OAuth server implementation (`mock-oauth-server.cjs`) has been design-verified against the API specifications, but has **not undergone full runtime validation** in the complete Docker Compose environment.
+
+2. **Network Restrictions**: Due to network limitations in the development environment, the Docker Compose stack could not be fully built and tested end-to-end. The `docker compose up -d --build` command may require:
+   - Unrestricted internet access to npm registry
+   - Ability to download Node.js dependencies
+   - No corporate proxy restrictions
+
+3. **Validation Status**:
+   - ✅ Configuration files syntax and structure verified
+   - ✅ Mock OAuth server logic reviewed against type definitions
+   - ✅ Environment variables mapped correctly
+   - ⚠️ Full Docker build process not validated due to network timeout
+   - ⚠️ End-to-end OAuth flow not tested in running containers
+
+4. **Recommendation**: Before relying on this test environment, perform a complete build and runtime test in an environment with full network access:
+   ```bash
+   docker compose up -d --build
+   docker compose logs -f
+   # Verify all services reach "healthy" status
+   ```
+
+If you encounter build or runtime issues, please refer to the Troubleshooting section below.
+
 ## Architecture
 
 The test environment consists of three services:
