@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import cors from "cors";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
@@ -19,6 +20,8 @@ import sduiRouter from "../src/routes/sdui";
 import operationsRouter from "../src/routes/operations";
 import brainRouter from "../src/routes/brain";
 import tenantRouter from "../src/routes/tenant";
+import authRouter from "../src/routes/auth";
+import smsRouter from "../src/routes/sms";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -42,9 +45,31 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  
+  // CORS 配置 - 允许前端跨域访问
+  app.use(cors({
+    origin: "http://localhost:5173", // 前端开发服务器地址
+    methods: ["GET", "POST", "PUT", "DELETE"], // 允许的 HTTP 方法
+    credentials: true // 允许携带 Cookies 和认证信息
+  }));
+  
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  
+  
+  // 全局请求日志
+  app.use((req, res, next) => {
+    console.log(`[Global Request] ${req.method} ${req.url}`);
+    next();
+  });
+
+  app.get("/api/test", (req, res) => {
+    console.log("[Test Route] Hit!");
+    res.json({ success: true, message: "API is working" });
+  });
+
+
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
@@ -57,6 +82,8 @@ async function startServer() {
   app.use("/api/operations", operationsRouter);
   app.use("/api/brain", brainRouter);
   app.use("/api/tenant", tenantRouter);
+  app.use("/api/auth", authRouter);
+  app.use("/api/sms", smsRouter);
 
   // tRPC API (原系统)
   app.use(
@@ -81,6 +108,9 @@ async function startServer() {
   } else {
     serveStatic(app);
   }
+
+  // development mode uses Vite, production mode uses static files
+  
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
