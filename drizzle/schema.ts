@@ -868,6 +868,50 @@ export const priceChangeLogs = mysqlTable(
   })
 );
 
+/**
+ * 定价规则表 - 动态定价管理
+ */
+export const pricingRules = mysqlTable(
+  "pricing_rules",
+  {
+    id: varchar("id", { length: 50 }).primaryKey(), // rule_xxx format
+    orgId: int("org_id").notNull(), // 组织隔离
+    name: json("name").notNull(), // 多语言名称 {ru, zh, en}
+    description: json("description"), // 多语言描述 {ru, zh, en}
+    condition: json("condition").notNull(), // 条件 {userLevel?, hour?, dayOfWeek?, storeId?, minQuantity?}
+    action: json("action").notNull(), // 动作 {type: "DISCOUNT_PERCENT" | "DISCOUNT_FIXED" | "MARKUP_PERCENT" | "SET_PRICE", value: number}
+    priority: int("priority").notNull().default(0), // 优先级，数字越大优先级越高
+    isActive: boolean("is_active").default(true), // 启用/禁用
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+    createdBy: int("created_by"), // 创建人
+    updatedBy: int("updated_by"), // 更新人
+  },
+  table => ({
+    orgIdx: index("pricing_rule_org_idx").on(table.orgId),
+    activeIdx: index("pricing_rule_active_idx").on(table.isActive),
+    priorityIdx: index("pricing_rule_priority_idx").on(table.priority),
+  })
+);
+
+/**
+ * 产品定价规则关联表 - 多对多关系
+ */
+export const productPricingRules = mysqlTable(
+  "product_pricing_rules",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    productId: int("product_id").notNull(),
+    ruleId: varchar("rule_id", { length: 50 }).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  table => ({
+    productIdx: index("ppr_product_idx").on(table.productId),
+    ruleIdx: index("ppr_rule_idx").on(table.ruleId),
+    uniqueIdx: uniqueIndex("ppr_unique_idx").on(table.productId, table.ruleId),
+  })
+);
+
 // ============================================================================
 // 第五章：AI 超级中心 (AI Center)
 // ============================================================================
