@@ -312,8 +312,7 @@ class PricingEngine {
       // Return updated rule
       return {
         id,
-        name: (updates.name ??
-          existingRule.name) as PricingRule["name"],
+        name: (updates.name ?? existingRule.name) as PricingRule["name"],
         description: (updates.description ??
           existingRule.description) as PricingRule["description"],
         condition: (updates.condition ??
