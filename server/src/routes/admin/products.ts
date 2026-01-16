@@ -213,4 +213,67 @@ router.post("/batch-update", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/admin/products/:id/pricing-rules
+ * Get pricing rules associated with a product
+ */
+router.get("/:id/pricing-rules", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ruleIds = await productEngine.getProductPricingRules(parseInt(id));
+
+    res.json({
+      success: true,
+      data: ruleIds,
+      count: ruleIds.length,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("[Admin Products] Error getting pricing rules:", error);
+    res.status(500).json({
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to get pricing rules",
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
+/**
+ * PUT /api/admin/products/:id/pricing-rules
+ * Update pricing rules for a product
+ */
+router.put("/:id/pricing-rules", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { ruleIds } = req.body;
+
+    if (!Array.isArray(ruleIds)) {
+      return res.status(400).json({
+        success: false,
+        message: "ruleIds must be an array",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    await productEngine.updateProductPricingRules(parseInt(id), ruleIds);
+
+    res.json({
+      success: true,
+      message: "Pricing rules updated successfully",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("[Admin Products] Error updating pricing rules:", error);
+    res.status(500).json({
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to update pricing rules",
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
 export default router;

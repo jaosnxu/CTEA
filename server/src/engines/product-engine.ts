@@ -28,6 +28,7 @@ export interface ProductData {
   code?: string;
   createdBy?: string;
   updatedBy?: string;
+  pricingRuleIds?: string[]; // Pricing rule IDs associated with this product
 }
 
 export interface ProductStats {
@@ -131,6 +132,14 @@ class ProductEngine {
         },
       });
 
+      // Handle pricing rule associations if provided
+      if (data.pricingRuleIds && data.pricingRuleIds.length > 0) {
+        await this.updateProductPricingRules(
+          parseInt(product.id),
+          data.pricingRuleIds
+        );
+      }
+
       return product;
     } catch (error) {
       console.error("[ProductEngine] Error creating product:", error);
@@ -153,10 +162,81 @@ class ProductEngine {
         },
       });
 
+      // Handle pricing rule associations if provided
+      if (updates.pricingRuleIds !== undefined) {
+        await this.updateProductPricingRules(
+          parseInt(id),
+          updates.pricingRuleIds
+        );
+      }
+
       return product;
     } catch (error) {
       console.error("[ProductEngine] Error updating product:", error);
       throw new Error("Failed to update product");
+    }
+  }
+
+  /**
+   * Update product pricing rule associations
+   */
+  async updateProductPricingRules(productId: number, ruleIds: string[]) {
+    try {
+      const { getDb } = await import("../../db");
+      const { productPricingRules } = await import("../../../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+
+      const db = await getDb();
+      if (!db) {
+        console.warn(
+          "[ProductEngine] Database not available for pricing rules update"
+        );
+        return;
+      }
+
+      // Remove all existing associations
+      await db
+        .delete(productPricingRules)
+        .where(eq(productPricingRules.productId, productId));
+
+      // Add new associations
+      if (ruleIds.length > 0) {
+        const values = ruleIds.map(ruleId => ({
+          productId,
+          ruleId,
+        }));
+
+        await db.insert(productPricingRules).values(values);
+      }
+    } catch (error) {
+      console.error("[ProductEngine] Error updating pricing rules:", error);
+      // Don't throw - pricing rules are optional
+    }
+  }
+
+  /**
+   * Get pricing rules for a product
+   */
+  async getProductPricingRules(productId: number): Promise<string[]> {
+    try {
+      const { getDb } = await import("../../db");
+      const { productPricingRules } = await import("../../../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+
+      const db = await getDb();
+      if (!db) {
+        return [];
+      }
+
+      const links = await db
+        .select()
+        .from(productPricingRules)
+        .where(eq(productPricingRules.productId, productId));
+
+      return links.map(link => link.ruleId);
+    } catch (error) {
+      console.error("[ProductEngine] Error getting pricing rules:", error);
+      return [];
     }
   }
 
