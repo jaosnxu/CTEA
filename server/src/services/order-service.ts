@@ -11,7 +11,7 @@
  */
 
 import { PrismaClient, OrderStatus, Prisma } from "@prisma/client";
-import { prisma } from "../../db";
+import { getPrismaClient } from "../db/prisma";
 import { TRPCError } from "@trpc/server";
 
 export interface OrderListFilter {
@@ -38,7 +38,7 @@ export interface OrderCreateInput {
 }
 
 export interface OrderItemInput {
-  productId: string;
+  productId: number;
   productName: string;
   productCode?: string;
   quantity: number;
@@ -59,8 +59,8 @@ export interface OrderUpdateInput {
 export class OrderService {
   private prisma: PrismaClient;
 
-  constructor(prisma: PrismaClient = prisma) {
-    this.prisma = prisma;
+  constructor(prismaClient?: PrismaClient) {
+    this.prisma = prismaClient ?? (getPrismaClient() as PrismaClient);
   }
 
   /**

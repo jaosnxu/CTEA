@@ -36,7 +36,7 @@ export interface OrderProduct {
 export interface OrderItem {
   id: string | bigint;
   orderId?: string | bigint;
-  productId?: string;
+  productId?: number;
   product?: OrderProduct;
   productName?: string;
   productCode?: string;

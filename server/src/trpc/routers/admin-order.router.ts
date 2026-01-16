@@ -37,13 +37,13 @@ const OrderStatusSchema = z.enum([
  * Order Item Schema
  */
 const OrderItemSchema = z.object({
-  productId: z.string(),
+  productId: z.number().int(),
   productName: z.string(),
   productCode: z.string().optional(),
   quantity: z.number().int().min(1),
   unitPrice: z.number(),
   discountAmount: z.number().optional(),
-  specifications: z.record(z.unknown()).optional(),
+  specifications: z.record(z.string(), z.unknown()).optional(),
   notes: z.string().optional(),
 });
 
@@ -132,7 +132,7 @@ export const adminOrderRouter = router({
         userId: z.string().optional(),
         status: OrderStatusSchema.optional(),
         items: z.array(OrderItemSchema).min(1),
-        deliveryAddress: z.record(z.unknown()).optional(),
+        deliveryAddress: z.record(z.string(), z.unknown()).optional(),
         notes: z.string().optional(),
         paymentMethod: z.string().optional(),
         deliveryFee: z.number().optional(),
@@ -193,7 +193,7 @@ export const adminOrderRouter = router({
           .transform((v) => BigInt(v)),
         status: OrderStatusSchema.optional(),
         notes: z.string().optional(),
-        deliveryAddress: z.record(z.unknown()).optional(),
+        deliveryAddress: z.record(z.string(), z.unknown()).optional(),
         paymentMethod: z.string().optional(),
         paymentStatus: z.string().optional(),
       })
