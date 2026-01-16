@@ -217,6 +217,32 @@ export class OrderService {
       });
     }
 
+    // Fetch store details for snapshot
+    const store = await this.prisma.store.findUnique({
+      where: { id: input.storeId },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        address: true,
+        phone: true,
+      },
+    });
+
+    // Fetch user details for snapshot if userId provided
+    let user = null;
+    if (input.userId) {
+      user = await this.prisma.users.findUnique({
+        where: { id: input.userId },
+        select: {
+          id: true,
+          phone: true,
+          nickname: true,
+          avatar: true,
+        },
+      });
+    }
+
     // Calculate totals
     let subtotalAmount = 0;
     let discountAmount = 0;
@@ -249,6 +275,28 @@ export class OrderService {
     const orderNumber =
       input.orderNumber || this.generateOrderNumber(input.storeId);
 
+    // Create snapshots
+    const storeSnapshot = store
+      ? {
+          id: store.id,
+          code: store.code,
+          name: store.name,
+          address: store.address,
+          phone: store.phone,
+        }
+      : null;
+
+    const customerSnapshot = user
+      ? {
+          id: user.id,
+          phone: user.phone,
+          nickname: user.nickname,
+          avatar: user.avatar,
+        }
+      : null;
+
+    const addressSnapshot = input.deliveryAddress || null;
+
     // Create order with items in transaction
     const order = await this.prisma.$transaction(async tx => {
       const newOrder = await tx.orders.create({
@@ -264,6 +312,10 @@ export class OrderService {
           deliveryAddress: input.deliveryAddress,
           notes: input.notes,
           paymentMethod: input.paymentMethod,
+          // Snapshot fields
+          customerSnapshot,
+          storeSnapshot,
+          addressSnapshot,
           createdBy: operatorId,
           updatedBy: operatorId,
           orderItems: {

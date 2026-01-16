@@ -896,6 +896,12 @@ model Orders {
   deliveryAddress      Json?
   paymentMethod        String?  @db.VarChar(50)
   paymentStatus        String?  @db.VarChar(50)
+  
+  // Snapshot fields - Prevent historical data corruption
+  customerSnapshot     Json?    // Snapshot of customer info at order time
+  storeSnapshot        Json?    // Snapshot of store info at order time
+  addressSnapshot      Json?    // Snapshot of delivery address
+  
   deletedAt            DateTime?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -903,12 +909,17 @@ model Orders {
   updatedBy            String?
   
   orderItems           Orderitems[]
+  orderLogs            OrderLifecycleLogs[]
+  payments             OrderPayments[]
+  refunds              OrderRefunds[]
+  afterSales           OrderAfterSales[]
   
   @@index([storeId])
   @@index([userId])
   @@index([status])
   @@index([createdAt])
   @@index([deletedAt])
+  @@index([orderNumber])
   @@map("orders")
 }
 /// Orderitems
@@ -944,6 +955,111 @@ model Orderdiscounts {
   createdBy            String?
   updatedBy            String?
   @@map("order_discounts")
+}
+
+/// Order Lifecycle Logs - Track all order operations and state changes
+model OrderLifecycleLogs {
+  id                   BigInt @id @default(autoincrement())
+  orderId              BigInt
+  order                Orders   @relation(fields: [orderId], references: [id])
+  action               String   @db.VarChar(100)  // CREATE, STATUS_CHANGE, UPDATE, APPROVE, REJECT, NOTE_ADD
+  previousStatus       String?  @db.VarChar(50)
+  newStatus            String?  @db.VarChar(50)
+  operatorId           String?  @db.VarChar(100)
+  operatorType         String?  @db.VarChar(50)   // CUSTOMER, STORE_STAFF, HQ_ADMIN, SYSTEM
+  operatorName         String?  @db.VarChar(200)
+  changes              Json?    // Detailed change data
+  notes                String?  @db.Text
+  ipAddress            String?  @db.VarChar(100)
+  userAgent            String?  @db.Text
+  createdAt            DateTime @default(now())
+  
+  @@index([orderId])
+  @@index([operatorId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("order_lifecycle_logs")
+}
+
+/// Order Payments - Payment transaction records
+model OrderPayments {
+  id                   BigInt @id @default(autoincrement())
+  orderId              BigInt
+  order                Orders   @relation(fields: [orderId], references: [id])
+  paymentMethod        String   @db.VarChar(50)  // CARD, CASH, WALLET, QR_CODE
+  paymentProvider      String?  @db.VarChar(100) // STRIPE, ALIPAY, WECHAT, etc.
+  transactionId        String?  @db.VarChar(200)
+  amount               Decimal  @db.Decimal(15, 2)
+  currency             String   @db.VarChar(10) @default("RUB")
+  status               String   @db.VarChar(50) @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED, CANCELLED
+  paidAt               DateTime?
+  failureReason        String?  @db.Text
+  metadata             Json?    // Additional payment data
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  createdBy            String?
+  
+  @@index([orderId])
+  @@index([transactionId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("order_payments")
+}
+
+/// Order Refunds - Refund requests and processing
+model OrderRefunds {
+  id                   BigInt @id @default(autoincrement())
+  orderId              BigInt
+  order                Orders   @relation(fields: [orderId], references: [id])
+  paymentId            BigInt?
+  refundAmount         Decimal  @db.Decimal(15, 2)
+  refundReason         String   @db.Text
+  refundMethod         String?  @db.VarChar(50)  // ORIGINAL, WALLET, MANUAL
+  status               RefundStatus @default(PENDING)
+  requestedBy          String?  @db.VarChar(100)
+  approvedBy           String?  @db.VarChar(100)
+  processedBy          String?  @db.VarChar(100)
+  transactionId        String?  @db.VarChar(200)
+  approvedAt           DateTime?
+  processedAt          DateTime?
+  completedAt          DateTime?
+  rejectionReason      String?  @db.Text
+  notes                String?  @db.Text
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  
+  @@index([orderId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("order_refunds")
+}
+
+/// Order After Sales - After-sales service requests
+model OrderAfterSales {
+  id                   BigInt @id @default(autoincrement())
+  orderId              BigInt
+  order                Orders   @relation(fields: [orderId], references: [id])
+  requestType          String   @db.VarChar(50)  // COMPLAINT, RETURN, EXCHANGE, QUALITY_ISSUE
+  description          String   @db.Text
+  images               Json?    // Array of image URLs
+  status               String   @db.VarChar(50) @default("PENDING") // PENDING, PROCESSING, RESOLVED, REJECTED, CLOSED
+  priority             Priority @default(MEDIUM)
+  assignedTo           String?  @db.VarChar(100)
+  resolution           String?  @db.Text
+  resolvedAt           DateTime?
+  closedAt             DateTime?
+  customerSatisfaction Int?     // 1-5 rating
+  notes                String?  @db.Text
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  createdBy            String?
+  updatedBy            String?
+  
+  @@index([orderId])
+  @@index([status])
+  @@index([requestType])
+  @@index([createdAt])
+  @@map("order_after_sales")
 }
 /// Reviews
 model Reviews {
