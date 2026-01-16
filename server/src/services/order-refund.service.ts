@@ -175,7 +175,10 @@ export class OrderRefundService {
 
     // TODO: Integrate with actual payment gateway for refund processing
     // This is a placeholder implementation
+    // Supported gateways: Stripe, Alipay, WeChat Pay, Bank Transfer
+    // Requirements: Gateway-specific credentials, API integration, webhook handlers
 
+    const DECIMAL_PRECISION = 0.01; // Threshold for amount comparison
     const updatedRefund = await this.prisma.$transaction(async tx => {
       // Update refund status
       const updated = await tx.orderRefunds.update({
@@ -194,7 +197,7 @@ export class OrderRefundService {
       const orderTotal = Number(refund.order.totalAmount || 0);
       const refundAmount = Number(refund.refundAmount);
 
-      if (Math.abs(orderTotal - refundAmount) < 0.01) {
+      if (Math.abs(orderTotal - refundAmount) < DECIMAL_PRECISION) {
         await tx.orders.update({
           where: { id: refund.orderId },
           data: {

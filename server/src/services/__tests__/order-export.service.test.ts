@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { OrderExportService } from "../services/order-export.service";
+import { OrderExportService } from "../order-export.service";
 import { PrismaClient, OrderStatus } from "@prisma/client";
 
 describe("OrderExportService", () => {
