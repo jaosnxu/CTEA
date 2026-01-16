@@ -46,6 +46,7 @@ import BrainDashboard from "./pages/admin/BrainDashboard";
 import TenantManagement from "./pages/admin/TenantManagement";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import ProductList from "./pages/admin/ProductList";
+import ProductEditor from "./pages/admin/ProductEditor";
 import CallScreen from "./pages/CallScreen";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -98,6 +99,8 @@ function Router() {
       <Route path="/admin/brain" component={BrainDashboard} />
       <Route path="/admin/tenants" component={TenantManagement} />
       <Route path="/admin/login" component={AdminLoginPage} />
+      <Route path="/admin/products/new" component={ProductEditor} />
+      <Route path="/admin/products/edit/:id" component={ProductEditor} />
       <Route path="/admin/products" component={ProductList} />
       <Route path="/admin" component={Dashboard} />
       {/* Final fallback route */}
