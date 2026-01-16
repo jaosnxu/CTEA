@@ -45,7 +45,7 @@ export type NotificationTarget =
 export interface NotificationRequest {
   type: NotificationType;
   data: Record<string, any>;
-  userId?: number;
+  userId?: string;
   telegramChatId?: string;
 }
 

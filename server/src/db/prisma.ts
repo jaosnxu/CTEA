@@ -7,15 +7,18 @@
 import pkg from "@prisma/client";
 const { PrismaClient } = pkg;
 
+// Type alias for PrismaClient instance
+type PrismaClientInstance = InstanceType<typeof PrismaClient>;
+
 /**
  * Global Prisma Client instance
  */
-let prismaInstance: PrismaClient | null = null;
+let prismaInstance: PrismaClientInstance | null = null;
 
 /**
  * Get or create Prisma Client instance
  */
-export function getPrismaClient(): PrismaClient {
+export function getPrismaClient(): PrismaClientInstance {
   if (!prismaInstance) {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {

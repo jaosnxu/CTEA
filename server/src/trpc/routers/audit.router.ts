@@ -271,11 +271,11 @@ export const auditRouter = router({
 
       return {
         total,
-        byAction: byAction.map(item => ({
+        byAction: byAction.map((item: { action: string; _count: number }) => ({
           action: item.action,
           count: item._count,
         })),
-        byTable: byTable.map(item => ({
+        byTable: byTable.map((item: { tableName: string; _count: number }) => ({
           tableName: item.tableName,
           count: item._count,
         })),

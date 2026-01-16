@@ -16,6 +16,9 @@ import type { AuditAction, OperatorType } from "@prisma/client";
 import crypto from "crypto";
 import { getPrismaClient } from "../db/prisma";
 
+// Type alias for PrismaClient instance
+type PrismaClientInstance = InstanceType<typeof PrismaClient>;
+
 export interface CreateAuditLogInput {
   orgId?: string;
   tableName: string;
@@ -43,9 +46,9 @@ export interface AuditChainValidationResult {
 }
 
 export class AuditLogService {
-  private prisma: PrismaClient;
+  private prisma: PrismaClientInstance;
 
-  constructor(prisma: PrismaClient) {
+  constructor(prisma: PrismaClientInstance) {
     this.prisma = prisma;
   }
 

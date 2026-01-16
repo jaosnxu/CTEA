@@ -307,7 +307,10 @@ export const rbacRouter = router({
       });
 
       // 提取权限列表
-      const permissions = rules.map(rule => `${rule.resource}:${rule.action}`);
+      const permissions = rules.map(
+        (rule: { resource: string; action: string }) =>
+          `${rule.resource}:${rule.action}`
+      );
 
       return {
         userId: user.id,

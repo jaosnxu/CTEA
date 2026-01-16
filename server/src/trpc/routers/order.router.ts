@@ -57,7 +57,7 @@ export const orderRouter = router({
           where: { orgId: ctx.userSession.orgId },
           select: { id: true },
         });
-        where.storeId = { in: stores.map(s => s.id) };
+        where.storeId = { in: stores.map((s: { id: string }) => s.id) };
       }
 
       // 查询订单列表
@@ -274,7 +274,7 @@ export const orderRouter = router({
           where: { orgId: ctx.userSession.orgId },
           select: { id: true },
         });
-        where.storeId = { in: stores.map(s => s.id) };
+        where.storeId = { in: stores.map((s: { id: string }) => s.id) };
       }
 
       // 统计订单
@@ -298,7 +298,7 @@ export const orderRouter = router({
 
       return {
         total,
-        byStatus: byStatus.map(item => ({
+        byStatus: byStatus.map((item: { status: string; _count: number }) => ({
           status: item.status,
           count: item._count,
         })),
@@ -424,7 +424,7 @@ export const orderRouter = router({
           where: { orgId: ctx.userSession.orgId },
           select: { id: true },
         });
-        where.storeId = { in: stores.map(s => s.id) };
+        where.storeId = { in: stores.map((s: { id: string }) => s.id) };
       }
 
       // 查询订单

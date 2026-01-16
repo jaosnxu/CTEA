@@ -21,7 +21,7 @@ const router = Router();
 interface NotifyRequestBody {
   type: NotificationType;
   data: Record<string, any>;
-  userId?: number;
+  userId?: string;
   telegramChatId?: string;
 }
 
