@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "wouter";
 import AdminLayout from "../../components/admin/AdminLayout";
 
 // ==================== 类型定义 ====================
@@ -108,6 +109,7 @@ const translations = {
 // ==================== 主页面组件 ====================
 
 export default function ProductList() {
+  const [, navigate] = useNavigate();
   const [lang, setLang] = useState<"ru" | "zh">("ru");
   const [products, setProducts] = useState<Product[]>([]);
   const [stats, setStats] = useState<ProductStats | null>(null);
@@ -185,6 +187,12 @@ export default function ProductList() {
             <p className="text-gray-600 mt-1">{t.subtitle}</p>
           </div>
           <div className="flex gap-2">
+            <button
+              onClick={() => navigate('/admin/products/new')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              + {lang === "ru" ? "Новый товар" : "新建产品"}
+            </button>
             <button
               onClick={() => setLang(lang === "ru" ? "zh" : "ru")}
               className="px-3 py-1 bg-gray-100 rounded-lg text-sm"
@@ -339,18 +347,26 @@ export default function ProductList() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => toggleProductStatus(product)}
-                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                          product.status === "active"
-                            ? "bg-red-100 text-red-700 hover:bg-red-200"
-                            : "bg-green-100 text-green-700 hover:bg-green-200"
-                        }`}
-                      >
-                        {product.status === "active"
-                          ? t.actions.deactivate
-                          : t.actions.activate}
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => navigate(`/admin/products/edit/${product.id}`)}
+                          className="px-3 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                        >
+                          {lang === "ru" ? "Изменить" : "编辑"}
+                        </button>
+                        <button
+                          onClick={() => toggleProductStatus(product)}
+                          className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                            product.status === "active"
+                              ? "bg-red-100 text-red-700 hover:bg-red-200"
+                              : "bg-green-100 text-green-700 hover:bg-green-200"
+                          }`}
+                        >
+                          {product.status === "active"
+                            ? t.actions.deactivate
+                            : t.actions.activate}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
