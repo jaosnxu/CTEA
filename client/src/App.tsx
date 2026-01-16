@@ -49,6 +49,8 @@ import ProductList from "./pages/admin/ProductList";
 import ProductEditor from "./pages/admin/ProductEditor";
 import PricingRulesList from "./pages/admin/PricingRulesList";
 import PricingRuleForm from "./pages/admin/PricingRuleForm";
+import LayoutsList from "./pages/admin/LayoutsList";
+import LayoutEditor from "./pages/admin/LayoutEditor";
 import CallScreen from "./pages/CallScreen";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -107,6 +109,8 @@ function Router() {
       <Route path="/admin/pricing-rules/new" component={PricingRuleForm} />
       <Route path="/admin/pricing-rules/edit/:id" component={PricingRuleForm} />
       <Route path="/admin/pricing-rules" component={PricingRulesList} />
+      <Route path="/admin/layouts/edit/:page" component={LayoutEditor} />
+      <Route path="/admin/layouts" component={LayoutsList} />
       <Route path="/admin" component={Dashboard} />
       {/* Final fallback route */}
       <Route component={NotFound} />

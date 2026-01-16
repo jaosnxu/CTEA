@@ -2546,3 +2546,36 @@ export type InsertOfflineRedemptionQueue =
 
 export type UserTrustScore = typeof userTrustScores.$inferSelect;
 export type InsertUserTrustScore = typeof userTrustScores.$inferInsert;
+
+// ============================================================================
+// SDUI Layout Configuration System
+// ============================================================================
+
+/**
+ * 布局配置表 - SDUI 动态页面布局
+ * 支持首页、下单页、商城页等页面的布局配置与版本管理
+ */
+export const layoutConfigs = mysqlTable(
+  "layout_configs",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    page: varchar("page", { length: 50 }).notNull(), // home, order, mall 等
+    config: json("config").notNull(), // 布局配置 JSON
+    version: int("version").notNull().default(1), // 版本号
+    isActive: boolean("is_active").default(true), // 当前激活版本
+    createdBy: varchar("created_by", { length: 255 }), // 创建人
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  },
+  table => ({
+    pageIdx: index("layout_page_idx").on(table.page),
+    activeIdx: index("layout_active_idx").on(table.isActive),
+    pageVersionIdx: uniqueIndex("layout_page_version_idx").on(
+      table.page,
+      table.version
+    ),
+  })
+);
+
+export type LayoutConfig = typeof layoutConfigs.$inferSelect;
+export type InsertLayoutConfig = typeof layoutConfigs.$inferInsert;
