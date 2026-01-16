@@ -461,8 +461,11 @@ class PricingEngine {
         return false;
       }
 
-      // Check user level condition (would need user data)
-      // For now, skip this check as we don't have user data in params
+      // Check user level condition
+      // If rule requires a specific user level, skip it since we don't have user data in params
+      if (condition.userLevel) {
+        return false;
+      }
 
       return true;
     });

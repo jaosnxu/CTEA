@@ -3,7 +3,15 @@
  * Tests for SDUI layout configuration API
  */
 
-import { describe, it, expect, beforeAll, afterAll, vi, beforeEach } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  vi,
+  beforeEach,
+} from "vitest";
 import {
   DEFAULT_HOME_LAYOUT,
   DEFAULT_ORDER_LAYOUT,
@@ -19,7 +27,7 @@ vi.mock("../../../db", () => ({
   getDb: vi.fn().mockImplementation(async () => {
     // Create a thenable chain that can be awaited at any point
     const createSelectChain = () => {
-      const getResults = () => layoutConfigsStore.filter((c) => c.isActive);
+      const getResults = () => layoutConfigsStore.filter(c => c.isActive);
 
       const chain: any = {
         from: vi.fn().mockImplementation(() => chain),
@@ -50,7 +58,8 @@ vi.mock("../../../db", () => ({
               page: insertData.page,
               config: insertData.config,
               version: insertData.version || 1,
-              isActive: insertData.isActive !== undefined ? insertData.isActive : true,
+              isActive:
+                insertData.isActive !== undefined ? insertData.isActive : true,
               createdBy: insertData.createdBy || "test",
               createdAt: new Date(),
               updatedAt: new Date(),
