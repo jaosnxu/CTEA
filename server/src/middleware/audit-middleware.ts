@@ -14,7 +14,7 @@ import { Request, Response, NextFunction } from "express";
 import { AuditLogService } from "../services/audit-log-service";
 import { createLogger } from "../utils/logger";
 
-const logger = createLogger('AuditMiddleware');
+const logger = createLogger("AuditMiddleware");
 
 type AuditAction = "INSERT" | "UPDATE" | "DELETE";
 
@@ -121,7 +121,7 @@ export function createAuditMiddleware(options: AuditMiddlewareOptions) {
         // Log error but don't fail the request
         logger.error("Failed to create audit log", error as Error, {
           method: req.method,
-          path: req.path
+          path: req.path,
         });
       }
     }
