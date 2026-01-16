@@ -14,6 +14,7 @@
 
 import jwt from "jsonwebtoken";
 import { getDb } from "../../db";
+import { sql } from "drizzle-orm";
 import { getSmsVerificationService } from "./sms-verification-service";
 import { getTelegramBotService } from "./telegram-bot-service";
 
@@ -24,7 +25,7 @@ export type UserStatus = "ACTIVE" | "DISABLED" | "DELETED";
 
 /** 用户信息 */
 export interface User {
-  id: number;
+  id: string;
   phone: string;
   nickname: string | null;
   avatar: string | null;
@@ -48,7 +49,7 @@ export interface LoginResponse {
   success: boolean;
   isNewUser?: boolean;
   user?: {
-    id: number;
+    id: string;
     phone: string;
     nickname: string | null;
     avatar: string | null;
@@ -61,7 +62,7 @@ export interface LoginResponse {
 
 /** JWT Payload */
 export interface JwtPayload {
-  userId: number;
+  userId: string;
   phone: string;
   iat: number;
   exp: number;
@@ -150,10 +151,12 @@ export class AuthService {
 
     try {
       // 查找用户
-      const [existingUsers] = await (db as any).execute(
-        "SELECT * FROM users WHERE phone = ? AND status = ?",
-        [phone, "ACTIVE"]
+      const result = await db.execute(
+        sql.raw(
+          `SELECT * FROM users WHERE phone = '${phone}' AND status = 'ACTIVE'`
+        )
       );
+      const existingUsers = result[0] as unknown as Record<string, unknown>[];
 
       let user: User;
       let isNewUser = false;
@@ -164,14 +167,11 @@ export class AuthService {
         user = this.mapRowToUser(existingUsers[0]);
 
         // 更新登录信息
-        await (db as any).execute(
-          `UPDATE users SET 
+        await db.execute(sql`UPDATE users SET 
              last_login_at = NOW(), 
-             last_login_ip = ?, 
+             last_login_ip = ${userIp || null}, 
              login_count = login_count + 1 
-           WHERE id = ?`,
-          [userIp || null, user.id]
-        );
+           WHERE id = ${user.id}`);
 
         console.log(`   用户 ID: ${user.id}`);
         console.log(`   登录次数: ${user.loginCount + 1}`);
@@ -183,21 +183,24 @@ export class AuthService {
         // 生成默认昵称
         const defaultNickname = this.generateDefaultNickname(phone);
 
-        const [insertResult] = await (db as any).execute(
-          `INSERT INTO users (phone, nickname, last_login_at, last_login_ip, login_count)
-           VALUES (?, ?, NOW(), ?, 1)`,
-          [phone, defaultNickname, userIp || null]
+        const insertResult = await db.execute(
+          sql.raw(`INSERT INTO users (id, phone, nickname, last_login_at, last_login_ip, login_count)
+           VALUES (UUID(), '${phone}', '${defaultNickname}', NOW(), ${userIp ? `'${userIp}'` : "NULL"}, 1)`)
         );
 
-        const userId = insertResult.insertId;
-        console.log(`   新用户 ID: ${userId}`);
+        console.log(`   新用户创建成功`);
         console.log(`   默认昵称: ${defaultNickname}`);
 
-        // 查询新创建的用户
-        const [newUsers] = await (db as any).execute(
-          "SELECT * FROM users WHERE id = ?",
-          [userId]
+        // 查询新创建的用户（按 phone 查询，因为 UUID 由数据库生成）
+        const newUserResult = await db.execute(
+          sql.raw(
+            `SELECT * FROM users WHERE phone = '${phone}' ORDER BY createdAt DESC LIMIT 1`
+          )
         );
+        const newUsers = newUserResult[0] as unknown as Record<
+          string,
+          unknown
+        >[];
 
         user = this.mapRowToUser(newUsers[0]);
       }
@@ -291,10 +294,10 @@ export class AuthService {
     if (!db) return null;
 
     try {
-      const [users] = await (db as any).execute(
-        "SELECT * FROM users WHERE id = ? AND status = ?",
-        [payload.userId, "ACTIVE"]
+      const result = await db.execute(
+        sql`SELECT * FROM users WHERE id = ${payload.userId} AND status = 'ACTIVE'`
       );
+      const users = result[0] as unknown as Record<string, unknown>[];
 
       if (!users || users.length === 0) {
         return null;
@@ -314,15 +317,15 @@ export class AuthService {
   /**
    * 根据 ID 获取用户
    */
-  async getUserById(userId: number): Promise<User | null> {
+  async getUserById(userId: string): Promise<User | null> {
     const db = await getDb();
     if (!db) return null;
 
     try {
-      const [users] = await (db as any).execute(
-        "SELECT * FROM users WHERE id = ? AND status = ?",
-        [userId, "ACTIVE"]
+      const result = await db.execute(
+        sql`SELECT * FROM users WHERE id = ${userId} AND status = 'ACTIVE'`
       );
+      const users = result[0] as unknown as Record<string, unknown>[];
 
       if (!users || users.length === 0) {
         return null;
@@ -343,10 +346,10 @@ export class AuthService {
     if (!db) return null;
 
     try {
-      const [users] = await (db as any).execute(
-        "SELECT * FROM users WHERE phone = ? AND status = ?",
-        [phone, "ACTIVE"]
+      const result = await db.execute(
+        sql`SELECT * FROM users WHERE phone = ${phone} AND status = 'ACTIVE'`
       );
+      const users = result[0] as unknown as Record<string, unknown>[];
 
       if (!users || users.length === 0) {
         return null;
@@ -363,7 +366,7 @@ export class AuthService {
    * 更新用户信息
    */
   async updateUser(
-    userId: number,
+    userId: string,
     updates: { nickname?: string; avatar?: string }
   ): Promise<boolean> {
     const db = await getDb();
@@ -374,24 +377,23 @@ export class AuthService {
       const values: any[] = [];
 
       if (updates.nickname !== undefined) {
-        fields.push("nickname = ?");
-        values.push(updates.nickname);
+        fields.push(
+          `nickname = ${sql.raw(`'${updates.nickname.replace(/'/g, "''")}'`)}`
+        );
       }
 
       if (updates.avatar !== undefined) {
-        fields.push("avatar = ?");
-        values.push(updates.avatar);
+        fields.push(
+          `avatar = ${sql.raw(`'${updates.avatar.replace(/'/g, "''")}'`)}`
+        );
       }
 
       if (fields.length === 0) {
         return true;
       }
 
-      values.push(userId);
-
-      await (db as any).execute(
-        `UPDATE users SET ${fields.join(", ")} WHERE id = ?`,
-        values
+      await db.execute(
+        sql.raw(`UPDATE users SET ${fields.join(", ")} WHERE id = ${userId}`)
       );
 
       return true;
@@ -422,7 +424,6 @@ export class AuthService {
         nickname: user.nickname,
         userId: user.id,
       },
-      userId: user.id,
     });
   }
 

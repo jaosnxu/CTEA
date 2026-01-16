@@ -5,14 +5,13 @@
  */
 
 import { getPrismaClient } from "../db/prisma";
-import {
-  OperatorType as PrismaOperatorType,
-  AuditAction as PrismaAuditAction,
-} from "@prisma/client";
 import crypto from "crypto";
+import { createLogger } from "../utils/logger";
 
-export type OperatorType = PrismaOperatorType;
-export type AuditAction = PrismaAuditAction;
+const logger = createLogger('Audit');
+
+export type OperatorType = "SYSTEM" | "ADMIN" | "USER" | "API";
+export type AuditAction = "INSERT" | "UPDATE" | "DELETE";
 
 export interface AuditLogParams {
   tableName: string;
@@ -116,7 +115,11 @@ class AuditService {
       });
     } catch (error) {
       // Log error but don't throw to avoid blocking the main operation
-      console.error("[AuditService] Failed to create audit log:", error);
+      logger.error("Failed to create audit log", error as Error, {
+        tableName: params.tableName,
+        recordId: params.recordId,
+        action: params.action
+      });
     }
   }
 

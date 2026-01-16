@@ -2,22 +2,23 @@ import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
+import { createLogger } from "./src/utils/logger";
+
+const logger = createLogger('Database');
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _connectionAttempted = false;
 
-// Drizzle ORM connection - disabled to prevent MySQL timeout errors
-// All new database operations should use Prisma client instead
+// Drizzle ORM connection - MySQL database
+// For new operations, prefer using Prisma client (getPrismaClient)
 export async function getDb() {
-  // Only log once to avoid spam
-  if (!_connectionAttempted) {
-    _connectionAttempted = true;
-    console.log(
-      "[Database] Drizzle ORM disabled - MySQL connection skipped to prevent ETIMEDOUT errors"
-    );
-    console.log(
-      "[Database] Use Prisma client (getPrismaClient) for database operations"
-    );
+  if (!_db && process.env.DATABASE_URL) {
+    try {
+      _db = drizzle(process.env.DATABASE_URL);
+    } catch (error) {
+      logger.warn("Failed to connect to database", { error });
+      _db = null;
+    }
   }
   // Return null - routes should handle this gracefully
   return _db;
@@ -30,7 +31,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
+    logger.warn("Cannot upsert user: database not available");
     return;
   }
 
@@ -77,7 +78,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       set: updateSet,
     });
   } catch (error) {
-    console.error("[Database] Failed to upsert user:", error);
+    logger.error("Failed to upsert user", error as Error, { openId: user.openId });
     throw error;
   }
 }
@@ -85,7 +86,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 export async function getUserByOpenId(openId: string) {
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
+    logger.warn("Cannot get user: database not available");
     return undefined;
   }
 

@@ -15,6 +15,7 @@ import { bannerRouter } from "./routers/banner.router";
 import { marketingRouter } from "./routers/marketing.router";
 import { productRouter } from "./routers/product.router";
 import { biRouter } from "./routers/bi.router";
+import { layoutRouter } from "./routers/layout.router";
 
 /**
  * 主 Router
@@ -30,6 +31,7 @@ export const appRouter = router({
   marketing: marketingRouter,
   product: productRouter,
   bi: biRouter,
+  layout: layoutRouter,
 });
 
 /**

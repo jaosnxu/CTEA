@@ -88,7 +88,12 @@ function getRequestLanguage(req: Request): string {
  *   error?: { code: string, message: string, cooldownRemaining?: number }
  * }
  */
+
 router.post("/send", async (req: Request, res: Response) => {
+  console.log("\n" + "=".repeat(60));
+  console.log("[SMS API] POST /api/sms/send");
+  console.log("Body:", JSON.stringify(req.body));
+  console.log("=".repeat(60));
   const startTime = Date.now();
   const userIp = getClientIp(req);
   const language = req.body.language || getRequestLanguage(req);
@@ -105,7 +110,11 @@ router.post("/send", async (req: Request, res: Response) => {
       purpose = "LOGIN",
       ticket,
       randstr,
-    } = req.body as SendCodeRequestBody;
+      captchaTicket,
+      captchaRandstr,
+    } = req.body as any;
+    const finalTicket = ticket || captchaTicket;
+    const finalRandstr = randstr || captchaRandstr;
 
     // 参数验证
     if (!phone) {
@@ -128,16 +137,21 @@ router.post("/send", async (req: Request, res: Response) => {
       });
     }
 
-    // 🔥 安全铁律：必须提供 Captcha 票据
-    if (!ticket || !randstr) {
-      console.log("❌ 缺少 Captcha 票据，拒绝请求！");
-      return res.status(403).json({
-        success: false,
-        error: {
-          code: "CAPTCHA_REQUIRED",
-          message: getLocalizedError("captcha_required", language),
-        },
-      });
+    // 🔥 安全铁律：必须提供 Captcha 票据（生产环境）
+    // 开发环境跳过 Captcha 验证
+    if (process.env.NODE_ENV !== "development") {
+      if (!finalTicket || !finalRandstr) {
+        console.log("❌ 缺少 Captcha 票据，拒绝请求！");
+        return res.status(403).json({
+          success: false,
+          error: {
+            code: "CAPTCHA_REQUIRED",
+            message: getLocalizedError("captcha_required", language),
+          },
+        });
+      }
+    } else {
+      console.log("⚠️  开发环境：跳过 Captcha 验证");
     }
 
     console.log(`Phone: ${phone.substring(0, 5)}***`);
@@ -148,8 +162,8 @@ router.post("/send", async (req: Request, res: Response) => {
     const result = await verificationService.sendCode({
       phone,
       purpose: purpose as VerificationPurpose,
-      ticket,
-      randstr,
+      ticket: finalTicket,
+      randstr: finalRandstr,
       userIp,
       language,
     });

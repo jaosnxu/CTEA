@@ -6,33 +6,27 @@
  */
 
 import { PrismaClient } from "@prisma/client";
-import { Pool } from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
+
+type PrismaClientType = InstanceType<typeof PrismaClient>;
 
 /**
  * Global Prisma Client instance
  */
-let prismaInstance: PrismaClient | null = null;
+let prismaInstance: PrismaClientType | null = null;
 
 /**
  * Get or create Prisma Client instance
  * Uses lazy initialization to ensure DATABASE_URL is available
  */
-export function getPrismaClient(): PrismaClient {
+export function getPrismaClient(): PrismaClientType {
   if (!prismaInstance) {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-      throw new Error(
-        "DATABASE_URL environment variable is not set. Please configure it in your .env file."
-      );
+      throw new Error("DATABASE_URL environment variable is not set");
     }
 
-    // Prisma 7.x requires adapter for PostgreSQL
-    const pool = new Pool({ connectionString });
-    const adapter = new PrismaPg(pool);
-
+    // Prisma 7.x with MySQL - direct connection using DATABASE_URL from env
     prismaInstance = new PrismaClient({
-      adapter,
       log:
         process.env.NODE_ENV === "development"
           ? ["query", "error", "warn"]

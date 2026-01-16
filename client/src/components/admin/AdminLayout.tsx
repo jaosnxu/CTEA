@@ -161,7 +161,13 @@ const navigationConfig: NavItem[] = [
         id: "ops-products",
         label: { ru: "Товары и SKU", zh: "SKU管理" },
         icon: <Package className="w-4 h-4" />,
-        href: "/admin/ops/products",
+        href: "/admin/products",
+      },
+      {
+        id: "ops-pricing-rules",
+        label: { ru: "Правила ценообразования", zh: "定价规则" },
+        icon: <Target className="w-4 h-4" />,
+        href: "/admin/pricing-rules",
       },
       {
         id: "ops-product-management",

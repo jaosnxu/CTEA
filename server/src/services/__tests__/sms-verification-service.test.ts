@@ -56,20 +56,19 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
-        // 冷却时间检查 - 返回空（无冷却）
-        if (
-          query.includes("ORDER BY created_at DESC LIMIT 1") &&
-          !query.includes("is_verified")
-        ) {
+      let callCount = 0;
+      mockExecute.mockImplementation((query: any) => {
+        callCount++;
+        // First call: 冷却时间检查 - 返回空（无冷却）
+        if (callCount === 1) {
           return Promise.resolve([[]]);
         }
-        // 使旧验证码失效
-        if (query.includes("UPDATE") && query.includes("is_verified = TRUE")) {
+        // Second call: 使旧验证码失效
+        if (callCount === 2) {
           return Promise.resolve([{ affectedRows: 0 }]);
         }
-        // 存储新验证码
-        if (query.includes("INSERT INTO sms_verification_codes")) {
+        // Third call: 存储新验证码
+        if (callCount === 3) {
           return Promise.resolve([{ insertId: 1 }]);
         }
         return Promise.resolve([[]]);
@@ -124,12 +123,11 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
-        // 查找有效验证码
-        if (
-          query.includes("SELECT") &&
-          query.includes("sms_verification_codes")
-        ) {
+      let callCount = 0;
+      mockExecute.mockImplementation((query: any) => {
+        callCount++;
+        // First call: 查找有效验证码
+        if (callCount === 1) {
           return Promise.resolve([
             [
               {
@@ -142,8 +140,8 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
             ],
           ]);
         }
-        // 标记为已验证
-        if (query.includes("UPDATE") && query.includes("is_verified = TRUE")) {
+        // Second call: 标记为已验证
+        if (callCount === 2) {
           return Promise.resolve([{ affectedRows: 1 }]);
         }
         return Promise.resolve([[]]);
@@ -169,12 +167,11 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
-        // 查找有效验证码
-        if (
-          query.includes("SELECT") &&
-          query.includes("sms_verification_codes")
-        ) {
+      let callCount = 0;
+      mockExecute.mockImplementation((query: any) => {
+        callCount++;
+        // First call: 查找有效验证码
+        if (callCount === 1) {
           return Promise.resolve([
             [
               {
@@ -187,8 +184,8 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
             ],
           ]);
         }
-        // 增加尝试次数
-        if (query.includes("UPDATE") && query.includes("attempt_count")) {
+        // Second call: 增加尝试次数
+        if (callCount === 2) {
           return Promise.resolve([{ affectedRows: 1 }]);
         }
         return Promise.resolve([[]]);
@@ -216,12 +213,11 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
-        // 查找有效验证码（已经尝试了 4 次）
-        if (
-          query.includes("SELECT") &&
-          query.includes("sms_verification_codes")
-        ) {
+      let callCount = 0;
+      mockExecute.mockImplementation((query: any) => {
+        callCount++;
+        // First call: 查找有效验证码（已经尝试了 4 次）
+        if (callCount === 1) {
           return Promise.resolve([
             [
               {
@@ -234,8 +230,8 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
             ],
           ]);
         }
-        // 增加尝试次数 / 标记失效
-        if (query.includes("UPDATE")) {
+        // Second call: 使验证码失效
+        if (callCount === 2) {
           return Promise.resolve([{ affectedRows: 1 }]);
         }
         return Promise.resolve([[]]);
@@ -263,29 +259,19 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
+      mockExecute.mockImplementation((query: any) => {
         // 查找有效验证码（已经尝试了 5 次）
-        if (
-          query.includes("SELECT") &&
-          query.includes("sms_verification_codes")
-        ) {
-          return Promise.resolve([
-            [
-              {
-                id: 1,
-                code: "123456",
-                expires_at: new Date(Date.now() + 300000),
-                is_verified: false,
-                attempt_count: 5, // 已达到最大次数
-              },
-            ],
-          ]);
-        }
-        // 标记失效
-        if (query.includes("UPDATE")) {
-          return Promise.resolve([{ affectedRows: 1 }]);
-        }
-        return Promise.resolve([[]]);
+        return Promise.resolve([
+          [
+            {
+              id: 1,
+              code: "123456",
+              expires_at: new Date(Date.now() + 300000),
+              is_verified: false,
+              attempt_count: 5, // 已达到最大次数
+            },
+          ],
+        ]);
       });
 
       const result = await service.verifyCode({
@@ -310,25 +296,19 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
+      mockExecute.mockImplementation((query: any) => {
         // 查找有效验证码（已过期）
-        if (
-          query.includes("SELECT") &&
-          query.includes("sms_verification_codes")
-        ) {
-          return Promise.resolve([
-            [
-              {
-                id: 1,
-                code: "123456",
-                expires_at: new Date(Date.now() - 1000), // 已过期
-                is_verified: false,
-                attempt_count: 0,
-              },
-            ],
-          ]);
-        }
-        return Promise.resolve([[]]);
+        return Promise.resolve([
+          [
+            {
+              id: 1,
+              code: "123456",
+              expires_at: new Date(Date.now() - 1000), // 已过期
+              is_verified: false,
+              attempt_count: 0,
+            },
+          ],
+        ]);
       });
 
       const result = await service.verifyCode({

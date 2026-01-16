@@ -51,6 +51,13 @@ import InfluencerManagement from "./pages/admin/InfluencerManagement";
 import OrganizationSettings from "./pages/admin/OrganizationSettings";
 import BIAnalysisHub from "./pages/admin/BIAnalysisHub";
 import IntegrationHub from "./pages/admin/IntegrationHub";
+import AdminLoginPage from "./pages/admin/AdminLoginPage";
+import ProductList from "./pages/admin/ProductList";
+import ProductEditor from "./pages/admin/ProductEditor";
+import PricingRulesList from "./pages/admin/PricingRulesList";
+import PricingRuleForm from "./pages/admin/PricingRuleForm";
+import LayoutsList from "./pages/admin/LayoutsList";
+import LayoutEditor from "./pages/admin/LayoutEditor";
 import CallScreen from "./pages/CallScreen";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -123,6 +130,15 @@ function Router() {
       <Route path="/admin/ai/cockpit" component={BIAnalysisHub} />
       <Route path="/admin/ai/reports" component={BIAnalysisHub} />
       <Route path="/admin/ai/customer-service" component={BIAnalysisHub} />
+      <Route path="/admin/login" component={AdminLoginPage} />
+      <Route path="/admin/products/new" component={ProductEditor} />
+      <Route path="/admin/products/edit/:id" component={ProductEditor} />
+      <Route path="/admin/products" component={ProductList} />
+      <Route path="/admin/pricing-rules/new" component={PricingRuleForm} />
+      <Route path="/admin/pricing-rules/edit/:id" component={PricingRuleForm} />
+      <Route path="/admin/pricing-rules" component={PricingRulesList} />
+      <Route path="/admin/layouts/edit/:page" component={LayoutEditor} />
+      <Route path="/admin/layouts" component={LayoutsList} />
       <Route path="/admin" component={Dashboard} />
       {/* Final fallback route */}
       <Route component={NotFound} />

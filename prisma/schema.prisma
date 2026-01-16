@@ -12,7 +12,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 // ============================================================================
@@ -1098,6 +1099,12 @@ model Users {
   id                   String @id @default(uuid())
   openId               String?
   phone                String?  @db.VarChar(20)
+  nickname             String?  @db.VarChar(100)
+  avatar               String?  @db.VarChar(500)
+  status               String?  @default("ACTIVE") @db.VarChar(20)
+  lastLoginAt          DateTime? @map("last_login_at")
+  lastLoginIp          String?  @db.VarChar(50) @map("last_login_ip")
+  loginCount           Int?     @default(0) @map("login_count")
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   createdBy            String?
@@ -1152,10 +1159,25 @@ model Smsproviders {
 /// Smsverificationlogs
 model Smsverificationlogs {
   id                   BigInt @id @default(autoincrement())
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  createdBy            String?
-  updatedBy            String?
+  phone                String @db.VarChar(20)
+  verificationCode     String @db.VarChar(10) @map("verification_code")
+  purpose              String @db.VarChar(50)
+  provider             String? @db.VarChar(50)
+  status               String @default("SENT") @db.VarChar(20)
+  expiresAt            DateTime @map("expires_at")
+  attempts             Int @default(0)
+  verifiedAt           DateTime? @map("verified_at")
+  ipAddress            String? @db.VarChar(50) @map("ip_address")
+  userAgent            String? @db.VarChar(500) @map("user_agent")
+  geoCountry           String? @db.VarChar(50) @map("geo_country")
+  geoCity              String? @db.VarChar(100) @map("geo_city")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  createdBy            String? @map("created_by")
+  updatedBy            String? @map("updated_by")
+  
+  @@index([phone, purpose, status])
+  @@index([expiresAt])
   @@map("sms_verification_logs")
 }
 /// Phonebindings
