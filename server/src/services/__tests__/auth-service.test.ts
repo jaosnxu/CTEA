@@ -11,6 +11,25 @@ import { describe, it, expect, beforeAll, vi, beforeEach } from "vitest";
 
 // Mock 数据库
 const mockExecute = vi.fn();
+
+// Helper to convert drizzle sql object to string for matching
+const getSqlString = (query: any): string => {
+  if (typeof query === "string") return query;
+  if (query && query.queryChunks) {
+    return query.queryChunks.map((chunk: any) => {
+      if (typeof chunk === "string") return chunk;
+      if (chunk && chunk.value && Array.isArray(chunk.value)) {
+        return chunk.value.join("");
+      }
+      return "[param]";
+    }).join("");
+  }
+  if (query && query.sql) {
+    return Array.isArray(query.sql) ? query.sql.join("") : query.sql;
+  }
+  return String(query);
+};
+
 vi.mock("../../../db", () => ({
   getDb: vi.fn().mockResolvedValue({
     execute: (...args: any[]) => mockExecute(...args),
@@ -43,34 +62,37 @@ describe("AuthService - 用户体系与身份认证测试", () => {
       console.log("测试场景：新用户自动注册");
       console.log("=".repeat(70));
 
-      // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
-        // 查找用户 - 返回空（用户不存在）
-        if (query.includes("SELECT") && query.includes("FROM users")) {
-          if (query.includes("WHERE phone")) {
+      // Mock 数据库操作 - 需要跟踪状态来模拟新用户创建流程
+      let userCreated = false;
+      mockExecute.mockImplementation((query: any) => {
+        const queryStr = getSqlString(query);
+        // 查找用户
+        if (queryStr.includes("SELECT") && queryStr.includes("users")) {
+          // 第一次查询返回空（用户不存在），创建后返回用户数据
+          if (!userCreated) {
             return Promise.resolve([[]]);
           }
-          if (query.includes("WHERE id")) {
-            return Promise.resolve([
-              [
-                {
-                  id: 1,
-                  phone: "+79001234567",
-                  nickname: "Гость4567",
-                  avatar: null,
-                  status: "ACTIVE",
-                  last_login_at: new Date(),
-                  last_login_ip: "192.168.1.100",
-                  login_count: 1,
-                  created_at: new Date(),
-                  updated_at: new Date(),
-                },
-              ],
-            ]);
-          }
+          // 用户已创建，返回用户数据
+          return Promise.resolve([
+            [
+              {
+                id: "uuid-1",
+                phone: "+79001234567",
+                nickname: "Гость4567",
+                avatar: null,
+                status: "ACTIVE",
+                last_login_at: new Date(),
+                last_login_ip: "192.168.1.100",
+                login_count: 1,
+                created_at: new Date(),
+                updated_at: new Date(),
+              },
+            ],
+          ]);
         }
         // 创建用户
-        if (query.includes("INSERT INTO users")) {
+        if (queryStr.includes("INSERT INTO users")) {
+          userCreated = true;
           return Promise.resolve([{ insertId: 1 }]);
         }
         return Promise.resolve([[]]);
@@ -112,17 +134,18 @@ describe("AuthService - 用户体系与身份认证测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
+      mockExecute.mockImplementation((query: any) => {
+        const queryStr = getSqlString(query);
         // 查找用户 - 返回已存在用户
         if (
-          query.includes("SELECT") &&
-          query.includes("FROM users") &&
-          query.includes("WHERE phone")
+          queryStr.includes("SELECT") &&
+          queryStr.includes("users") &&
+          queryStr.includes("phone")
         ) {
           return Promise.resolve([
             [
               {
-                id: 1,
+                id: "uuid-1",
                 phone: "+79001234567",
                 nickname: "Иван",
                 avatar: "https://example.com/avatar.jpg",
@@ -137,7 +160,7 @@ describe("AuthService - 用户体系与身份认证测试", () => {
           ]);
         }
         // 更新登录信息
-        if (query.includes("UPDATE users")) {
+        if (queryStr.includes("UPDATE users")) {
           return Promise.resolve([{ affectedRows: 1 }]);
         }
         return Promise.resolve([[]]);

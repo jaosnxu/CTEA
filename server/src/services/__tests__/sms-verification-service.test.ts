@@ -12,6 +12,25 @@ import { describe, it, expect, beforeAll, vi, beforeEach } from "vitest";
 
 // Mock 数据库
 const mockExecute = vi.fn();
+
+// Helper to convert drizzle sql object to string for matching
+const getSqlString = (query: any): string => {
+  if (typeof query === "string") return query;
+  if (query && query.queryChunks) {
+    return query.queryChunks.map((chunk: any) => {
+      if (typeof chunk === "string") return chunk;
+      if (chunk && chunk.value && Array.isArray(chunk.value)) {
+        return chunk.value.join("");
+      }
+      return "[param]";
+    }).join("");
+  }
+  if (query && query.sql) {
+    return Array.isArray(query.sql) ? query.sql.join("") : query.sql;
+  }
+  return String(query);
+};
+
 vi.mock("../../../db", () => ({
   getDb: vi.fn().mockResolvedValue({
     execute: (...args: any[]) => mockExecute(...args),
@@ -56,20 +75,21 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
+      mockExecute.mockImplementation((query: any) => {
+        const queryStr = getSqlString(query);
         // 冷却时间检查 - 返回空（无冷却）
         if (
-          query.includes("ORDER BY created_at DESC LIMIT 1") &&
-          !query.includes("is_verified")
+          queryStr.includes("ORDER BY created_at DESC LIMIT 1") &&
+          !queryStr.includes("is_verified")
         ) {
           return Promise.resolve([[]]);
         }
         // 使旧验证码失效
-        if (query.includes("UPDATE") && query.includes("is_verified = TRUE")) {
+        if (queryStr.includes("UPDATE") && queryStr.includes("status")) {
           return Promise.resolve([{ affectedRows: 0 }]);
         }
         // 存储新验证码
-        if (query.includes("INSERT INTO sms_verification_codes")) {
+        if (queryStr.includes("INSERT INTO sms_verification_logs")) {
           return Promise.resolve([{ insertId: 1 }]);
         }
         return Promise.resolve([[]]);
@@ -124,11 +144,12 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
+      mockExecute.mockImplementation((query: any) => {
+        const queryStr = getSqlString(query);
         // 查找有效验证码
         if (
-          query.includes("SELECT") &&
-          query.includes("sms_verification_codes")
+          queryStr.includes("SELECT") &&
+          queryStr.includes("sms_verification_logs")
         ) {
           return Promise.resolve([
             [
@@ -136,14 +157,14 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
                 id: 1,
                 code: "123456",
                 expires_at: new Date(Date.now() + 300000), // 5分钟后过期
-                is_verified: false,
+                status: "PENDING",
                 attempt_count: 0,
               },
             ],
           ]);
         }
         // 标记为已验证
-        if (query.includes("UPDATE") && query.includes("is_verified = TRUE")) {
+        if (queryStr.includes("UPDATE") && queryStr.includes("status")) {
           return Promise.resolve([{ affectedRows: 1 }]);
         }
         return Promise.resolve([[]]);
@@ -169,11 +190,12 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
+      mockExecute.mockImplementation((query: any) => {
+        const queryStr = getSqlString(query);
         // 查找有效验证码
         if (
-          query.includes("SELECT") &&
-          query.includes("sms_verification_codes")
+          queryStr.includes("SELECT") &&
+          queryStr.includes("sms_verification_logs")
         ) {
           return Promise.resolve([
             [
@@ -181,14 +203,14 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
                 id: 1,
                 code: "123456", // 正确的验证码
                 expires_at: new Date(Date.now() + 300000),
-                is_verified: false,
+                status: "PENDING",
                 attempt_count: 0,
               },
             ],
           ]);
         }
         // 增加尝试次数
-        if (query.includes("UPDATE") && query.includes("attempt_count")) {
+        if (queryStr.includes("UPDATE") && queryStr.includes("attempts")) {
           return Promise.resolve([{ affectedRows: 1 }]);
         }
         return Promise.resolve([[]]);
@@ -216,11 +238,12 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
+      mockExecute.mockImplementation((query: any) => {
+        const queryStr = getSqlString(query);
         // 查找有效验证码（已经尝试了 4 次）
         if (
-          query.includes("SELECT") &&
-          query.includes("sms_verification_codes")
+          queryStr.includes("SELECT") &&
+          queryStr.includes("sms_verification_logs")
         ) {
           return Promise.resolve([
             [
@@ -228,14 +251,14 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
                 id: 1,
                 code: "123456",
                 expires_at: new Date(Date.now() + 300000),
-                is_verified: false,
+                status: "PENDING",
                 attempt_count: 4, // 已经尝试了 4 次
               },
             ],
           ]);
         }
         // 增加尝试次数 / 标记失效
-        if (query.includes("UPDATE")) {
+        if (queryStr.includes("UPDATE")) {
           return Promise.resolve([{ affectedRows: 1 }]);
         }
         return Promise.resolve([[]]);
@@ -263,11 +286,12 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
+      mockExecute.mockImplementation((query: any) => {
+        const queryStr = getSqlString(query);
         // 查找有效验证码（已经尝试了 5 次）
         if (
-          query.includes("SELECT") &&
-          query.includes("sms_verification_codes")
+          queryStr.includes("SELECT") &&
+          queryStr.includes("sms_verification_logs")
         ) {
           return Promise.resolve([
             [
@@ -275,14 +299,14 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
                 id: 1,
                 code: "123456",
                 expires_at: new Date(Date.now() + 300000),
-                is_verified: false,
+                status: "PENDING",
                 attempt_count: 5, // 已达到最大次数
               },
             ],
           ]);
         }
         // 标记失效
-        if (query.includes("UPDATE")) {
+        if (queryStr.includes("UPDATE")) {
           return Promise.resolve([{ affectedRows: 1 }]);
         }
         return Promise.resolve([[]]);
@@ -310,11 +334,12 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
+      mockExecute.mockImplementation((query: any) => {
+        const queryStr = getSqlString(query);
         // 查找有效验证码（已过期）
         if (
-          query.includes("SELECT") &&
-          query.includes("sms_verification_codes")
+          queryStr.includes("SELECT") &&
+          queryStr.includes("sms_verification_logs")
         ) {
           return Promise.resolve([
             [
@@ -322,7 +347,7 @@ describe("SmsVerificationService - 核心验证逻辑测试", () => {
                 id: 1,
                 code: "123456",
                 expires_at: new Date(Date.now() - 1000), // 已过期
-                is_verified: false,
+                status: "PENDING",
                 attempt_count: 0,
               },
             ],
