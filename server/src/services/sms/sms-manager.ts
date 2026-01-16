@@ -107,7 +107,7 @@ export class SmsManager {
   /**
    * 获取可用的 Provider（按优先级排序）
    */
-  
+
   private async getAvailableProviders(): Promise<ISmsProvider[]> {
     const available: ISmsProvider[] = [];
     for (const provider of Array.from(this.providers.values())) {
@@ -115,29 +115,32 @@ export class SmsManager {
         available.push(provider);
       }
     }
-    
+
     // 开发环境下始终添加一个模拟的 Provider，确保测试能通过
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       console.log("[SmsManager] 开发环境：添加模拟 SMS Provider");
       const mockProvider: ISmsProvider = {
         name: "MockProvider",
         config: { priority: 0 } as any,
-        sendSms: async (req: any) => ({ success: true, provider: "MockProvider", messageId: "mock-id" }),
-        sendVerificationCode: async (req: any) => ({ 
-          success: true, 
-          provider: "MockProvider", 
-          code: req.code, 
-          expiresAt: new Date(Date.now() + 300000) 
+        sendSms: async (req: any) => ({
+          success: true,
+          provider: "MockProvider",
+          messageId: "mock-id",
+        }),
+        sendVerificationCode: async (req: any) => ({
+          success: true,
+          provider: "MockProvider",
+          code: req.code,
+          expiresAt: new Date(Date.now() + 300000),
         }),
         isAvailable: async () => true,
-        getStatus: async () => ({ available: true })
+        getStatus: async () => ({ available: true }),
       };
       available.push(mockProvider);
     }
-    
+
     return available.sort((a, b) => a.config.priority - b.config.priority);
   }
-
 
   /**
    * 🔥 安全发送短信（带验证码校验）
@@ -161,7 +164,7 @@ export class SmsManager {
     console.log("\n[Step 1] 验证码校验...");
 
     // 开发环境跳过 Captcha 验证
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.NODE_ENV !== "development") {
       if (!ticket || !randstr) {
         console.log("❌ 缺少验证码票据，中断请求！");
         console.log(`${"=".repeat(60)}\n`);
@@ -256,7 +259,7 @@ export class SmsManager {
     console.log("\n[Step 1] 验证码校验...");
 
     // 开发环境跳过 Captcha 验证
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.NODE_ENV !== "development") {
       if (!ticket || !randstr) {
         console.log("❌ 缺少验证码票据，中断请求！");
         console.log(`${"=".repeat(60)}\n`);
