@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # PostgreSQL database for local testing
@@ -55,22 +55,23 @@ services:
       PORT: 3000
       DATABASE_URL: postgresql://chutea_test:test_password@postgres:5432/chutea_test
       API_KEY: test-api-key-12345
-      
-      # OAuth Configuration (pointing to mock server)
+
+      # Standard OAuth 2.0 Configuration (pointing to mock server)
       OAUTH_CLIENT_ID: test-client-id
       OAUTH_CLIENT_SECRET: test-client-secret
       OAUTH_CALLBACK_URL: http://localhost:3000/oauth/callback
       OAUTH_TOKEN_URL: http://mock-oauth:9000/oauth/token
-      
-      # Manus OAuth Configuration (optional)
+
+      # Manus OAuth Configuration
+      OAUTH_SERVER_URL: http://mock-oauth:9000
+      VITE_APP_ID: test-app-id
+      COOKIE_SECRET: test-cookie-secret-min-32-chars-long-secure
+
+      # Legacy compatibility
       appId: test-app-id
       oAuthServerUrl: http://mock-oauth:9000
       cookieSecret: test-cookie-secret-min-32-chars-long-secure
       ownerOpenId: test-owner-123
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: npm run dev
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
       interval: 10s
@@ -95,22 +96,23 @@ services:
       PORT: 3001
       DATABASE_URL: postgresql://chutea_test:test_password@postgres:5432/chutea_test
       API_KEY: test-api-key-12345
-      
-      # OAuth Configuration (pointing to mock server)
+
+      # Standard OAuth 2.0 Configuration (pointing to mock server)
       OAUTH_CLIENT_ID: test-client-id
       OAUTH_CLIENT_SECRET: test-client-secret
       OAUTH_CALLBACK_URL: http://localhost:3001/oauth/callback
       OAUTH_TOKEN_URL: http://mock-oauth:9000/oauth/token
-      
-      # Manus OAuth Configuration (optional)
+
+      # Manus OAuth Configuration
+      OAUTH_SERVER_URL: http://mock-oauth:9000
+      VITE_APP_ID: test-app-id
+      COOKIE_SECRET: test-cookie-secret-min-32-chars-long-secure
+
+      # Legacy compatibility
       appId: test-app-id
       oAuthServerUrl: http://mock-oauth:9000
       cookieSecret: test-cookie-secret-min-32-chars-long-secure
       ownerOpenId: test-owner-123
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: npm run dev
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/health"]
       interval: 10s

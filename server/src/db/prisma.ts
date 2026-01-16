@@ -4,27 +4,27 @@
  * Singleton pattern to ensure only one Prisma Client instance is created
  */
 
-import pkg from "@prisma/client";
-const { PrismaClient } = pkg;
-import { Pool } from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
+
+type PrismaClientType = InstanceType<typeof PrismaClient>;
 
 /**
  * Global Prisma Client instance
  */
-let prismaInstance: PrismaClient | null = null;
+let prismaInstance: PrismaClientType | null = null;
 
 /**
  * Get or create Prisma Client instance
  */
-export function getPrismaClient(): PrismaClient {
+export function getPrismaClient(): PrismaClientType {
   if (!prismaInstance) {
-    // Prisma 7.x requires adapter for PostgreSQL
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-    const adapter = new PrismaPg(pool);
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+      throw new Error("DATABASE_URL environment variable is not set");
+    }
 
+    // Prisma 7.x with MySQL - direct connection using DATABASE_URL from env
     prismaInstance = new PrismaClient({
-      adapter,
       log:
         process.env.NODE_ENV === "development"
           ? ["query", "error", "warn"]

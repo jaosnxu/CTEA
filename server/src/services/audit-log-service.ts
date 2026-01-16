@@ -12,9 +12,15 @@
 
 import pkg from "@prisma/client";
 const { PrismaClient } = pkg;
-import type { AuditAction, OperatorType } from "@prisma/client";
 import crypto from "crypto";
 import { getPrismaClient } from "../db/prisma";
+import { createLogger } from "../utils/logger";
+
+const logger = createLogger("AuditLog");
+
+type PrismaClientType = InstanceType<typeof PrismaClient>;
+type AuditAction = "INSERT" | "UPDATE" | "DELETE";
+type OperatorType = "SYSTEM" | "ADMIN" | "USER" | "API";
 
 export interface CreateAuditLogInput {
   orgId?: string;
@@ -43,9 +49,9 @@ export interface AuditChainValidationResult {
 }
 
 export class AuditLogService {
-  private prisma: PrismaClient;
+  private prisma: PrismaClientType;
 
-  constructor(prisma: PrismaClient) {
+  constructor(prisma: PrismaClientType) {
     this.prisma = prisma;
   }
 
@@ -101,7 +107,11 @@ export class AuditLogService {
         `✅ Audit log created: ${eventId} (table: ${input.tableName}, record: ${input.recordId})`
       );
     } catch (error) {
-      console.error("❌ Failed to create audit log:", error);
+      logger.error("Failed to create audit log", error as Error, {
+        tableName: input.tableName,
+        recordId: input.recordId,
+        action: input.action,
+      });
       // Don't throw error to prevent breaking main business logic
       // Audit logging should be non-blocking
     }
@@ -227,7 +237,7 @@ export class AuditLogService {
 
       return result;
     } catch (error) {
-      console.error("❌ Failed to validate audit chain:", error);
+      logger.error("Failed to validate audit chain", error as Error);
       throw error;
     }
   }
@@ -332,7 +342,12 @@ export class AuditLogService {
       },
     });
 
-    console.log(`✅ Audit event registered: ${eventId}`);
+    logger.info(`Audit event registered: ${eventId}`, {
+      eventId,
+      tableName: data.tableName,
+      recordId: data.recordId,
+      action: data.action,
+    });
   }
 }
 

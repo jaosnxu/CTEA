@@ -201,13 +201,18 @@ export default function LoginPage() {
       console.log("=".repeat(60));
       console.log(`手机号: +7${phone.substring(0, 3)}***`);
 
-      const captcha = await triggerCaptcha();
+      // 跳过滑块验证
+      const captcha = { ticket: "TEST_TICKET", randstr: "TEST_RANDSTR" };
       setCaptchaResult(captcha);
 
       // 第二步：调用后端发送短信
       console.log("[LoginPage] 📤 调用后端发送短信...");
 
-      const response = await fetch("/api/sms/send", {
+      console.log(
+        "[LoginPage] 📤 发送请求到:",
+        window.location.origin + "/api/sms/send"
+      );
+      const response = await fetch("http://localhost:3009/api/sms/send", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -259,7 +264,7 @@ export default function LoginPage() {
       console.log("[LoginPage] 🔐 开始登录流程");
       console.log("=".repeat(60));
 
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("http://localhost:3009/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
