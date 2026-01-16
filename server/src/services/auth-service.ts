@@ -49,7 +49,7 @@ export interface LoginResponse {
   success: boolean;
   isNewUser?: boolean;
   user?: {
-    id: number;
+    id: string;
     phone: string;
     nickname: string | null;
     avatar: string | null;
@@ -156,7 +156,7 @@ export class AuthService {
           `SELECT * FROM users WHERE phone = '${phone}' AND status = 'ACTIVE'`
         )
       );
-      const existingUsers = result[0];
+      const existingUsers = result[0] as unknown as Record<string, unknown>[];
 
       let user: User;
       let isNewUser = false;
@@ -197,7 +197,10 @@ export class AuthService {
             `SELECT * FROM users WHERE phone = '${phone}' ORDER BY createdAt DESC LIMIT 1`
           )
         );
-        const newUsers = newUserResult[0];
+        const newUsers = newUserResult[0] as unknown as Record<
+          string,
+          unknown
+        >[];
 
         user = this.mapRowToUser(newUsers[0]);
       }
@@ -294,7 +297,7 @@ export class AuthService {
       const result = await db.execute(
         sql`SELECT * FROM users WHERE id = ${payload.userId} AND status = 'ACTIVE'`
       );
-      const users = result[0];
+      const users = result[0] as unknown as Record<string, unknown>[];
 
       if (!users || users.length === 0) {
         return null;
@@ -322,7 +325,7 @@ export class AuthService {
       const result = await db.execute(
         sql`SELECT * FROM users WHERE id = ${userId} AND status = 'ACTIVE'`
       );
-      const users = result[0];
+      const users = result[0] as unknown as Record<string, unknown>[];
 
       if (!users || users.length === 0) {
         return null;
@@ -346,7 +349,7 @@ export class AuthService {
       const result = await db.execute(
         sql`SELECT * FROM users WHERE phone = ${phone} AND status = 'ACTIVE'`
       );
-      const users = result[0];
+      const users = result[0] as unknown as Record<string, unknown>[];
 
       if (!users || users.length === 0) {
         return null;
@@ -421,7 +424,6 @@ export class AuthService {
         nickname: user.nickname,
         userId: user.id,
       },
-      userId: user.id,
     });
   }
 

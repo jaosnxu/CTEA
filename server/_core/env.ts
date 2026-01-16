@@ -13,6 +13,9 @@ const EnvSchema = z.object({
   OAUTH_SERVER_URL: z.string().url("OAUTH_SERVER_URL must be a valid URL"),
   VITE_APP_ID: z.string().min(1, "VITE_APP_ID cannot be empty"),
   COOKIE_SECRET: z.string().min(1, "COOKIE_SECRET cannot be empty"),
+  forgeApiUrl: z.string().optional(),
+  forgeApiKey: z.string().optional(),
+  ownerOpenId: z.string().optional(),
 });
 
 // Parse and validate environment variables

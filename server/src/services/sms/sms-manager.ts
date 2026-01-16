@@ -451,7 +451,10 @@ export class SmsManager {
         SELECT COUNT(*) as count FROM sms_send_logs 
         WHERE phone = ${normalizedPhone} AND created_at > ${oneMinuteAgo}
       `);
-      if (phoneMinuteResult[0]?.count >= config.phonePerMinute) {
+      const phoneMinuteRows = phoneMinuteResult[0] as unknown as {
+        count: number;
+      }[];
+      if (phoneMinuteRows?.[0]?.count >= config.phonePerMinute) {
         return { allowed: false, reason: "phone_minute" };
       }
 
@@ -459,7 +462,10 @@ export class SmsManager {
         SELECT COUNT(*) as count FROM sms_send_logs 
         WHERE phone = ${normalizedPhone} AND created_at > ${oneHourAgo}
       `);
-      if (phoneHourResult[0]?.count >= config.phonePerHour) {
+      const phoneHourRows = phoneHourResult[0] as unknown as {
+        count: number;
+      }[];
+      if (phoneHourRows?.[0]?.count >= config.phonePerHour) {
         return { allowed: false, reason: "phone_hour" };
       }
 
@@ -467,7 +473,8 @@ export class SmsManager {
         SELECT COUNT(*) as count FROM sms_send_logs 
         WHERE phone = ${normalizedPhone} AND created_at > ${oneDayAgo}
       `);
-      if (phoneDayResult[0]?.count >= config.phonePerDay) {
+      const phoneDayRows = phoneDayResult[0] as unknown as { count: number }[];
+      if (phoneDayRows?.[0]?.count >= config.phonePerDay) {
         return { allowed: false, reason: "phone_day" };
       }
 
@@ -476,7 +483,8 @@ export class SmsManager {
         SELECT COUNT(*) as count FROM sms_send_logs 
         WHERE ip_address = ${ip} AND created_at > ${oneMinuteAgo}
       `);
-      if (ipMinuteResult[0]?.count >= config.ipPerMinute) {
+      const ipMinuteRows = ipMinuteResult[0] as unknown as { count: number }[];
+      if (ipMinuteRows?.[0]?.count >= config.ipPerMinute) {
         return { allowed: false, reason: "ip_minute" };
       }
 
@@ -484,7 +492,8 @@ export class SmsManager {
         SELECT COUNT(*) as count FROM sms_send_logs 
         WHERE ip_address = ${ip} AND created_at > ${oneHourAgo}
       `);
-      if (ipHourResult[0]?.count >= config.ipPerHour) {
+      const ipHourRows = ipHourResult[0] as unknown as { count: number }[];
+      if (ipHourRows?.[0]?.count >= config.ipPerHour) {
         return { allowed: false, reason: "ip_hour" };
       }
 

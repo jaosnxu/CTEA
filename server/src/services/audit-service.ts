@@ -5,14 +5,10 @@
  */
 
 import { getPrismaClient } from "../db/prisma";
-import {
-  OperatorType as PrismaOperatorType,
-  AuditAction as PrismaAuditAction,
-} from "@prisma/client";
 import crypto from "crypto";
 
-export type OperatorType = PrismaOperatorType;
-export type AuditAction = PrismaAuditAction;
+export type OperatorType = "SYSTEM" | "ADMIN" | "USER" | "API";
+export type AuditAction = "INSERT" | "UPDATE" | "DELETE";
 
 export interface AuditLogParams {
   tableName: string;
