@@ -1,7 +1,7 @@
 // ============================================================================
 // CTEA Platform - Complete Prisma Schema
 // ============================================================================
-// Architecture: PostgreSQL 14+ with Prisma ORM
+// Architecture: MySQL 8.0+ with Prisma ORM
 // Audit Event: M3.4-GLOBAL-COMP-002A
 // Migration Date: 2026-01-12
 // Total Tables: 74

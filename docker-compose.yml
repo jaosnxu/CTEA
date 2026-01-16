@@ -1,20 +1,21 @@
 version: "3.8"
 
 services:
-  # PostgreSQL Database for testing
-  postgres:
-    image: postgres:16-alpine
-    container_name: ctea-test-postgres
+  # MySQL Database for testing
+  mysql:
+    image: mysql:8.0
+    container_name: ctea-test-mysql
     environment:
-      POSTGRES_DB: ctea_test
-      POSTGRES_USER: ctea_test_user
-      POSTGRES_PASSWORD: ctea_test_password
+      MYSQL_DATABASE: ctea_test
+      MYSQL_USER: ctea_test_user
+      MYSQL_PASSWORD: ctea_test_password
+      MYSQL_ROOT_PASSWORD: ctea_root_password
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ctea_test_user -d ctea_test"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pctea_root_password"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -57,7 +58,7 @@ services:
       PORT: 3000
 
       # Database configuration
-      DATABASE_URL: postgresql://ctea_test_user:ctea_test_password@postgres:5432/ctea_test
+      DATABASE_URL: mysql://ctea_test_user:ctea_test_password@mysql:3306/ctea_test
 
       # OAuth configuration (pointing to mock server)
       OAUTH_SERVER_URL: http://mock-oauth:4000
@@ -73,7 +74,7 @@ services:
       COOKIE_SECRET: test-cookie-secret-change-in-production
       API_KEY: test-api-key-change-in-production
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
       mock-oauth:
         condition: service_healthy
@@ -89,4 +90,4 @@ services:
       start_period: 40s
 
 volumes:
-  postgres_data:
+  mysql_data:
