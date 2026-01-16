@@ -219,8 +219,13 @@ jobs:
             sleep 3
           done
 
-      - name: Setup Test Database
+      - name: Setup Test Database (Prisma)
         run: pnpm exec prisma db push --skip-generate
+        env:
+          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/ctea"
+
+      - name: Setup Test Database (Drizzle)
+        run: pnpm exec drizzle-kit push
         env:
           DATABASE_URL: "mysql://root:root@127.0.0.1:3306/ctea"
 
