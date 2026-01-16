@@ -1,5 +1,8 @@
-import React from 'react';
-import { ProductFormData, ProductImage } from '../../../types/product-editor.types';
+import React from "react";
+import {
+  ProductFormData,
+  ProductImage,
+} from "../../../types/product-editor.types";
 
 interface Props {
   data: ProductFormData;
@@ -10,7 +13,7 @@ export default function ImagesTab({ data, onChange }: Props) {
   const addImage = () => {
     const newImage: ProductImage = {
       id: `img_${Date.now()}`,
-      url: '',
+      url: "",
       isPrimary: data.images.length === 0,
       sortOrder: data.images.length,
     };
@@ -40,19 +43,22 @@ export default function ImagesTab({ data, onChange }: Props) {
     onChange({ images: newImages });
   };
 
-  const moveImage = (index: number, direction: 'up' | 'down') => {
+  const moveImage = (index: number, direction: "up" | "down") => {
     const newImages = [...data.images];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+
     if (targetIndex < 0 || targetIndex >= newImages.length) return;
-    
-    [newImages[index], newImages[targetIndex]] = [newImages[targetIndex], newImages[index]];
-    
+
+    [newImages[index], newImages[targetIndex]] = [
+      newImages[targetIndex],
+      newImages[index],
+    ];
+
     // 更新排序
     newImages.forEach((img, i) => {
       img.sortOrder = i;
     });
-    
+
     onChange({ images: newImages });
   };
 
@@ -83,7 +89,9 @@ export default function ImagesTab({ data, onChange }: Props) {
             <div
               key={image.id}
               className={`border rounded-lg p-4 ${
-                image.isPrimary ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                image.isPrimary
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200"
               }`}
             >
               <div className="flex items-start gap-4">
@@ -94,8 +102,9 @@ export default function ImagesTab({ data, onChange }: Props) {
                       src={image.url}
                       alt="Product"
                       className="w-24 h-24 object-cover rounded-lg border border-gray-300"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3E无图片%3C/text%3E%3C/svg%3E';
+                      onError={e => {
+                        (e.target as HTMLImageElement).src =
+                          'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3E无图片%3C/text%3E%3C/svg%3E';
                       }}
                     />
                   ) : (
@@ -114,7 +123,9 @@ export default function ImagesTab({ data, onChange }: Props) {
                     <input
                       type="text"
                       value={image.url}
-                      onChange={(e) => updateImage(index, { url: e.target.value })}
+                      onChange={e =>
+                        updateImage(index, { url: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="https://example.com/product.jpg"
                     />
@@ -125,7 +136,7 @@ export default function ImagesTab({ data, onChange }: Props) {
                       <input
                         type="checkbox"
                         checked={image.isPrimary}
-                        onChange={(e) => {
+                        onChange={e => {
                           if (e.target.checked) {
                             setPrimaryImage(index);
                           }
@@ -133,25 +144,27 @@ export default function ImagesTab({ data, onChange }: Props) {
                         className="mr-2"
                       />
                       <span className="text-sm text-gray-700">
-                        {image.isPrimary ? '🌟 主图' : '设为主图'}
+                        {image.isPrimary ? "🌟 主图" : "设为主图"}
                       </span>
                     </label>
 
-                    <span className="text-sm text-gray-500">排序：{index + 1}</span>
+                    <span className="text-sm text-gray-500">
+                      排序：{index + 1}
+                    </span>
                   </div>
                 </div>
 
                 {/* 操作按钮 */}
                 <div className="flex flex-col gap-2">
                   <button
-                    onClick={() => moveImage(index, 'up')}
+                    onClick={() => moveImage(index, "up")}
                     disabled={index === 0}
                     className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30"
                   >
                     ↑
                   </button>
                   <button
-                    onClick={() => moveImage(index, 'down')}
+                    onClick={() => moveImage(index, "down")}
                     disabled={index === data.images.length - 1}
                     className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30"
                   >

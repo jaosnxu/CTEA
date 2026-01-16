@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import AdminLayout from "../../components/admin/AdminLayout";
 
 // ==================== 类型定义 ====================
@@ -109,7 +109,7 @@ const translations = {
 // ==================== 主页面组件 ====================
 
 export default function ProductList() {
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
   const [lang, setLang] = useState<"ru" | "zh">("ru");
   const [products, setProducts] = useState<Product[]>([]);
   const [stats, setStats] = useState<ProductStats | null>(null);
@@ -188,7 +188,7 @@ export default function ProductList() {
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => navigate('/admin/products/new')}
+              onClick={() => setLocation("/admin/products/new")}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               + {lang === "ru" ? "Новый товар" : "新建产品"}
@@ -349,7 +349,9 @@ export default function ProductList() {
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() => navigate(`/admin/products/edit/${product.id}`)}
+                          onClick={() =>
+                            setLocation(`/admin/products/edit/${product.id}`)
+                          }
                           className="px-3 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
                         >
                           {lang === "ru" ? "Изменить" : "编辑"}

@@ -78,14 +78,15 @@ export default function LayoutsList() {
   // 确保所有页面都显示
   const allPages = ["home", "order", "mall"];
   const layoutMap = new Map(layouts.map(l => [l.page, l]));
-  
-  const displayLayouts: (LayoutInfo | { page: string; isDefault: boolean })[] = allPages.map(page => {
-    const layout = layoutMap.get(page);
-    if (layout) {
-      return layout;
-    }
-    return { page, isDefault: true };
-  });
+
+  const displayLayouts: (LayoutInfo | { page: string; isDefault: boolean })[] =
+    allPages.map(page => {
+      const layout = layoutMap.get(page);
+      if (layout) {
+        return layout;
+      }
+      return { page, isDefault: true };
+    });
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -164,7 +165,7 @@ export default function LayoutsList() {
                 {displayLayouts.map(layout => {
                   const page = layout.page;
                   const Icon = pageIcons[page as keyof typeof pageIcons];
-                  const isDefault = 'isDefault' in layout && layout.isDefault;
+                  const isDefault = "isDefault" in layout && layout.isDefault;
 
                   return (
                     <TableRow key={page}>
@@ -201,13 +202,17 @@ export default function LayoutsList() {
                             )}
                       </TableCell>
                       <TableCell>
-                        {isDefault ? "-" : (layout as LayoutInfo).createdBy || "系统"}
+                        {isDefault
+                          ? "-"
+                          : (layout as LayoutInfo).createdBy || "系统"}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setLocation(`/admin/layouts/edit/${page}`)}
+                          onClick={() =>
+                            setLocation(`/admin/layouts/edit/${page}`)
+                          }
                         >
                           <FileEdit className="h-4 w-4 mr-1" />
                           {language === "zh" && "编辑"}

@@ -3,12 +3,7 @@
  * 实时预览布局配置效果
  */
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PageLayoutConfig, LayoutComponent } from "@shared/types/layout";
 
 interface LayoutPreviewProps {

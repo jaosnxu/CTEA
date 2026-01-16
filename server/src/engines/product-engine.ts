@@ -134,7 +134,10 @@ class ProductEngine {
 
       // Handle pricing rule associations if provided
       if (data.pricingRuleIds && data.pricingRuleIds.length > 0) {
-        await this.updateProductPricingRules(parseInt(product.id), data.pricingRuleIds);
+        await this.updateProductPricingRules(
+          parseInt(product.id),
+          data.pricingRuleIds
+        );
       }
 
       return product;
@@ -161,7 +164,10 @@ class ProductEngine {
 
       // Handle pricing rule associations if provided
       if (updates.pricingRuleIds !== undefined) {
-        await this.updateProductPricingRules(parseInt(id), updates.pricingRuleIds);
+        await this.updateProductPricingRules(
+          parseInt(id),
+          updates.pricingRuleIds
+        );
       }
 
       return product;
@@ -179,10 +185,12 @@ class ProductEngine {
       const { getDb } = await import("../../db");
       const { productPricingRules } = await import("../../../drizzle/schema");
       const { eq } = await import("drizzle-orm");
-      
+
       const db = await getDb();
       if (!db) {
-        console.warn("[ProductEngine] Database not available for pricing rules update");
+        console.warn(
+          "[ProductEngine] Database not available for pricing rules update"
+        );
         return;
       }
 
@@ -214,7 +222,7 @@ class ProductEngine {
       const { getDb } = await import("../../db");
       const { productPricingRules } = await import("../../../drizzle/schema");
       const { eq } = await import("drizzle-orm");
-      
+
       const db = await getDb();
       if (!db) {
         return [];

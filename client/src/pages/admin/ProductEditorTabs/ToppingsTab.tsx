@@ -1,5 +1,8 @@
-import React from 'react';
-import { ProductFormData, ProductTopping } from '../../../types/product-editor.types';
+import React from "react";
+import {
+  ProductFormData,
+  ProductTopping,
+} from "../../../types/product-editor.types";
 
 interface Props {
   data: ProductFormData;
@@ -10,7 +13,7 @@ export default function ToppingsTab({ data, onChange }: Props) {
   const addTopping = () => {
     const newTopping: ProductTopping = {
       id: `topping_${Date.now()}`,
-      name: '',
+      name: "",
       price: 0,
       stock: 0,
       maxQuantity: 3,
@@ -65,7 +68,9 @@ export default function ToppingsTab({ data, onChange }: Props) {
                   <input
                     type="text"
                     value={topping.name}
-                    onChange={(e) => updateTopping(index, { name: e.target.value })}
+                    onChange={e =>
+                      updateTopping(index, { name: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="例如：珍珠、椰果"
                   />
@@ -78,8 +83,10 @@ export default function ToppingsTab({ data, onChange }: Props) {
                   <input
                     type="number"
                     value={topping.price}
-                    onChange={(e) =>
-                      updateTopping(index, { price: parseFloat(e.target.value) || 0 })
+                    onChange={e =>
+                      updateTopping(index, {
+                        price: parseFloat(e.target.value) || 0,
+                      })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="20"
@@ -95,8 +102,10 @@ export default function ToppingsTab({ data, onChange }: Props) {
                   <input
                     type="number"
                     value={topping.stock}
-                    onChange={(e) =>
-                      updateTopping(index, { stock: parseInt(e.target.value) || 0 })
+                    onChange={e =>
+                      updateTopping(index, {
+                        stock: parseInt(e.target.value) || 0,
+                      })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="100"
@@ -111,8 +120,10 @@ export default function ToppingsTab({ data, onChange }: Props) {
                   <input
                     type="number"
                     value={topping.maxQuantity}
-                    onChange={(e) =>
-                      updateTopping(index, { maxQuantity: parseInt(e.target.value) || 1 })
+                    onChange={e =>
+                      updateTopping(index, {
+                        maxQuantity: parseInt(e.target.value) || 1,
+                      })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="3"
@@ -128,8 +139,10 @@ export default function ToppingsTab({ data, onChange }: Props) {
                   </label>
                   <input
                     type="text"
-                    value={topping.image || ''}
-                    onChange={(e) => updateTopping(index, { image: e.target.value })}
+                    value={topping.image || ""}
+                    onChange={e =>
+                      updateTopping(index, { image: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="https://example.com/topping.jpg"
                   />

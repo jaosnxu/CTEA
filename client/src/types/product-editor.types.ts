@@ -6,8 +6,8 @@ export interface ProductFormData {
   categoryId: string;
   basePrice: number;
   costPrice: number;
-  status: 'ACTIVE' | 'INACTIVE';
-  
+  status: "ACTIVE" | "INACTIVE";
+
   // 多语言
   nameMultiLang: {
     zh?: string;
@@ -19,22 +19,22 @@ export interface ProductFormData {
     ru?: string;
     en?: string;
   };
-  
+
   // 规格选项
   specOptions: ProductSpecOption[];
-  
+
   // 小料配置
   toppings: ProductTopping[];
-  
+
   // 图片
   images: ProductImage[];
-  
+
   // 定价规则
   pricingRuleIds: string[];
-  
+
   // 库存
   inventory: StoreInventory[];
-  
+
   // 营销设置
   memberDiscounts: MemberDiscount[];
   couponIds: string[];
@@ -42,7 +42,7 @@ export interface ProductFormData {
 
 export interface ProductSpecOption {
   id: string;
-  type: 'SIZE' | 'TEMPERATURE' | 'SWEETNESS' | 'ICE';
+  type: "SIZE" | "TEMPERATURE" | "SWEETNESS" | "ICE";
   name: string;
   values: SpecValue[];
 }
@@ -78,6 +78,6 @@ export interface StoreInventory {
 }
 
 export interface MemberDiscount {
-  level: 'REGULAR' | 'SILVER' | 'GOLD' | 'PLATINUM';
+  level: "REGULAR" | "SILVER" | "GOLD" | "PLATINUM";
   discountPercent: number; // 如 5 表示 95 折
 }

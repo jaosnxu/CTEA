@@ -4,8 +4,12 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { appRouter } from "../routers";
-import { DEFAULT_HOME_LAYOUT, DEFAULT_ORDER_LAYOUT, DEFAULT_MALL_LAYOUT } from "@shared/types/layout";
+import { appRouter } from "../router";
+import {
+  DEFAULT_HOME_LAYOUT,
+  DEFAULT_ORDER_LAYOUT,
+  DEFAULT_MALL_LAYOUT,
+} from "@shared/types/layout";
 
 describe("Layout Router", () => {
   // Mock context for testing
@@ -24,7 +28,7 @@ describe("Layout Router", () => {
     it("should return empty layout list initially", async () => {
       const caller = appRouter.createCaller(mockContext);
       const result = await caller.layout.list();
-      
+
       expect(result).toHaveProperty("layouts");
       expect(Array.isArray(result.layouts)).toBe(true);
     });
@@ -34,7 +38,7 @@ describe("Layout Router", () => {
     it("should return default home layout when no config exists", async () => {
       const caller = appRouter.createCaller(mockContext);
       const result = await caller.layout.get({ page: "home" });
-      
+
       expect(result).toHaveProperty("layout");
       expect(result.layout.page).toBe("home");
       expect(result.layout.config).toMatchObject({
@@ -46,7 +50,7 @@ describe("Layout Router", () => {
     it("should return default order layout", async () => {
       const caller = appRouter.createCaller(mockContext);
       const result = await caller.layout.get({ page: "order" });
-      
+
       expect(result.layout.page).toBe("order");
       expect(result.layout.config).toMatchObject({
         page: "order",
@@ -57,7 +61,7 @@ describe("Layout Router", () => {
     it("should return default mall layout", async () => {
       const caller = appRouter.createCaller(mockContext);
       const result = await caller.layout.get({ page: "mall" });
-      
+
       expect(result.layout.page).toBe("mall");
       expect(result.layout.config).toMatchObject({
         page: "mall",
@@ -69,7 +73,7 @@ describe("Layout Router", () => {
   describe("save", () => {
     it("should save a new layout configuration", async () => {
       const caller = appRouter.createCaller(mockContext);
-      
+
       const customLayout = {
         ...DEFAULT_HOME_LAYOUT,
         blocks: [
@@ -88,7 +92,7 @@ describe("Layout Router", () => {
         page: "home",
         config: customLayout,
       });
-      
+
       expect(result).toHaveProperty("layout");
       expect(result).toHaveProperty("message");
       expect(result.layout.page).toBe("home");
@@ -101,7 +105,7 @@ describe("Layout Router", () => {
     it("should return version history for a page", async () => {
       const caller = appRouter.createCaller(mockContext);
       const result = await caller.layout.history({ page: "home", limit: 10 });
-      
+
       expect(result).toHaveProperty("versions");
       expect(Array.isArray(result.versions)).toBe(true);
     });

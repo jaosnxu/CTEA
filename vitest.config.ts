@@ -15,5 +15,17 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["server/**/*.test.ts", "server/**/*.spec.ts"],
+    env: {
+      NODE_ENV: "test",
+      PORT: "3000",
+      DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+      API_KEY: "test-api-key",
+      OAUTH_CLIENT_ID: "test-oauth-client-id",
+      OAUTH_CLIENT_SECRET: "test-oauth-client-secret",
+      OAUTH_CALLBACK_URL: "http://localhost:3000/callback",
+      OAUTH_SERVER_URL: "http://localhost:3000/oauth",
+      VITE_APP_ID: "test-app-id",
+      COOKIE_SECRET: "test-cookie-secret",
+    },
   },
 });

@@ -1,5 +1,9 @@
-import React from 'react';
-import { ProductFormData, ProductSpecOption, SpecValue } from '../../../types/product-editor.types';
+import React from "react";
+import {
+  ProductFormData,
+  ProductSpecOption,
+  SpecValue,
+} from "../../../types/product-editor.types";
 
 interface Props {
   data: ProductFormData;
@@ -10,14 +14,17 @@ export default function SpecOptionsTab({ data, onChange }: Props) {
   const addSpecOption = () => {
     const newSpec: ProductSpecOption = {
       id: `spec_${Date.now()}`,
-      type: 'SIZE',
-      name: '尺寸',
+      type: "SIZE",
+      name: "尺寸",
       values: [],
     };
     onChange({ specOptions: [...data.specOptions, newSpec] });
   };
 
-  const updateSpecOption = (index: number, updates: Partial<ProductSpecOption>) => {
+  const updateSpecOption = (
+    index: number,
+    updates: Partial<ProductSpecOption>
+  ) => {
     const newSpecs = [...data.specOptions];
     newSpecs[index] = { ...newSpecs[index], ...updates };
     onChange({ specOptions: newSpecs });
@@ -31,7 +38,7 @@ export default function SpecOptionsTab({ data, onChange }: Props) {
   const addSpecValue = (specIndex: number) => {
     const newValue: SpecValue = {
       id: `value_${Date.now()}`,
-      label: '',
+      label: "",
       priceAdjustment: 0,
       isDefault: false,
     };
@@ -40,7 +47,11 @@ export default function SpecOptionsTab({ data, onChange }: Props) {
     onChange({ specOptions: newSpecs });
   };
 
-  const updateSpecValue = (specIndex: number, valueIndex: number, updates: Partial<SpecValue>) => {
+  const updateSpecValue = (
+    specIndex: number,
+    valueIndex: number,
+    updates: Partial<SpecValue>
+  ) => {
     const newSpecs = [...data.specOptions];
     newSpecs[specIndex].values[valueIndex] = {
       ...newSpecs[specIndex].values[valueIndex],
@@ -51,7 +62,9 @@ export default function SpecOptionsTab({ data, onChange }: Props) {
 
   const removeSpecValue = (specIndex: number, valueIndex: number) => {
     const newSpecs = [...data.specOptions];
-    newSpecs[specIndex].values = newSpecs[specIndex].values.filter((_, i) => i !== valueIndex);
+    newSpecs[specIndex].values = newSpecs[specIndex].values.filter(
+      (_, i) => i !== valueIndex
+    );
     onChange({ specOptions: newSpecs });
   };
 
@@ -88,7 +101,10 @@ export default function SpecOptionsTab({ data, onChange }: Props) {
       ) : (
         <div className="space-y-6">
           {data.specOptions.map((spec, specIndex) => (
-            <div key={spec.id} className="border border-gray-200 rounded-lg p-6">
+            <div
+              key={spec.id}
+              className="border border-gray-200 rounded-lg p-6"
+            >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1 grid grid-cols-2 gap-4">
                   <div>
@@ -97,9 +113,9 @@ export default function SpecOptionsTab({ data, onChange }: Props) {
                     </label>
                     <select
                       value={spec.type}
-                      onChange={(e) =>
+                      onChange={e =>
                         updateSpecOption(specIndex, {
-                          type: e.target.value as ProductSpecOption['type'],
+                          type: e.target.value as ProductSpecOption["type"],
                         })
                       }
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -117,7 +133,9 @@ export default function SpecOptionsTab({ data, onChange }: Props) {
                     <input
                       type="text"
                       value={spec.name}
-                      onChange={(e) => updateSpecOption(specIndex, { name: e.target.value })}
+                      onChange={e =>
+                        updateSpecOption(specIndex, { name: e.target.value })
+                      }
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="例如：尺寸、温度"
                     />
@@ -134,7 +152,9 @@ export default function SpecOptionsTab({ data, onChange }: Props) {
               {/* 规格值列表 */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">规格值</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    规格值
+                  </label>
                   <button
                     onClick={() => addSpecValue(specIndex)}
                     className="text-sm text-blue-600 hover:text-blue-700"
@@ -148,8 +168,10 @@ export default function SpecOptionsTab({ data, onChange }: Props) {
                     <input
                       type="text"
                       value={value.label}
-                      onChange={(e) =>
-                        updateSpecValue(specIndex, valueIndex, { label: e.target.value })
+                      onChange={e =>
+                        updateSpecValue(specIndex, valueIndex, {
+                          label: e.target.value,
+                        })
                       }
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="选项名称（如：大杯、热饮）"
@@ -157,7 +179,7 @@ export default function SpecOptionsTab({ data, onChange }: Props) {
                     <input
                       type="number"
                       value={value.priceAdjustment}
-                      onChange={(e) =>
+                      onChange={e =>
                         updateSpecValue(specIndex, valueIndex, {
                           priceAdjustment: parseFloat(e.target.value) || 0,
                         })
@@ -170,7 +192,7 @@ export default function SpecOptionsTab({ data, onChange }: Props) {
                       <input
                         type="checkbox"
                         checked={value.isDefault}
-                        onChange={(e) => {
+                        onChange={e => {
                           if (e.target.checked) {
                             setDefaultValue(specIndex, valueIndex);
                           }

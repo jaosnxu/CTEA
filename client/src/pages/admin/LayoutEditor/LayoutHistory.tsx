@@ -55,8 +55,8 @@ export function LayoutHistory({
         language === "zh"
           ? "版本还原成功"
           : language === "ru"
-          ? "Версия восстановлена"
-          : "Version restored successfully"
+            ? "Версия восстановлена"
+            : "Version restored successfully"
       );
       setRestoringVersion(null);
       onRestore(restoringVersion!);
@@ -66,8 +66,8 @@ export function LayoutHistory({
         language === "zh"
           ? `还原失败: ${error.message}`
           : language === "ru"
-          ? `Ошибка восстановления: ${error.message}`
-          : `Restore failed: ${error.message}`
+            ? `Ошибка восстановления: ${error.message}`
+            : `Restore failed: ${error.message}`
       );
       setRestoringVersion(null);
     },
@@ -89,7 +89,8 @@ export function LayoutHistory({
           </DialogTitle>
           <DialogDescription>
             {language === "zh" && "查看和还原历史版本"}
-            {language === "ru" && "Просмотр и восстановление исторических версий"}
+            {language === "ru" &&
+              "Просмотр и восстановление исторических версий"}
             {language === "en" && "View and restore historical versions"}
           </DialogDescription>
         </DialogHeader>
@@ -138,7 +139,9 @@ export function LayoutHistory({
             <TableBody>
               {historyQuery.data?.versions.map(version => (
                 <TableRow key={version.id}>
-                  <TableCell className="font-medium">v{version.version}</TableCell>
+                  <TableCell className="font-medium">
+                    v{version.version}
+                  </TableCell>
                   <TableCell>
                     {version.isActive ? (
                       <Badge variant="default">
@@ -172,13 +175,13 @@ export function LayoutHistory({
                           ? language === "zh"
                             ? "还原中..."
                             : language === "ru"
-                            ? "Восстановление..."
-                            : "Restoring..."
+                              ? "Восстановление..."
+                              : "Restoring..."
                           : language === "zh"
-                          ? "还原"
-                          : language === "ru"
-                          ? "Восстановить"
-                          : "Restore"}
+                            ? "还原"
+                            : language === "ru"
+                              ? "Восстановить"
+                              : "Restore"}
                       </Button>
                     )}
                   </TableCell>

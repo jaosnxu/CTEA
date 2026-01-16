@@ -133,9 +133,18 @@ class PricingEngine {
         finalPrice = newPrice;
 
         if (discount > 0) {
-          const name = typeof rule.name === "string" ? rule.name : rule.name.ru || rule.name.zh || rule.name.en || "";
-          const description = typeof rule.description === "string" ? rule.description : (rule.description?.ru || rule.description?.zh || rule.description?.en || "");
-          
+          const name =
+            typeof rule.name === "string"
+              ? rule.name
+              : rule.name.ru || rule.name.zh || rule.name.en || "";
+          const description =
+            typeof rule.description === "string"
+              ? rule.description
+              : rule.description?.ru ||
+                rule.description?.zh ||
+                rule.description?.en ||
+                "";
+
           appliedRules.push({
             id: rule.id,
             name,
@@ -166,23 +175,25 @@ class PricingEngine {
     try {
       const db = await getDb();
       if (!db) {
-        console.warn("[PricingEngine] Database not available, using default rules");
+        console.warn(
+          "[PricingEngine] Database not available, using default rules"
+        );
         return DEFAULT_PRICING_RULES;
       }
 
       let query;
-      
+
       if (productId) {
         // Get rules associated with a specific product
         const productRuleLinks = await db
           .select()
           .from(productPricingRules)
           .where(eq(productPricingRules.productId, parseInt(productId)));
-        
+
         if (productRuleLinks.length === 0) {
           return [];
         }
-        
+
         const ruleIds = productRuleLinks.map(link => link.ruleId);
         query = db
           .select()
@@ -198,7 +209,7 @@ class PricingEngine {
       }
 
       const dbRules = await query;
-      
+
       // Transform database rules to PricingRule format
       return dbRules.map(rule => ({
         id: rule.id,
@@ -281,11 +292,15 @@ class PricingEngine {
       // Build update object
       const updateData: any = {};
       if (updates.name !== undefined) updateData.name = updates.name;
-      if (updates.description !== undefined) updateData.description = updates.description;
-      if (updates.condition !== undefined) updateData.condition = updates.condition;
+      if (updates.description !== undefined)
+        updateData.description = updates.description;
+      if (updates.condition !== undefined)
+        updateData.condition = updates.condition;
       if (updates.action !== undefined) updateData.action = updates.action;
-      if (updates.priority !== undefined) updateData.priority = updates.priority;
-      if (updates.isActive !== undefined) updateData.isActive = updates.isActive;
+      if (updates.priority !== undefined)
+        updateData.priority = updates.priority;
+      if (updates.isActive !== undefined)
+        updateData.isActive = updates.isActive;
 
       if (Object.keys(updateData).length > 0) {
         await db
@@ -297,9 +312,11 @@ class PricingEngine {
       // Return updated rule
       return {
         id,
-        name: updates.name ?? existingRule.name,
-        description: updates.description ?? existingRule.description,
-        condition: (updates.condition ?? existingRule.condition) as PricingRuleCondition,
+        name: (updates.name ?? existingRule.name) as PricingRule["name"],
+        description: (updates.description ??
+          existingRule.description) as PricingRule["description"],
+        condition: (updates.condition ??
+          existingRule.condition) as PricingRuleCondition,
         action: (updates.action ?? existingRule.action) as PricingRuleAction,
         priority: updates.priority ?? existingRule.priority,
         isActive: updates.isActive ?? existingRule.isActive ?? true,
@@ -357,7 +374,10 @@ class PricingEngine {
   /**
    * Remove pricing rule from a product
    */
-  async removeRuleFromProduct(productId: number, ruleId: string): Promise<void> {
+  async removeRuleFromProduct(
+    productId: number,
+    ruleId: string
+  ): Promise<void> {
     try {
       const db = await getDb();
       if (!db) {
