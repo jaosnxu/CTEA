@@ -9,7 +9,7 @@
  */
 
 import { z } from "zod";
-import { router, adminProcedure } from "../../../_core/trpc";
+import { router, protectedProcedure } from "../../../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { eq, and, desc } from "drizzle-orm";
 import { layoutConfigs } from "../../../../drizzle/schema";
@@ -20,6 +20,16 @@ import {
   PageType,
 } from "@shared/types/layout";
 import { getDb } from "../../../db";
+
+// Admin middleware check
+const requireAdmin = async (ctx: any) => {
+  if (!ctx.user || ctx.user.role !== "admin") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Admin access required",
+    });
+  }
+};
 
 /**
  * 获取默认布局配置
@@ -44,7 +54,9 @@ export const layoutRouter = router({
   /**
    * 获取所有布局配置列表
    */
-  list: adminProcedure.query(async ({ ctx }) => {
+  list: protectedProcedure.query(async ({ ctx }) => {
+    await requireAdmin(ctx);
+    
     const db = await getDb();
     if (!db) {
       throw new TRPCError({
@@ -68,13 +80,15 @@ export const layoutRouter = router({
   /**
    * 获取指定页面的布局配置
    */
-  get: adminProcedure
+  get: protectedProcedure
     .input(
       z.object({
         page: z.enum(["home", "order", "mall"]),
       })
     )
     .query(async ({ ctx, input }) => {
+      await requireAdmin(ctx);
+      
       const db = await getDb();
       if (!db) {
         throw new TRPCError({
@@ -126,7 +140,7 @@ export const layoutRouter = router({
   /**
    * 获取指定页面的版本历史
    */
-  history: adminProcedure
+  history: protectedProcedure
     .input(
       z.object({
         page: z.enum(["home", "order", "mall"]),
@@ -134,6 +148,8 @@ export const layoutRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
+      await requireAdmin(ctx);
+      
       const db = await getDb();
       if (!db) {
         throw new TRPCError({
@@ -157,7 +173,7 @@ export const layoutRouter = router({
   /**
    * 保存/更新布局配置
    */
-  save: adminProcedure
+  save: protectedProcedure
     .input(
       z.object({
         page: z.enum(["home", "order", "mall"]),
@@ -165,6 +181,8 @@ export const layoutRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      await requireAdmin(ctx);
+      
       const db = await getDb();
       if (!db) {
         throw new TRPCError({
@@ -217,7 +235,7 @@ export const layoutRouter = router({
   /**
    * 还原到指定版本
    */
-  restore: adminProcedure
+  restore: protectedProcedure
     .input(
       z.object({
         page: z.enum(["home", "order", "mall"]),
@@ -225,6 +243,8 @@ export const layoutRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      await requireAdmin(ctx);
+      
       const db = await getDb();
       if (!db) {
         throw new TRPCError({
