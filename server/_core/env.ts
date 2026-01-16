@@ -2,7 +2,7 @@
 import { z } from "zod";
 import { createLogger } from "../src/utils/logger";
 
-const logger = createLogger('Environment');
+const logger = createLogger("Environment");
 
 // Define the environment variables schema
 const EnvSchema = z.object({
@@ -26,5 +26,5 @@ export const ENV = EnvSchema.parse(process.env);
 
 logger.info("Environment variables validated successfully", {
   nodeEnv: ENV.NODE_ENV,
-  port: ENV.PORT
+  port: ENV.PORT,
 });

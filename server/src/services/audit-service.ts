@@ -8,7 +8,7 @@ import { getPrismaClient } from "../db/prisma";
 import crypto from "crypto";
 import { createLogger } from "../utils/logger";
 
-const logger = createLogger('Audit');
+const logger = createLogger("Audit");
 
 export type OperatorType = "SYSTEM" | "ADMIN" | "USER" | "API";
 export type AuditAction = "INSERT" | "UPDATE" | "DELETE";
@@ -118,7 +118,7 @@ class AuditService {
       logger.error("Failed to create audit log", error as Error, {
         tableName: params.tableName,
         recordId: params.recordId,
-        action: params.action
+        action: params.action,
       });
     }
   }

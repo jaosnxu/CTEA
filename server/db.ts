@@ -4,7 +4,7 @@ import { InsertUser, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { createLogger } from "./src/utils/logger";
 
-const logger = createLogger('Database');
+const logger = createLogger("Database");
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -75,7 +75,9 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       set: updateSet,
     });
   } catch (error) {
-    logger.error("Failed to upsert user", error as Error, { openId: user.openId });
+    logger.error("Failed to upsert user", error as Error, {
+      openId: user.openId,
+    });
     throw error;
   }
 }
