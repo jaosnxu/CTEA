@@ -179,7 +179,7 @@ const navigationConfig: NavItem[] = [
         id: "ops-orders",
         label: { ru: "Заказы", zh: "订单监控" },
         icon: <ShoppingBag className="w-4 h-4" />,
-        href: "/admin/ops/orders",
+        href: "/admin/orders",
       },
       {
         id: "ops-telegram",
