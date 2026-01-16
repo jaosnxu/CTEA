@@ -102,7 +102,7 @@ class ProductEngine {
   async getProductById(id: string) {
     try {
       const product = await this.prisma.products.findUnique({
-        where: { id },
+        where: { id: parseInt(id, 10) },
       });
 
       if (!product) {
@@ -123,21 +123,16 @@ class ProductEngine {
     try {
       const product = await this.prisma.products.create({
         data: {
-          name: data.name || "",
+          name: data.name ? { default: data.name } : undefined,
           orgId: data.orgId || null,
           categoryId: data.categoryId || 1,
           code: data.code || `PROD_${Date.now()}`,
-          createdBy: data.createdBy,
-          updatedBy: data.updatedBy,
         },
       });
 
       // Handle pricing rule associations if provided
       if (data.pricingRuleIds && data.pricingRuleIds.length > 0) {
-        await this.updateProductPricingRules(
-          parseInt(product.id),
-          data.pricingRuleIds
-        );
+        await this.updateProductPricingRules(product.id, data.pricingRuleIds);
       }
 
       return product;
@@ -152,22 +147,19 @@ class ProductEngine {
    */
   async updateProduct(id: string, updates: ProductData) {
     try {
+      const numericId = parseInt(id, 10);
       const product = await this.prisma.products.update({
-        where: { id },
+        where: { id: numericId },
         data: {
-          name: updates.name,
+          name: updates.name ? { default: updates.name } : undefined,
           code: updates.code,
-          updatedBy: updates.updatedBy,
           updatedAt: new Date(),
         },
       });
 
       // Handle pricing rule associations if provided
       if (updates.pricingRuleIds !== undefined) {
-        await this.updateProductPricingRules(
-          parseInt(id),
-          updates.pricingRuleIds
-        );
+        await this.updateProductPricingRules(numericId, updates.pricingRuleIds);
       }
 
       return product;
@@ -248,7 +240,7 @@ class ProductEngine {
       // Since there's no soft delete field in schema, we'll do hard delete
       // In production, you should add a 'deletedAt' field
       await this.prisma.products.delete({
-        where: { id },
+        where: { id: parseInt(id, 10) },
       });
 
       return { success: true };
@@ -263,14 +255,15 @@ class ProductEngine {
    */
   async batchUpdateProducts(ids: string[], updates: ProductData) {
     try {
+      const numericIds = ids.map(id => parseInt(id, 10));
       const result = await this.prisma.products.updateMany({
         where: {
           id: {
-            in: ids,
+            in: numericIds,
           },
         },
         data: {
-          name: updates.name,
+          name: updates.name ? { default: updates.name } : undefined,
           code: updates.code,
           updatedAt: new Date(),
         },

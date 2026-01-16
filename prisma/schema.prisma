@@ -565,6 +565,7 @@ model Sduilayouts {
   id                   String @id @default(uuid())
   orgId                String?   @db.VarChar(36)
   layoutCode           String?
+  layoutConfig         String?  @db.Text
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   createdBy            String?
@@ -610,19 +611,43 @@ model Categories {
 }
 /// Products
 model Products {
-  id                   String @id @default(uuid())
+  id                   Int @id @default(autoincrement())
   orgId                String?   @db.VarChar(36)
   categoryId           Int
-  code                 String?
-  name                 String?  @db.VarChar(200)
+  code                 String?  @db.VarChar(50)
+  name                 Json?
+  description          Json?
+  image                String?  @db.VarChar(500)
+  images               Json?
+  basePrice            Decimal? @db.Decimal(15, 2)
+  iikoProductId        String?  @db.VarChar(100)
+  iikoGroupId          String?  @db.VarChar(100)
+  nutritionInfo        Json?
+  allergens            Json?
+  preparationTime      Int?
+  isActive             Boolean? @default(true)
+  sortOrder            Int?     @default(0)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
-  createdBy            String?
-  updatedBy            String?
   
   orderItems           Orderitems[]
   
   @@map("products")
+}
+/// PricingRules
+model PricingRules {
+  id                   String @id @default(uuid())
+  productId            String?
+  name                 String   @db.VarChar(200)
+  description          String?  @db.Text
+  condition            Json
+  action               Json
+  priority             Int      @default(0)
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  
+  @@map("pricing_rules")
 }
 /// Skuattributes
 model Skuattributes {
@@ -788,7 +813,7 @@ model Orderitems {
   id                   BigInt @id @default(autoincrement())
   orderId              BigInt?
   order                Orders?  @relation(fields: [orderId], references: [id])
-  productId            String?
+  productId            Int?
   product              Products? @relation(fields: [productId], references: [id])
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -1021,6 +1046,7 @@ model Users {
   nickname             String?  @db.VarChar(100)
   avatar               String?  @db.VarChar(500)
   status               String?  @default("ACTIVE") @db.VarChar(20)
+  level                String?  @db.VarChar(20)
   lastLoginAt          DateTime? @map("last_login_at")
   lastLoginIp          String?  @db.VarChar(50) @map("last_login_ip")
   loginCount           Int?     @default(0) @map("login_count")
