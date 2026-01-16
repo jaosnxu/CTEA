@@ -31,21 +31,25 @@ prisma/
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
+
 ```bash
 npm install --legacy-peer-deps
 ```
 
 ### 2. Generate Prisma Client
+
 ```bash
 npx prisma generate
 ```
 
 ### 3. Start Development Server
+
 ```bash
 npm run dev
 ```
 
 ### 4. Test Endpoints
+
 ```bash
 # Health check
 curl http://localhost:3000/api/health
@@ -65,17 +69,20 @@ curl http://localhost:3000/api/client/layouts/home
 ## 🎯 What Was Implemented
 
 ### 3 Backend Engines
+
 1. **ProductEngine** - Complete CRUD operations for products with filtering and statistics
 2. **PricingEngine** - Rule-based dynamic pricing with time and user-level conditions
 3. **LayoutEngine** - SDUI (Server-Driven UI) configuration management
 
 ### 4 API Route Groups
+
 1. **Admin Products** - 6 endpoints for product management
 2. **Admin Pricing Rules** - Pricing rule management
 3. **Client Products** - Product viewing and price calculation
 4. **Client Layouts** - Dynamic UI layout configuration
 
 ### Database Updates
+
 - Updated Products model with `basePrice`, `isActive`, and other fields
 - Added `level` field to Users model for pricing rules
 - Added `layoutConfig` field to Sduilayouts model
@@ -108,6 +115,7 @@ All 11 endpoints have been tested and verified:
 ## 📋 Example Responses
 
 ### Pricing Rules (Default)
+
 ```json
 {
   "success": true,
@@ -116,8 +124,8 @@ All 11 endpoints have been tested and verified:
       "id": "rule_001",
       "name": "欢乐时光",
       "description": "下午2-5点享8折",
-      "condition": {"hour": [14, 15, 16, 17]},
-      "action": {"type": "DISCOUNT_PERCENT", "value": 20},
+      "condition": { "hour": [14, 15, 16, 17] },
+      "action": { "type": "DISCOUNT_PERCENT", "value": 20 },
       "priority": 5,
       "isActive": true
     }
@@ -126,15 +134,16 @@ All 11 endpoints have been tested and verified:
 ```
 
 ### Layout Configuration
+
 ```json
 {
   "success": true,
   "data": {
     "page": "home",
     "sections": [
-      {"type": "banner", "imageUrl": "/banners/home.jpg"},
-      {"type": "categories", "columns": 4},
-      {"type": "hotProducts", "title": "Популярное", "limit": 6}
+      { "type": "banner", "imageUrl": "/banners/home.jpg" },
+      { "type": "categories", "columns": 4 },
+      { "type": "hotProducts", "title": "Популярное", "limit": 6 }
     ]
   }
 }
@@ -147,6 +156,7 @@ The current implementation focuses on functionality. Authentication and authoriz
 ## 🤝 Contributing
 
 When adding new features:
+
 1. Follow the singleton pattern for engines
 2. Add comprehensive error handling
 3. Include default fallbacks where appropriate

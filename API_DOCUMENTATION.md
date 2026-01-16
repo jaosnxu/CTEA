@@ -1,9 +1,11 @@
 # API Endpoints Documentation
 
 ## Overview
+
 This document describes all newly implemented API endpoints for the CTEA platform.
 
 ## Base URL
+
 ```
 Development: http://localhost:3000
 Production: https://your-domain.com
@@ -14,11 +16,13 @@ Production: https://your-domain.com
 ## Admin API Endpoints
 
 ### 1. Get Product Statistics
+
 Returns comprehensive statistics about products, orders, and revenue.
 
 **Endpoint:** `GET /api/admin/products/stats/summary`
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -27,7 +31,7 @@ Returns comprehensive statistics about products, orders, and revenue.
     "activeProducts": 142,
     "categories": 12,
     "orders": 1234,
-    "totalRevenue": 45678.90
+    "totalRevenue": 45678.9
   },
   "timestamp": "2026-01-16T13:48:43.825Z"
 }
@@ -36,16 +40,19 @@ Returns comprehensive statistics about products, orders, and revenue.
 ---
 
 ### 2. List All Products (Admin)
+
 Get a list of all products with optional filtering.
 
 **Endpoint:** `GET /api/admin/products`
 
 **Query Parameters:**
+
 - `category` (optional) - Filter by category ID
 - `search` (optional) - Search by product code
 - `status` (optional) - Filter by status (ACTIVE/INACTIVE)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -55,7 +62,7 @@ Get a list of all products with optional filtering.
       "orgId": 1,
       "categoryId": 5,
       "code": "PROD001",
-      "name": {"ru": "Классический чай", "zh": "经典茶"},
+      "name": { "ru": "Классический чай", "zh": "经典茶" },
       "basePrice": "299.00",
       "isActive": true,
       "createdAt": "2026-01-15T10:30:00.000Z",
@@ -70,14 +77,17 @@ Get a list of all products with optional filtering.
 ---
 
 ### 3. Get Product Details (Admin)
+
 Get detailed information about a specific product.
 
 **Endpoint:** `GET /api/admin/products/:id`
 
 **Parameters:**
+
 - `id` - Product ID (integer)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -86,8 +96,8 @@ Get detailed information about a specific product.
     "orgId": 1,
     "categoryId": 5,
     "code": "PROD001",
-    "name": {"ru": "Классический чай", "zh": "经典茶"},
-    "description": {"ru": "Описание", "zh": "描述"},
+    "name": { "ru": "Классический чай", "zh": "经典茶" },
+    "description": { "ru": "Описание", "zh": "描述" },
     "basePrice": "299.00",
     "isActive": true,
     "sortOrder": 0,
@@ -101,23 +111,26 @@ Get detailed information about a specific product.
 ---
 
 ### 4. Create Product
+
 Create a new product.
 
 **Endpoint:** `POST /api/admin/products`
 
 **Request Body:**
+
 ```json
 {
   "orgId": 1,
   "categoryId": 5,
   "code": "PROD002",
-  "name": {"ru": "Новый чай", "zh": "新茶"},
+  "name": { "ru": "Новый чай", "zh": "新茶" },
   "basePrice": "350.00",
   "isActive": true
 }
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -126,7 +139,7 @@ Create a new product.
     "orgId": 1,
     "categoryId": 5,
     "code": "PROD002",
-    "name": {"ru": "Новый чай", "zh": "新茶"},
+    "name": { "ru": "Новый чай", "zh": "新茶" },
     "basePrice": "350.00",
     "isActive": true,
     "createdAt": "2026-01-16T13:48:43.825Z",
@@ -140,29 +153,33 @@ Create a new product.
 ---
 
 ### 5. Update Product
+
 Update an existing product.
 
 **Endpoint:** `PUT /api/admin/products/:id`
 
 **Parameters:**
+
 - `id` - Product ID (integer)
 
 **Request Body:**
+
 ```json
 {
-  "name": {"ru": "Обновленный чай", "zh": "更新茶"},
+  "name": { "ru": "Обновленный чай", "zh": "更新茶" },
   "basePrice": "399.00",
   "isActive": true
 }
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
   "data": {
     "id": 1,
-    "name": {"ru": "Обновленный чай", "zh": "更新茶"},
+    "name": { "ru": "Обновленный чай", "zh": "更新茶" },
     "basePrice": "399.00",
     "updatedAt": "2026-01-16T13:50:00.000Z"
   },
@@ -174,14 +191,17 @@ Update an existing product.
 ---
 
 ### 6. Delete Product (Soft Delete)
+
 Soft delete a product by setting isActive to false.
 
 **Endpoint:** `DELETE /api/admin/products/:id`
 
 **Parameters:**
+
 - `id` - Product ID (integer)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -193,15 +213,18 @@ Soft delete a product by setting isActive to false.
 ---
 
 ### 7. Get Pricing Rules
+
 Get all pricing rules with optional filtering.
 
 **Endpoint:** `GET /api/admin/pricing-rules`
 
 **Query Parameters:**
+
 - `productId` (optional) - Filter by product ID
 - `isActive` (optional) - Filter by active status (true/false)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -244,22 +267,25 @@ Get all pricing rules with optional filtering.
 ## Client API Endpoints
 
 ### 8. List Active Products (Client)
+
 Get a list of all active products visible to clients.
 
 **Endpoint:** `GET /api/client/products`
 
 **Query Parameters:**
+
 - `category` (optional) - Filter by category ID
 - `search` (optional) - Search by product code
 
 **Response:**
+
 ```json
 {
   "success": true,
   "data": [
     {
       "id": 1,
-      "name": {"ru": "Классический чай", "zh": "经典茶"},
+      "name": { "ru": "Классический чай", "zh": "经典茶" },
       "basePrice": "299.00",
       "isActive": true
     }
@@ -272,21 +298,24 @@ Get a list of all active products visible to clients.
 ---
 
 ### 9. Get Product Details (Client)
+
 Get detailed information about a specific product (client view).
 
 **Endpoint:** `GET /api/client/products/:id`
 
 **Parameters:**
+
 - `id` - Product ID (integer)
 
 **Response:**
+
 ```json
 {
   "success": true,
   "data": {
     "id": 1,
-    "name": {"ru": "Классический чай", "zh": "经典茶"},
-    "description": {"ru": "Описание", "zh": "描述"},
+    "name": { "ru": "Классический чай", "zh": "经典茶" },
+    "description": { "ru": "Описание", "zh": "描述" },
     "basePrice": "299.00",
     "image": "/products/tea-001.jpg",
     "isActive": true
@@ -298,14 +327,17 @@ Get detailed information about a specific product (client view).
 ---
 
 ### 10. Calculate Product Price
+
 Calculate the final price for a product based on pricing rules.
 
 **Endpoint:** `POST /api/client/products/:id/calculate-price`
 
 **Parameters:**
+
 - `id` - Product ID (integer)
 
 **Request Body:**
+
 ```json
 {
   "userId": "user_123",
@@ -316,21 +348,22 @@ Calculate the final price for a product based on pricing rules.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
   "data": {
     "productId": "1",
-    "productName": {"ru": "Классический чай", "zh": "经典茶"},
-    "originalPrice": 299.00,
-    "finalPrice": 239.20,
-    "savedAmount": 59.80,
+    "productName": { "ru": "Классический чай", "zh": "经典茶" },
+    "originalPrice": 299.0,
+    "finalPrice": 239.2,
+    "savedAmount": 59.8,
     "appliedRules": [
       {
         "ruleId": "rule_001",
         "ruleName": "欢乐时光",
         "adjustmentType": "DISCOUNT_PERCENT",
-        "adjustmentValue": -59.80
+        "adjustmentValue": -59.8
       }
     ]
   },
@@ -341,14 +374,17 @@ Calculate the final price for a product based on pricing rules.
 ---
 
 ### 11. Get Page Layout
+
 Get the SDUI layout configuration for a specific page.
 
 **Endpoint:** `GET /api/client/layouts/:pageName`
 
 **Parameters:**
+
 - `pageName` - Page identifier (home, order, mall)
 
 **Response for Home Page:**
+
 ```json
 {
   "success": true,
@@ -386,6 +422,7 @@ Get the SDUI layout configuration for a specific page.
 ```
 
 **Response for Order Page:**
+
 ```json
 {
   "success": true,
@@ -409,6 +446,7 @@ Get the SDUI layout configuration for a specific page.
 ```
 
 **Response for Mall Page:**
+
 ```json
 {
   "success": true,
@@ -445,6 +483,7 @@ All endpoints return consistent error responses:
 ```
 
 **Common HTTP Status Codes:**
+
 - `200` - Success
 - `404` - Resource not found
 - `500` - Internal server error
