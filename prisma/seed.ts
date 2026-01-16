@@ -43,10 +43,7 @@ async function main() {
       VALUES (?, 'CHUCHUTEA', ?, 'HQ', 'Europe/Moscow', 'RUB', 'ACTIVE', NOW(), NOW())
       ON DUPLICATE KEY UPDATE updatedAt = NOW()
     `,
-      [
-        orgId,
-        JSON.stringify({ ru: "CHUCHUTEA", zh: "楚茶", en: "CHUCHUTEA" }),
-      ]
+      [orgId, JSON.stringify({ ru: "CHUCHUTEA", zh: "楚茶", en: "CHUCHUTEA" })]
     );
 
     // Get the actual org ID (in case it already existed)
@@ -54,7 +51,9 @@ async function main() {
       "SELECT id FROM organizations WHERE code = 'CHUCHUTEA' LIMIT 1"
     );
     const actualOrgId = (orgRows as mysql.RowDataPacket[])[0]?.id || orgId;
-    console.log("Organization created/updated: CHUCHUTEA (ID: " + actualOrgId + ")");
+    console.log(
+      "Organization created/updated: CHUCHUTEA (ID: " + actualOrgId + ")"
+    );
 
     // 2. Create store
     console.log("Creating store...");
@@ -84,7 +83,8 @@ async function main() {
     const [storeRows] = await connection.query<mysql.RowDataPacket[]>(
       "SELECT id FROM stores WHERE code = 'MOSCOW-001' LIMIT 1"
     );
-    const actualStoreId = (storeRows as mysql.RowDataPacket[])[0]?.id || storeId;
+    const actualStoreId =
+      (storeRows as mysql.RowDataPacket[])[0]?.id || storeId;
     console.log("Store created/exists: MOSCOW-001 (ID: " + actualStoreId + ")");
 
     // 3. Create admin user
@@ -190,7 +190,11 @@ async function main() {
       }
     }
     console.log(
-      "Created " + productsCreated + " new products (total: " + productIds.length + ")"
+      "Created " +
+        productsCreated +
+        " new products (total: " +
+        productIds.length +
+        ")"
     );
 
     // 5b. Create inventory records with low stock warnings
@@ -209,7 +213,9 @@ async function main() {
       inventoryCreated++;
     }
     console.log(
-      "Created " + inventoryCreated + " inventory records (4 with LOW STOCK warnings)"
+      "Created " +
+        inventoryCreated +
+        " inventory records (4 with LOW STOCK warnings)"
     );
 
     // 6. Create 60+ historical orders with realistic distribution
@@ -266,7 +272,9 @@ async function main() {
         );
       }
       console.log(
-        "Created " + ordersToCreate + " historical orders (distributed over 30 days)"
+        "Created " +
+          ordersToCreate +
+          " historical orders (distributed over 30 days)"
       );
     } else {
       console.log("Orders already exist (" + orderCount + " found)");
@@ -281,7 +289,8 @@ async function main() {
 
       // Random daily metrics
       const dailyOrders = Math.floor(Math.random() * 20) + 5;
-      const dailyRevenue = dailyOrders * (Math.floor(Math.random() * 200) + 300);
+      const dailyRevenue =
+        dailyOrders * (Math.floor(Math.random() * 200) + 300);
 
       await connection.query(
         `
