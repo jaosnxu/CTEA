@@ -17,7 +17,13 @@ export default function Order() {
   const [isSpecModalOpen, setIsSpecModalOpen] = useState(false);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
 
-  const { drinkCart, drinkCartCount } = useApp();
+  const {
+    drinkCart,
+    drinkCartCount,
+    products,
+    isLoadingProducts,
+    productsError,
+  } = useApp();
   const { t } = useLanguage();
 
   // Refs for scroll sync
@@ -163,6 +169,32 @@ export default function Order() {
             />
           </div>
         </div>
+
+        {/* Data Source Indicator */}
+        {!isLoadingProducts && products.length > 0 && (
+          <div className="bg-blue-50 border-b border-blue-200 px-4 py-3">
+            <p className="text-sm text-blue-800">
+              📦 数据来源: MySQL 数据库（{products.length} 款产品）
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              💡 后台修改后会自动刷新
+            </p>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isLoadingProducts && (
+          <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-3">
+            <p className="text-sm text-yellow-800">⏳ 正在加载产品数据...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {productsError && (
+          <div className="bg-red-50 border-b border-red-200 px-4 py-3">
+            <p className="text-sm text-red-800">❌ 加载失败: {productsError}</p>
+          </div>
+        )}
 
         {/* Main Content */}
         <div className="flex flex-1 overflow-hidden">

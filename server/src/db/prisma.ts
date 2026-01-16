@@ -4,8 +4,7 @@
  * Singleton pattern to ensure only one Prisma Client instance is created
  */
 
-import pkg from "@prisma/client";
-const { PrismaClient } = pkg;
+import { PrismaClient } from "@prisma/client";
 
 type PrismaClientType = InstanceType<typeof PrismaClient>;
 
