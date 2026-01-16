@@ -3,15 +3,106 @@
  * Tests for SDUI layout configuration API
  */
 
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { appRouter } from "../router";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  vi,
+  beforeEach,
+} from "vitest";
 import {
   DEFAULT_HOME_LAYOUT,
   DEFAULT_ORDER_LAYOUT,
   DEFAULT_MALL_LAYOUT,
 } from "@shared/types/layout";
 
+// In-memory storage for layout configs
+let layoutConfigsStore: any[] = [];
+let nextId = 1;
+
+// Mock database - must be before importing appRouter
+vi.mock("../../../db", () => ({
+  getDb: vi.fn().mockImplementation(async () => {
+    // Create a thenable chain that can be awaited at any point
+    const createSelectChain = () => {
+      const getResults = () => layoutConfigsStore.filter(c => c.isActive);
+
+      const chain: any = {
+        from: vi.fn().mockImplementation(() => chain),
+        where: vi.fn().mockImplementation(() => chain),
+        orderBy: vi.fn().mockImplementation(() => chain),
+        limit: vi.fn().mockImplementation(() => chain),
+        // Make the chain thenable so it can be awaited at any point
+        then: (resolve: any, reject: any) => {
+          return Promise.resolve(getResults()).then(resolve, reject);
+        },
+      };
+
+      return chain;
+    };
+
+    const createInsertChain = () => {
+      let insertData: any = null;
+
+      const chain: any = {
+        values: vi.fn().mockImplementation((data: any) => {
+          insertData = data;
+          return chain;
+        }),
+        $returningId: vi.fn().mockImplementation(() => {
+          if (insertData) {
+            const newConfig = {
+              id: nextId++,
+              page: insertData.page,
+              config: insertData.config,
+              version: insertData.version || 1,
+              isActive:
+                insertData.isActive !== undefined ? insertData.isActive : true,
+              createdBy: insertData.createdBy || "test",
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
+            layoutConfigsStore.push(newConfig);
+            return Promise.resolve([{ id: newConfig.id }]);
+          }
+          return Promise.resolve([{ id: nextId++ }]);
+        }),
+      };
+
+      return chain;
+    };
+
+    const createUpdateChain = () => {
+      const chain: any = {
+        set: vi.fn().mockImplementation(() => chain),
+        where: vi.fn().mockImplementation(() => chain),
+        then: (resolve: any, reject: any) => {
+          return Promise.resolve({ rowsAffected: 1 }).then(resolve, reject);
+        },
+      };
+
+      return chain;
+    };
+
+    return {
+      select: vi.fn().mockImplementation(() => createSelectChain()),
+      insert: vi.fn().mockImplementation(() => createInsertChain()),
+      update: vi.fn().mockImplementation(() => createUpdateChain()),
+    };
+  }),
+}));
+
+// Import appRouter after mocking
+import { appRouter } from "../router";
+
 describe("Layout Router", () => {
+  beforeEach(() => {
+    // Reset the in-memory store before each test
+    layoutConfigsStore = [];
+    nextId = 1;
+  });
   // Mock context for testing
   const mockContext = {
     user: {

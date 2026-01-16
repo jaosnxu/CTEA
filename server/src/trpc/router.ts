@@ -16,6 +16,7 @@ import { marketingRouter } from "./routers/marketing.router";
 import { productRouter } from "./routers/product.router";
 import { biRouter } from "./routers/bi.router";
 import { layoutRouter } from "./routers/layout.router";
+import { authRouter } from "./routers/auth.router";
 
 /**
  * 主 Router
@@ -32,6 +33,7 @@ export const appRouter = router({
   product: productRouter,
   bi: biRouter,
   layout: layoutRouter,
+  auth: authRouter,
 });
 
 /**
