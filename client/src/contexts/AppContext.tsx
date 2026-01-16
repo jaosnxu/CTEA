@@ -160,6 +160,11 @@ interface AppContextType {
   city: string;
   favorites: FavoriteItem[];
   giftCards: GiftCard[]; // 礼品卡列表
+  
+  // Database products
+  products: Product[];
+  isLoadingProducts: boolean;
+  productsError: string | null;
 
   // Actions
   setCity: (city: string) => void;
@@ -193,6 +198,7 @@ interface AppContextType {
     images?: string[]
   ) => void;
   reviews: OrderReview[]; // 评价列表
+  refreshProducts: () => Promise<void>; // Refresh products from API
 
   // 礼品卡方法
   purchaseGiftCard: (amount: number) => GiftCard;
@@ -562,6 +568,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [],
     "chutea_gift_cards"
   );
+
+  // Database products state
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [productsError, setProductsError] = useState<string | null>(null);
+
+  // Load products from API
+  const refreshProducts = async () => {
+    try {
+      setIsLoadingProducts(true);
+      setProductsError(null);
+      
+      const response = await fetch('/api/client/products');
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        setProducts(result.data);
+        console.log('✅ [数据库] 已加载', result.data.length, '款产品');
+      } else {
+        setProductsError('Failed to load products');
+        console.error('❌ [数据库] 加载产品失败');
+      }
+    } catch (error) {
+      setProductsError(error instanceof Error ? error.message : 'Unknown error');
+      console.error('❌ [数据库] 加载产品出错:', error);
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
+
+  // Load products on mount
+  useEffect(() => {
+    refreshProducts();
+  }, []);
 
   // Drink Cart Actions
   const addToDrinkCart = (item: Partial<CartItem> & { productId: string }) => {
@@ -1007,6 +1047,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         favorites,
         giftCards,
         reviews,
+        products,
+        isLoadingProducts,
+        productsError,
         setCity,
         addToDrinkCart,
         updateDrinkCartQuantity,
@@ -1028,6 +1071,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         removeFromFavorites,
         isFavorite,
         addReview,
+        refreshProducts,
         purchaseGiftCard,
         transferGiftCard,
         useGiftCard,
