@@ -17,13 +17,13 @@ CTEA uses Winston for structured logging with support for multiple log levels, f
 
 ## Log Levels
 
-| Level | Usage | Examples |
-|-------|-------|----------|
-| `error` | System errors, exceptions | Failed database connections, unhandled errors |
-| `warn` | Warning conditions | Deprecated API usage, missing optional config |
-| `info` | General information | Server started, user logged in, operation completed |
-| `http` | HTTP requests/responses | API calls, request details |
-| `debug` | Detailed debugging | Query execution details, internal state |
+| Level   | Usage                     | Examples                                            |
+| ------- | ------------------------- | --------------------------------------------------- |
+| `error` | System errors, exceptions | Failed database connections, unhandled errors       |
+| `warn`  | Warning conditions        | Deprecated API usage, missing optional config       |
+| `info`  | General information       | Server started, user logged in, operation completed |
+| `http`  | HTTP requests/responses   | API calls, request details                          |
+| `debug` | Detailed debugging        | Query execution details, internal state             |
 
 ## Configuration
 
@@ -51,6 +51,7 @@ logs/
 ```
 
 **Retention Policy:**
+
 - Combined logs: 14 days
 - Error logs: 30 days
 - Max file size: 20MB (auto-rotates)
@@ -60,62 +61,65 @@ logs/
 ### Basic Logging
 
 ```typescript
-import { createLogger } from './server/src/utils/logger';
+import { createLogger } from "./server/src/utils/logger";
 
-const logger = createLogger('ModuleName');
+const logger = createLogger("ModuleName");
 
 // Log messages at different levels
-logger.info('User logged in', { userId: '123' });
-logger.warn('Cache miss', { key: 'user:123' });
-logger.error('Database connection failed', error, { host: 'db.example.com' });
-logger.debug('Query executed', { sql: 'SELECT * FROM users', duration: '15ms' });
+logger.info("User logged in", { userId: "123" });
+logger.warn("Cache miss", { key: "user:123" });
+logger.error("Database connection failed", error, { host: "db.example.com" });
+logger.debug("Query executed", {
+  sql: "SELECT * FROM users",
+  duration: "15ms",
+});
 ```
 
 ### Request Context Logging
 
 ```typescript
-import { createLogger } from './server/src/utils/logger';
+import { createLogger } from "./server/src/utils/logger";
 
-const logger = createLogger('API');
+const logger = createLogger("API");
 
 // Create logger with request context
 const requestLogger = logger.withRequest(requestId, userId);
 
-requestLogger.info('Processing request', { 
-  endpoint: '/api/orders',
-  method: 'POST'
+requestLogger.info("Processing request", {
+  endpoint: "/api/orders",
+  method: "POST",
 });
 ```
 
 ### Child Loggers
 
 ```typescript
-import { createLogger } from './server/src/utils/logger';
+import { createLogger } from "./server/src/utils/logger";
 
-const dbLogger = createLogger('Database');
+const dbLogger = createLogger("Database");
 
 // Create child logger for more specific context
-const queryLogger = dbLogger.child('Query');
-const migrationLogger = dbLogger.child('Migration');
+const queryLogger = dbLogger.child("Query");
+const migrationLogger = dbLogger.child("Migration");
 
-queryLogger.info('Executing query', { sql: 'SELECT * FROM users' });
-migrationLogger.info('Running migration', { version: '001' });
+queryLogger.info("Executing query", { sql: "SELECT * FROM users" });
+migrationLogger.info("Running migration", { version: "001" });
 ```
 
 ### Error Logging
 
 ```typescript
-import { createLogger } from './server/src/utils/logger';
+import { createLogger } from "./server/src/utils/logger";
 
-const logger = createLogger('ErrorHandler');
+const logger = createLogger("ErrorHandler");
 
 try {
   // Some operation
 } catch (error) {
   // Logs error with full stack trace
-  logger.error('Operation failed', error as Error, {
-    operation: 'userRegistration',
-    userId: '123'
+  logger.error("Operation failed", error as Error, {
+    operation: "userRegistration",
+    userId: "123",
   });
 }
 ```
@@ -126,13 +130,17 @@ The logging middleware automatically logs all HTTP requests:
 
 ```typescript
 // Automatically added in server/_core/index.ts
-import { loggingMiddleware, requestIdMiddleware } from './src/middleware/logging-middleware';
+import {
+  loggingMiddleware,
+  requestIdMiddleware,
+} from "./src/middleware/logging-middleware";
 
-app.use(requestIdMiddleware);  // Adds X-Request-ID header
-app.use(loggingMiddleware);    // Logs all requests
+app.use(requestIdMiddleware); // Adds X-Request-ID header
+app.use(loggingMiddleware); // Logs all requests
 ```
 
 **Request Log Format:**
+
 ```json
 {
   "timestamp": "2026-01-16 15:30:00",
@@ -148,6 +156,7 @@ app.use(loggingMiddleware);    // Logs all requests
 ```
 
 **Response Log Format:**
+
 ```json
 {
   "timestamp": "2026-01-16 15:30:01",
@@ -167,16 +176,16 @@ app.use(loggingMiddleware);    // Logs all requests
 The logging system integrates seamlessly with CTEA's existing audit logging:
 
 ```typescript
-import { createLogger } from './server/src/utils/logger';
+import { createLogger } from "./server/src/utils/logger";
 
-const logger = createLogger('AuditLog');
+const logger = createLogger("AuditLog");
 
 // Audit events are logged with structured context
-logger.info('Audit event registered', {
-  eventId: 'EVT-20260116-000001',
-  tableName: 'orders',
-  recordId: '123',
-  action: 'INSERT'
+logger.info("Audit event registered", {
+  eventId: "EVT-20260116-000001",
+  tableName: "orders",
+  recordId: "123",
+  action: "INSERT",
 });
 ```
 
@@ -210,55 +219,55 @@ logger.info('Audit event registered', {
 
 ```typescript
 // ✅ Good
-logger.error('Failed to save order', error);
-logger.warn('Product stock low', { productId: '123', stock: 5 });
-logger.info('Order created', { orderId: '456' });
-logger.debug('Cache lookup', { key: 'order:456', hit: true });
+logger.error("Failed to save order", error);
+logger.warn("Product stock low", { productId: "123", stock: 5 });
+logger.info("Order created", { orderId: "456" });
+logger.debug("Cache lookup", { key: "order:456", hit: true });
 
 // ❌ Bad
-logger.info('Error occurred');  // Should be error level
-logger.error('User clicked button');  // Should be debug or not logged
+logger.info("Error occurred"); // Should be error level
+logger.error("User clicked button"); // Should be debug or not logged
 ```
 
 ### 2. Include Relevant Context
 
 ```typescript
 // ✅ Good
-logger.error('Database query failed', error, {
-  query: 'SELECT * FROM orders',
-  database: 'main',
-  userId: '123'
+logger.error("Database query failed", error, {
+  query: "SELECT * FROM orders",
+  database: "main",
+  userId: "123",
 });
 
 // ❌ Bad
-logger.error('Query failed');  // Missing context
+logger.error("Query failed"); // Missing context
 ```
 
 ### 3. Use Structured Metadata
 
 ```typescript
 // ✅ Good
-logger.info('Payment processed', {
-  orderId: '123',
-  amount: 50.00,
-  currency: 'USD',
-  paymentMethod: 'card'
+logger.info("Payment processed", {
+  orderId: "123",
+  amount: 50.0,
+  currency: "USD",
+  paymentMethod: "card",
 });
 
 // ❌ Bad
-logger.info(`Payment processed: order 123, $50.00`);  // Harder to parse
+logger.info(`Payment processed: order 123, $50.00`); // Harder to parse
 ```
 
 ### 4. Don't Log Sensitive Information
 
 ```typescript
 // ✅ Good
-logger.info('User authenticated', { userId: '123' });
+logger.info("User authenticated", { userId: "123" });
 
 // ❌ Bad
-logger.info('User authenticated', { 
-  userId: '123',
-  password: 'secret123'  // Never log passwords!
+logger.info("User authenticated", {
+  userId: "123",
+  password: "secret123", // Never log passwords!
 });
 ```
 
@@ -271,6 +280,7 @@ npx tsx server/test-logging.ts
 ```
 
 This will test:
+
 - Default logger
 - Context logger
 - Request context logger
@@ -284,7 +294,8 @@ This will test:
 
 **Issue**: Logs show in console but not in files
 
-**Solution**: 
+**Solution**:
+
 - Check `NODE_ENV` is set to `production` for combined logs
 - Error logs are always written to files
 - Ensure `logs/` directory permissions are correct
@@ -294,10 +305,11 @@ This will test:
 **Issue**: Log files using too much disk space
 
 **Solution**:
+
 - Logs automatically rotate daily
 - Adjust retention in `server/src/utils/logger.ts`:
   ```typescript
-  maxFiles: '7d'  // Keep logs for 7 days instead of 14
+  maxFiles: "7d"; // Keep logs for 7 days instead of 14
   ```
 
 ### Performance Impact
@@ -305,6 +317,7 @@ This will test:
 **Issue**: Concerned about logging performance
 
 **Solution**:
+
 - Logging is asynchronous and non-blocking
 - File writes are buffered
 - Adjust log level in production:
@@ -318,17 +331,17 @@ If you have existing code using `console.log`, migrate to structured logging:
 
 ```typescript
 // Before
-console.log('[Auth] User logged in:', userId);
-console.error('[Database] Connection failed:', error);
+console.log("[Auth] User logged in:", userId);
+console.error("[Database] Connection failed:", error);
 
 // After
-import { createLogger } from './server/src/utils/logger';
+import { createLogger } from "./server/src/utils/logger";
 
-const logger = createLogger('Auth');
-logger.info('User logged in', { userId });
+const logger = createLogger("Auth");
+logger.info("User logged in", { userId });
 
-const dbLogger = createLogger('Database');
-dbLogger.error('Connection failed', error);
+const dbLogger = createLogger("Database");
+dbLogger.error("Connection failed", error);
 ```
 
 ## Examples
@@ -336,33 +349,33 @@ dbLogger.error('Connection failed', error);
 ### Example 1: API Endpoint
 
 ```typescript
-import { createLogger } from './server/src/utils/logger';
+import { createLogger } from "./server/src/utils/logger";
 
-const logger = createLogger('OrderAPI');
+const logger = createLogger("OrderAPI");
 
 export async function createOrder(req, res) {
   const requestLogger = logger.withRequest(req.id, req.user?.id);
-  
+
   try {
-    requestLogger.info('Creating order', { 
+    requestLogger.info("Creating order", {
       items: req.body.items.length,
-      total: req.body.total
+      total: req.body.total,
     });
-    
+
     const order = await orderService.create(req.body);
-    
-    requestLogger.info('Order created successfully', {
+
+    requestLogger.info("Order created successfully", {
       orderId: order.id,
-      total: order.total
+      total: order.total,
     });
-    
+
     res.json(order);
   } catch (error) {
-    requestLogger.error('Failed to create order', error, {
+    requestLogger.error("Failed to create order", error, {
       userId: req.user?.id,
-      items: req.body.items
+      items: req.body.items,
     });
-    res.status(500).json({ error: 'Failed to create order' });
+    res.status(500).json({ error: "Failed to create order" });
   }
 }
 ```
@@ -370,31 +383,31 @@ export async function createOrder(req, res) {
 ### Example 2: Background Job
 
 ```typescript
-import { createLogger } from './server/src/utils/logger';
+import { createLogger } from "./server/src/utils/logger";
 
-const logger = createLogger('Jobs');
+const logger = createLogger("Jobs");
 
 export async function processPayments() {
-  const jobLogger = logger.child('PaymentProcessor');
-  
-  jobLogger.info('Starting payment processing job');
-  
+  const jobLogger = logger.child("PaymentProcessor");
+
+  jobLogger.info("Starting payment processing job");
+
   const pendingPayments = await getPendingPayments();
-  jobLogger.info('Found pending payments', { count: pendingPayments.length });
-  
+  jobLogger.info("Found pending payments", { count: pendingPayments.length });
+
   for (const payment of pendingPayments) {
     try {
       await processPayment(payment);
-      jobLogger.debug('Payment processed', { paymentId: payment.id });
+      jobLogger.debug("Payment processed", { paymentId: payment.id });
     } catch (error) {
-      jobLogger.error('Payment processing failed', error, {
+      jobLogger.error("Payment processing failed", error, {
         paymentId: payment.id,
-        amount: payment.amount
+        amount: payment.amount,
       });
     }
   }
-  
-  jobLogger.info('Payment processing job completed');
+
+  jobLogger.info("Payment processing job completed");
 }
 ```
 

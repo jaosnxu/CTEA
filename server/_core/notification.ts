@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { ENV } from "./env";
 import { createLogger } from "../src/utils/logger";
 
-const logger = createLogger('Notification');
+const logger = createLogger("Notification");
 
 export type NotificationPayload = {
   title: string;
@@ -99,11 +99,14 @@ export async function notifyOwner(
 
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
-      logger.warn(`Failed to notify owner (${response.status} ${response.statusText})`, {
-        status: response.status,
-        statusText: response.statusText,
-        detail
-      });
+      logger.warn(
+        `Failed to notify owner (${response.status} ${response.statusText})`,
+        {
+          status: response.status,
+          statusText: response.statusText,
+          detail,
+        }
+      );
       return false;
     }
 

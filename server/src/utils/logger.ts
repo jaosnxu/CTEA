@@ -1,6 +1,6 @@
 /**
  * Centralized Logging Service for CTEA
- * 
+ *
  * Features:
  * - Structured logging with Winston
  * - Multiple log levels (error, warn, info, http, debug)
@@ -10,16 +10,16 @@
  * - Production and development configurations
  */
 
-import winston from 'winston';
-import DailyRotateFile from 'winston-daily-rotate-file';
-import path from 'path';
+import winston from "winston";
+import DailyRotateFile from "winston-daily-rotate-file";
+import path from "path";
 
-const logDir = process.env.LOG_DIR || 'logs';
-const isProduction = process.env.NODE_ENV === 'production';
+const logDir = process.env.LOG_DIR || "logs";
+const isProduction = process.env.NODE_ENV === "production";
 
 // Define log format
 const logFormat = winston.format.combine(
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+  winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
   winston.format.errors({ stack: true }),
   winston.format.metadata(),
   winston.format.json()
@@ -28,7 +28,7 @@ const logFormat = winston.format.combine(
 // Helper function to format metadata
 const formatMetadata = (meta: any): string => {
   if (!meta.metadata || Object.keys(meta.metadata).length === 0) {
-    return '';
+    return "";
   }
   return `\n${JSON.stringify(meta.metadata, null, 2)}`;
 };
@@ -36,7 +36,7 @@ const formatMetadata = (meta: any): string => {
 // Console format for development (pretty print)
 const consoleFormat = winston.format.combine(
   winston.format.colorize(),
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+  winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
   winston.format.printf(({ timestamp, level, message, ...meta }) => {
     const metaStr = formatMetadata(meta);
     return `${timestamp} [${level}]: ${message}${metaStr}`;
@@ -50,7 +50,7 @@ const transports: winston.transport[] = [];
 transports.push(
   new winston.transports.Console({
     format: isProduction ? logFormat : consoleFormat,
-    level: process.env.LOG_LEVEL || (isProduction ? 'info' : 'debug'),
+    level: process.env.LOG_LEVEL || (isProduction ? "info" : "debug"),
   })
 );
 
@@ -58,12 +58,12 @@ transports.push(
 if (isProduction) {
   transports.push(
     new DailyRotateFile({
-      filename: path.join(logDir, 'combined-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
-      maxSize: '20m',
-      maxFiles: '14d',
+      filename: path.join(logDir, "combined-%DATE%.log"),
+      datePattern: "YYYY-MM-DD",
+      maxSize: "20m",
+      maxFiles: "14d",
       format: logFormat,
-      level: 'info',
+      level: "info",
     })
   );
 }
@@ -71,18 +71,18 @@ if (isProduction) {
 // File transport for error logs
 transports.push(
   new DailyRotateFile({
-    filename: path.join(logDir, 'error-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    maxSize: '20m',
-    maxFiles: '30d',
+    filename: path.join(logDir, "error-%DATE%.log"),
+    datePattern: "YYYY-MM-DD",
+    maxSize: "20m",
+    maxFiles: "30d",
     format: logFormat,
-    level: 'error',
+    level: "error",
   })
 );
 
 // Create the logger
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || (isProduction ? 'info' : 'debug'),
+  level: process.env.LOG_LEVEL || (isProduction ? "info" : "debug"),
   format: logFormat,
   transports,
   exitOnError: false,
@@ -123,29 +123,32 @@ export class Logger {
   error(message: string, error?: Error | any, meta?: any) {
     const errorMeta = {
       ...meta,
-      error: error instanceof Error ? {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      } : error,
+      error:
+        error instanceof Error
+          ? {
+              message: error.message,
+              stack: error.stack,
+              name: error.name,
+            }
+          : error,
     };
-    this.log('error', message, errorMeta);
+    this.log("error", message, errorMeta);
   }
 
   warn(message: string, meta?: any) {
-    this.log('warn', message, meta);
+    this.log("warn", message, meta);
   }
 
   info(message: string, meta?: any) {
-    this.log('info', message, meta);
+    this.log("info", message, meta);
   }
 
   debug(message: string, meta?: any) {
-    this.log('debug', message, meta);
+    this.log("debug", message, meta);
   }
 
   http(message: string, meta?: any) {
-    this.log('http', message, meta);
+    this.log("http", message, meta);
   }
 
   /**

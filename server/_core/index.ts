@@ -11,14 +11,14 @@ import { adminAppRouter } from "../src/trpc/admin-app-router";
 import { createContext as createAdminContext } from "../src/trpc/context";
 import { serveStatic, setupVite } from "./vite";
 import { createLogger } from "../src/utils/logger";
-import { 
-  loggingMiddleware, 
+import {
+  loggingMiddleware,
   errorLoggingMiddleware,
-  requestIdMiddleware 
+  requestIdMiddleware,
 } from "../src/middleware/logging-middleware";
 
 // Initialize logger
-const logger = createLogger('Server');
+const logger = createLogger("Server");
 
 // Node.js version compatibility check
 const nodeVersion = process.versions.node;
@@ -213,14 +213,14 @@ async function startServer() {
   if (port !== preferredPort) {
     logger.warn(`Port ${preferredPort} is busy, using port ${port} instead`, {
       preferredPort,
-      actualPort: port
+      actualPort: port,
     });
   }
 
   server.listen(port, () => {
     logger.info(`Server running on http://localhost:${port}/`, {
       port,
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || "development",
     });
 
     // Start background sync for local orders
@@ -228,7 +228,7 @@ async function startServer() {
   });
 }
 
-startServer().catch((error) => {
-  logger.error('Failed to start server', error);
+startServer().catch(error => {
+  logger.error("Failed to start server", error);
   process.exit(1);
 });
