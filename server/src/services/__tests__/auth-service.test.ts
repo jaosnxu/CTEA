@@ -16,13 +16,15 @@ const mockExecute = vi.fn();
 const getSqlString = (query: any): string => {
   if (typeof query === "string") return query;
   if (query && query.queryChunks) {
-    return query.queryChunks.map((chunk: any) => {
-      if (typeof chunk === "string") return chunk;
-      if (chunk && chunk.value && Array.isArray(chunk.value)) {
-        return chunk.value.join("");
-      }
-      return "[param]";
-    }).join("");
+    return query.queryChunks
+      .map((chunk: any) => {
+        if (typeof chunk === "string") return chunk;
+        if (chunk && chunk.value && Array.isArray(chunk.value)) {
+          return chunk.value.join("");
+        }
+        return "[param]";
+      })
+      .join("");
   }
   if (query && query.sql) {
     return Array.isArray(query.sql) ? query.sql.join("") : query.sql;
