@@ -10,6 +10,15 @@ import { createContext } from "./context";
 import { adminAppRouter } from "../src/trpc/admin-app-router";
 import { createContext as createAdminContext } from "../src/trpc/context";
 import { serveStatic, setupVite } from "./vite";
+import { createLogger } from "../src/utils/logger";
+import { 
+  loggingMiddleware, 
+  errorLoggingMiddleware,
+  requestIdMiddleware 
+} from "../src/middleware/logging-middleware";
+
+// Initialize logger
+const logger = createLogger('Server');
 
 // 业务 API 路由
 import withdrawalsRouter from "../src/routes/withdrawals";
@@ -65,14 +74,14 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // 全局请求日志
-  app.use((req, res, next) => {
-    console.log(`[Global Request] ${req.method} ${req.url}`);
-    next();
-  });
+  // Request ID middleware (add request ID to all requests)
+  app.use(requestIdMiddleware);
+
+  // Logging middleware (replaces simple console.log)
+  app.use(loggingMiddleware);
 
   app.get("/api/test", (req, res) => {
-    console.log("[Test Route] Hit!");
+    logger.info("Test route accessed");
     res.json({ success: true, message: "API is working" });
   });
 
@@ -134,18 +143,28 @@ async function startServer() {
     serveStatic(app);
   }
 
-  // development mode uses Vite, production mode uses static files
+  // Error logging middleware (must be after all routes)
+  app.use(errorLoggingMiddleware);
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
 
   if (port !== preferredPort) {
-    console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
+    logger.warn(`Port ${preferredPort} is busy, using port ${port} instead`, {
+      preferredPort,
+      actualPort: port
+    });
   }
 
   server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
+    logger.info(`Server running on http://localhost:${port}/`, {
+      port,
+      environment: process.env.NODE_ENV || 'development'
+    });
   });
 }
 
-startServer().catch(console.error);
+startServer().catch((error) => {
+  logger.error('Failed to start server', error);
+  process.exit(1);
+});
