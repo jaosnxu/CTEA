@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { appRouter } from "../routers";
+import { appRouter } from "../router";
 import {
   DEFAULT_HOME_LAYOUT,
   DEFAULT_ORDER_LAYOUT,

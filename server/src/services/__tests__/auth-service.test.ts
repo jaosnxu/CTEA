@@ -44,34 +44,35 @@ describe("AuthService - 用户体系与身份认证测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
-        // 查找用户 - 返回空（用户不存在）
-        if (query.includes("SELECT") && query.includes("FROM users")) {
-          if (query.includes("WHERE phone")) {
-            return Promise.resolve([[]]);
-          }
-          if (query.includes("WHERE id")) {
-            return Promise.resolve([
-              [
-                {
-                  id: 1,
-                  phone: "+79001234567",
-                  nickname: "Гость4567",
-                  avatar: null,
-                  status: "ACTIVE",
-                  last_login_at: new Date(),
-                  last_login_ip: "192.168.1.100",
-                  login_count: 1,
-                  created_at: new Date(),
-                  updated_at: new Date(),
-                },
-              ],
-            ]);
-          }
+      let callCount = 0;
+      mockExecute.mockImplementation(() => {
+        callCount++;
+        // First call: 查找用户 - 返回空（用户不存在）
+        if (callCount === 1) {
+          return Promise.resolve([[]]);
         }
-        // 创建用户
-        if (query.includes("INSERT INTO users")) {
+        // Second call: 创建用户
+        if (callCount === 2) {
           return Promise.resolve([{ insertId: 1 }]);
+        }
+        // Third call: 查找新创建的用户
+        if (callCount === 3) {
+          return Promise.resolve([
+            [
+              {
+                id: 1,
+                phone: "+79001234567",
+                nickname: "Гость4567",
+                avatar: null,
+                status: "ACTIVE",
+                last_login_at: new Date(),
+                last_login_ip: "192.168.1.100",
+                login_count: 1,
+                created_at: new Date(),
+                updated_at: new Date(),
+              },
+            ],
+          ]);
         }
         return Promise.resolve([[]]);
       });
@@ -112,32 +113,30 @@ describe("AuthService - 用户体系与身份认证测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
-        // 查找用户 - 返回已存在用户
-        if (
-          query.includes("SELECT") &&
-          query.includes("FROM users") &&
-          query.includes("WHERE phone")
-        ) {
+      let callCount = 0;
+      mockExecute.mockImplementation(() => {
+        callCount++;
+        // First call: 查找用户 - 返回已存在用户
+        if (callCount === 1) {
           return Promise.resolve([
             [
               {
                 id: 1,
                 phone: "+79001234567",
                 nickname: "Иван",
-                avatar: "https://example.com/avatar.jpg",
+                avatar: null,
                 status: "ACTIVE",
-                last_login_at: new Date(Date.now() - 86400000), // 1天前
-                last_login_ip: "192.168.1.50",
+                last_login_at: new Date(),
+                last_login_ip: "192.168.1.100",
                 login_count: 5,
-                created_at: new Date(Date.now() - 7 * 86400000), // 7天前
+                created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
                 updated_at: new Date(),
               },
             ],
           ]);
         }
-        // 更新登录信息
-        if (query.includes("UPDATE users")) {
+        // Second call: 更新 last_login
+        if (callCount === 2) {
           return Promise.resolve([{ affectedRows: 1 }]);
         }
         return Promise.resolve([[]]);
