@@ -1,5 +1,8 @@
-import React from 'react';
-import { ProductFormData, StoreInventory } from '../../../types/product-editor.types';
+import React from "react";
+import {
+  ProductFormData,
+  StoreInventory,
+} from "../../../types/product-editor.types";
 
 interface Props {
   data: ProductFormData;
@@ -8,10 +11,10 @@ interface Props {
 
 // 模拟的门店列表
 const AVAILABLE_STORES = [
-  { id: 'store_1', name: '莫斯科旗舰店' },
-  { id: 'store_2', name: '圣彼得堡分店' },
-  { id: 'store_3', name: '喀山分店' },
-  { id: 'store_4', name: '叶卡捷琳堡分店' },
+  { id: "store_1", name: "莫斯科旗舰店" },
+  { id: "store_2", name: "圣彼得堡分店" },
+  { id: "store_3", name: "喀山分店" },
+  { id: "store_4", name: "叶卡捷琳堡分店" },
 ];
 
 export default function InventoryTab({ data, onChange }: Props) {
@@ -37,7 +40,7 @@ export default function InventoryTab({ data, onChange }: Props) {
   };
 
   const availableStores = AVAILABLE_STORES.filter(
-    (store) => !data.inventory.some((inv) => inv.storeId === store.id)
+    store => !data.inventory.some(inv => inv.storeId === store.id)
   );
 
   return (
@@ -55,7 +58,7 @@ export default function InventoryTab({ data, onChange }: Props) {
               + 添加门店
             </button>
             <div className="hidden group-hover:block absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-              {availableStores.map((store) => (
+              {availableStores.map(store => (
                 <button
                   key={store.id}
                   onClick={() => addStore(store.id, store.name)}
@@ -92,7 +95,10 @@ export default function InventoryTab({ data, onChange }: Props) {
             <div className="bg-orange-50 rounded-lg p-4">
               <div className="text-sm text-gray-600">库存预警</div>
               <div className="text-2xl font-bold text-orange-600 mt-1">
-                {data.inventory.filter((inv) => inv.stock <= inv.lowStockAlert).length}
+                {
+                  data.inventory.filter(inv => inv.stock <= inv.lowStockAlert)
+                    .length
+                }
               </div>
             </div>
           </div>
@@ -104,8 +110,8 @@ export default function InventoryTab({ data, onChange }: Props) {
                 key={inventory.storeId}
                 className={`border rounded-lg p-4 ${
                   inventory.stock <= inventory.lowStockAlert
-                    ? 'border-orange-300 bg-orange-50'
-                    : 'border-gray-200'
+                    ? "border-orange-300 bg-orange-50"
+                    : "border-gray-200"
                 }`}
               >
                 <div className="flex items-center gap-4">
@@ -129,8 +135,10 @@ export default function InventoryTab({ data, onChange }: Props) {
                       <input
                         type="number"
                         value={inventory.stock}
-                        onChange={(e) =>
-                          updateInventory(index, { stock: parseInt(e.target.value) || 0 })
+                        onChange={e =>
+                          updateInventory(index, {
+                            stock: parseInt(e.target.value) || 0,
+                          })
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                         placeholder="0"
@@ -145,7 +153,7 @@ export default function InventoryTab({ data, onChange }: Props) {
                       <input
                         type="number"
                         value={inventory.lowStockAlert}
-                        onChange={(e) =>
+                        onChange={e =>
                           updateInventory(index, {
                             lowStockAlert: parseInt(e.target.value) || 0,
                           })

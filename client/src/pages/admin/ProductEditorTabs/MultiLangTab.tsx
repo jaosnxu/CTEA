@@ -1,5 +1,5 @@
-import React from 'react';
-import { ProductFormData } from '../../../types/product-editor.types';
+import React from "react";
+import { ProductFormData } from "../../../types/product-editor.types";
 
 interface Props {
   data: ProductFormData;
@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function MultiLangTab({ data, onChange }: Props) {
-  const updateNameLang = (lang: 'zh' | 'ru' | 'en', value: string) => {
+  const updateNameLang = (lang: "zh" | "ru" | "en", value: string) => {
     onChange({
       nameMultiLang: {
         ...data.nameMultiLang,
@@ -16,7 +16,7 @@ export default function MultiLangTab({ data, onChange }: Props) {
     });
   };
 
-  const updateDescLang = (lang: 'zh' | 'ru' | 'en', value: string) => {
+  const updateDescLang = (lang: "zh" | "ru" | "en", value: string) => {
     onChange({
       descriptionMultiLang: {
         ...data.descriptionMultiLang,
@@ -39,8 +39,8 @@ export default function MultiLangTab({ data, onChange }: Props) {
             </label>
             <input
               type="text"
-              value={data.nameMultiLang.zh || ''}
-              onChange={(e) => updateNameLang('zh', e.target.value)}
+              value={data.nameMultiLang.zh || ""}
+              onChange={e => updateNameLang("zh", e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               placeholder="多肉葡萄"
             />
@@ -50,8 +50,8 @@ export default function MultiLangTab({ data, onChange }: Props) {
               产品描述
             </label>
             <textarea
-              value={data.descriptionMultiLang.zh || ''}
-              onChange={(e) => updateDescLang('zh', e.target.value)}
+              value={data.descriptionMultiLang.zh || ""}
+              onChange={e => updateDescLang("zh", e.target.value)}
               rows={3}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               placeholder="新鲜葡萄搭配Q弹果肉，酸甜可口"
@@ -72,8 +72,8 @@ export default function MultiLangTab({ data, onChange }: Props) {
             </label>
             <input
               type="text"
-              value={data.nameMultiLang.ru || ''}
-              onChange={(e) => updateNameLang('ru', e.target.value)}
+              value={data.nameMultiLang.ru || ""}
+              onChange={e => updateNameLang("ru", e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               placeholder="Виноградный фреш с желе"
             />
@@ -83,8 +83,8 @@ export default function MultiLangTab({ data, onChange }: Props) {
               Описание
             </label>
             <textarea
-              value={data.descriptionMultiLang.ru || ''}
-              onChange={(e) => updateDescLang('ru', e.target.value)}
+              value={data.descriptionMultiLang.ru || ""}
+              onChange={e => updateDescLang("ru", e.target.value)}
               rows={3}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               placeholder="Свежий виноград с желе"
@@ -105,8 +105,8 @@ export default function MultiLangTab({ data, onChange }: Props) {
             </label>
             <input
               type="text"
-              value={data.nameMultiLang.en || ''}
-              onChange={(e) => updateNameLang('en', e.target.value)}
+              value={data.nameMultiLang.en || ""}
+              onChange={e => updateNameLang("en", e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               placeholder="Grape Jelly Drink"
             />
@@ -116,8 +116,8 @@ export default function MultiLangTab({ data, onChange }: Props) {
               Description
             </label>
             <textarea
-              value={data.descriptionMultiLang.en || ''}
-              onChange={(e) => updateDescLang('en', e.target.value)}
+              value={data.descriptionMultiLang.en || ""}
+              onChange={e => updateDescLang("en", e.target.value)}
               rows={3}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               placeholder="Fresh grape with jelly"

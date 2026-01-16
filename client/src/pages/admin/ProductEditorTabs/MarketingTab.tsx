@@ -1,5 +1,8 @@
-import React from 'react';
-import { ProductFormData, MemberDiscount } from '../../../types/product-editor.types';
+import React from "react";
+import {
+  ProductFormData,
+  MemberDiscount,
+} from "../../../types/product-editor.types";
 
 interface Props {
   data: ProductFormData;
@@ -7,27 +10,27 @@ interface Props {
 }
 
 const MEMBER_LEVELS = [
-  { level: 'REGULAR', label: '普通会员', icon: '👤' },
-  { level: 'SILVER', label: '银卡会员', icon: '🥈' },
-  { level: 'GOLD', label: '金卡会员', icon: '🥇' },
-  { level: 'PLATINUM', label: '白金会员', icon: '💎' },
+  { level: "REGULAR", label: "普通会员", icon: "👤" },
+  { level: "SILVER", label: "银卡会员", icon: "🥈" },
+  { level: "GOLD", label: "金卡会员", icon: "🥇" },
+  { level: "PLATINUM", label: "白金会员", icon: "💎" },
 ] as const;
 
 // 模拟的优惠券列表
 const AVAILABLE_COUPONS = [
-  { id: 'coupon_1', name: '新品尝鲜券', discount: '立减 50₽' },
-  { id: 'coupon_2', name: '满减优惠券', discount: '满 200 减 30' },
-  { id: 'coupon_3', name: '折扣券', discount: '9 折' },
-  { id: 'coupon_4', name: '会员专享券', discount: '8.5 折' },
+  { id: "coupon_1", name: "新品尝鲜券", discount: "立减 50₽" },
+  { id: "coupon_2", name: "满减优惠券", discount: "满 200 减 30" },
+  { id: "coupon_3", name: "折扣券", discount: "9 折" },
+  { id: "coupon_4", name: "会员专享券", discount: "8.5 折" },
 ];
 
 export default function MarketingTab({ data, onChange }: Props) {
   const updateMemberDiscount = (
-    level: MemberDiscount['level'],
+    level: MemberDiscount["level"],
     discountPercent: number
   ) => {
     const newDiscounts = [...(data.memberDiscounts || [])];
-    const existingIndex = newDiscounts.findIndex((d) => d.level === level);
+    const existingIndex = newDiscounts.findIndex(d => d.level === level);
 
     if (existingIndex >= 0) {
       if (discountPercent === 0) {
@@ -43,15 +46,15 @@ export default function MarketingTab({ data, onChange }: Props) {
     onChange({ memberDiscounts: newDiscounts });
   };
 
-  const getMemberDiscount = (level: MemberDiscount['level']): number => {
-    const discount = (data.memberDiscounts || []).find((d) => d.level === level);
+  const getMemberDiscount = (level: MemberDiscount["level"]): number => {
+    const discount = (data.memberDiscounts || []).find(d => d.level === level);
     return discount?.discountPercent || 0;
   };
 
   const toggleCoupon = (couponId: string) => {
     const currentCoupons = data.couponIds || [];
     const newCoupons = currentCoupons.includes(couponId)
-      ? currentCoupons.filter((id) => id !== couponId)
+      ? currentCoupons.filter(id => id !== couponId)
       : [...currentCoupons, couponId];
     onChange({ couponIds: newCoupons });
   };
@@ -94,8 +97,11 @@ export default function MarketingTab({ data, onChange }: Props) {
                   <input
                     type="number"
                     value={discount}
-                    onChange={(e) =>
-                      updateMemberDiscount(level, parseFloat(e.target.value) || 0)
+                    onChange={e =>
+                      updateMemberDiscount(
+                        level,
+                        parseFloat(e.target.value) || 0
+                      )
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="0"
@@ -118,12 +124,10 @@ export default function MarketingTab({ data, onChange }: Props) {
       {/* 优惠券 */}
       <div className="border-t border-gray-200 pt-8">
         <h3 className="text-lg font-medium text-gray-900 mb-4">可用优惠券</h3>
-        <p className="text-sm text-gray-500 mb-6">
-          选择可用于此产品的优惠券
-        </p>
+        <p className="text-sm text-gray-500 mb-6">选择可用于此产品的优惠券</p>
 
         <div className="grid grid-cols-2 gap-4">
-          {AVAILABLE_COUPONS.map((coupon) => {
+          {AVAILABLE_COUPONS.map(coupon => {
             const isSelected = (data.couponIds || []).includes(coupon.id);
 
             return (
@@ -132,8 +136,8 @@ export default function MarketingTab({ data, onChange }: Props) {
                 onClick={() => toggleCoupon(coupon.id)}
                 className={`border-2 rounded-lg p-4 text-left transition-all ${
                   isSelected
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-blue-300'
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 hover:border-blue-300"
                 }`}
               >
                 <div className="flex items-start justify-between">

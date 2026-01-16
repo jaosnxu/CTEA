@@ -17,14 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
-import {
-  ArrowLeft,
-  Save,
-  Eye,
-  Code,
-  History,
-  RotateCcw,
-} from "lucide-react";
+import { ArrowLeft, Save, Eye, Code, History, RotateCcw } from "lucide-react";
 import type { PageLayoutConfig, PageType } from "@shared/types/layout";
 import { LayoutVisualEditor } from "./LayoutEditor/LayoutVisualEditor";
 import { LayoutJsonEditor } from "./LayoutEditor/LayoutJsonEditor";
@@ -64,10 +57,7 @@ export default function LayoutEditor() {
   const page = params?.page as PageType;
 
   // 获取布局配置
-  const layoutQuery = trpc.layout.get.useQuery(
-    { page },
-    { enabled: !!page }
-  );
+  const layoutQuery = trpc.layout.get.useQuery({ page }, { enabled: !!page });
 
   // 保存布局配置
   const saveMutation = trpc.layout.save.useMutation({
@@ -76,8 +66,8 @@ export default function LayoutEditor() {
         language === "zh"
           ? "保存成功"
           : language === "ru"
-          ? "Успешно сохранено"
-          : "Saved successfully"
+            ? "Успешно сохранено"
+            : "Saved successfully"
       );
       setHasChanges(false);
       layoutQuery.refetch();
@@ -87,8 +77,8 @@ export default function LayoutEditor() {
         language === "zh"
           ? `保存失败: ${error.message}`
           : language === "ru"
-          ? `Ошибка сохранения: ${error.message}`
-          : `Save failed: ${error.message}`
+            ? `Ошибка сохранения: ${error.message}`
+            : `Save failed: ${error.message}`
       );
     },
   });
@@ -209,13 +199,13 @@ export default function LayoutEditor() {
               ? language === "zh"
                 ? "保存中..."
                 : language === "ru"
-                ? "Сохранение..."
-                : "Saving..."
+                  ? "Сохранение..."
+                  : "Saving..."
               : language === "zh"
-              ? "保存"
-              : language === "ru"
-              ? "Сохранить"
-              : "Save"}
+                ? "保存"
+                : language === "ru"
+                  ? "Сохранить"
+                  : "Save"}
           </Button>
         </div>
       </div>
@@ -245,8 +235,7 @@ export default function LayoutEditor() {
                       {language === "zh" && "拖拽组件或编辑 JSON"}
                       {language === "ru" &&
                         "Перетаскивайте компоненты или редактируйте JSON"}
-                      {language === "en" &&
-                        "Drag components or edit JSON"}
+                      {language === "en" && "Drag components or edit JSON"}
                     </CardDescription>
                   </div>
                   <Tabs

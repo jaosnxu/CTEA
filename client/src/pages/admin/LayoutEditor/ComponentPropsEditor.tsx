@@ -52,7 +52,11 @@ export function ComponentPropsEditor({
     });
   };
 
-  const updateI18nProp = (key: string, lang: "zh" | "ru" | "en", value: string) => {
+  const updateI18nProp = (
+    key: string,
+    lang: "zh" | "ru" | "en",
+    value: string
+  ) => {
     const currentValue = (editedComponent.props as any)[key] || {};
     updateProp(key, {
       ...currentValue,
@@ -104,7 +108,7 @@ export function ComponentPropsEditor({
                 {language === "en" && "Title (Chinese)"}
               </Label>
               <Input
-                value={((props as any).title?.zh || "")}
+                value={(props as any).title?.zh || ""}
                 onChange={e => updateI18nProp("title", "zh", e.target.value)}
               />
             </div>
@@ -115,7 +119,7 @@ export function ComponentPropsEditor({
                 {language === "en" && "Title (Russian)"}
               </Label>
               <Input
-                value={((props as any).title?.ru || "")}
+                value={(props as any).title?.ru || ""}
                 onChange={e => updateI18nProp("title", "ru", e.target.value)}
               />
             </div>
@@ -126,7 +130,7 @@ export function ComponentPropsEditor({
                 {language === "en" && "Title (English)"}
               </Label>
               <Input
-                value={((props as any).title?.en || "")}
+                value={(props as any).title?.en || ""}
                 onChange={e => updateI18nProp("title", "en", e.target.value)}
               />
             </div>
@@ -175,7 +179,7 @@ export function ComponentPropsEditor({
                 {language === "en" && "Content (Chinese)"}
               </Label>
               <Textarea
-                value={((props as any).content?.zh || "")}
+                value={(props as any).content?.zh || ""}
                 onChange={e => updateI18nProp("content", "zh", e.target.value)}
               />
             </div>
@@ -186,7 +190,7 @@ export function ComponentPropsEditor({
                 {language === "en" && "Content (Russian)"}
               </Label>
               <Textarea
-                value={((props as any).content?.ru || "")}
+                value={(props as any).content?.ru || ""}
                 onChange={e => updateI18nProp("content", "ru", e.target.value)}
               />
             </div>
@@ -197,7 +201,7 @@ export function ComponentPropsEditor({
                 {language === "en" && "Content (English)"}
               </Label>
               <Textarea
-                value={((props as any).content?.en || "")}
+                value={(props as any).content?.en || ""}
                 onChange={e => updateI18nProp("content", "en", e.target.value)}
               />
             </div>
@@ -275,7 +279,9 @@ export function ComponentPropsEditor({
               <Input
                 type="number"
                 value={(props as any).thickness || 1}
-                onChange={e => updateProp("thickness", parseInt(e.target.value))}
+                onChange={e =>
+                  updateProp("thickness", parseInt(e.target.value))
+                }
               />
             </div>
             <div>
@@ -309,7 +315,8 @@ export function ComponentPropsEditor({
         return (
           <div className="text-center text-muted-foreground py-4">
             {language === "zh" && "此组件暂无可编辑属性"}
-            {language === "ru" && "Нет редактируемых свойств для этого компонента"}
+            {language === "ru" &&
+              "Нет редактируемых свойств для этого компонента"}
             {language === "en" && "No editable properties for this component"}
           </div>
         );

@@ -7,6 +7,7 @@ This document describes the pricing rules management system implemented for the 
 ## Features
 
 ### Backend Features
+
 - ✅ Database schema for pricing rules and product associations
 - ✅ RESTful API endpoints for CRUD operations
 - ✅ Rule-based pricing engine with priority system
@@ -17,6 +18,7 @@ This document describes the pricing rules management system implemented for the 
 - ✅ Soft delete for rules (isActive flag)
 
 ### Frontend Features
+
 - ✅ Pricing rules list page with search and filters
 - ✅ Rule creation and editing form
 - ✅ Visual condition builder
@@ -71,9 +73,11 @@ CREATE TABLE `product_pricing_rules` (
 ### Pricing Rules API
 
 #### GET /api/admin/pricing-rules
+
 Get all pricing rules with pagination and filtering.
 
 **Query Parameters:**
+
 - `page` (number): Page number (default: 1)
 - `perPage` (number): Results per page (default: 20, max: 100)
 - `sortBy` (string): Sort field (default: "priority")
@@ -82,6 +86,7 @@ Get all pricing rules with pagination and filtering.
 - `search` (string): Search in name/description
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -96,12 +101,15 @@ Get all pricing rules with pagination and filtering.
 ```
 
 #### GET /api/admin/pricing-rules/:id
+
 Get a single pricing rule by ID.
 
 #### POST /api/admin/pricing-rules
+
 Create a new pricing rule.
 
 **Request Body:**
+
 ```json
 {
   "name": {
@@ -127,23 +135,29 @@ Create a new pricing rule.
 ```
 
 #### PUT /api/admin/pricing-rules/:id
+
 Update a pricing rule.
 
 #### DELETE /api/admin/pricing-rules/:id
+
 Soft delete a pricing rule (sets `isActive` to `false`).
 
 #### GET /api/admin/pricing-rules/:id/products
+
 Get list of product IDs affected by this rule.
 
 ### Products API Extensions
 
 #### GET /api/admin/products/:id/pricing-rules
+
 Get pricing rules associated with a product.
 
 #### PUT /api/admin/products/:id/pricing-rules
+
 Update pricing rules for a product.
 
 **Request Body:**
+
 ```json
 {
   "ruleIds": ["rule_001", "rule_002"]
@@ -154,26 +168,27 @@ Update pricing rules for a product.
 
 ### Supported Conditions
 
-| Condition | Type | Description | Example |
-|-----------|------|-------------|---------|
-| `userLevel` | string | User membership level | "Gold", "Silver", "Platinum" |
-| `hour` | number[] | Hours of day (0-23) | [14, 15, 16, 17] |
-| `dayOfWeek` | number[] | Days of week (0=Sun, 6=Sat) | [0, 6] |
-| `storeId` | string | Specific store | "store_123" |
-| `minQuantity` | number | Minimum order quantity | 2 |
+| Condition     | Type     | Description                 | Example                      |
+| ------------- | -------- | --------------------------- | ---------------------------- |
+| `userLevel`   | string   | User membership level       | "Gold", "Silver", "Platinum" |
+| `hour`        | number[] | Hours of day (0-23)         | [14, 15, 16, 17]             |
+| `dayOfWeek`   | number[] | Days of week (0=Sun, 6=Sat) | [0, 6]                       |
+| `storeId`     | string   | Specific store              | "store_123"                  |
+| `minQuantity` | number   | Minimum order quantity      | 2                            |
 
 ### Condition Logic
+
 - All conditions in a rule must be met (AND logic)
 - If a condition field is not specified, it's not checked
 
 ## Action Types
 
-| Action Type | Description | Value Meaning | Example |
-|-------------|-------------|---------------|---------|
-| `DISCOUNT_PERCENT` | Percentage discount | Discount % (e.g., 20 = 20% off) | `{"type": "DISCOUNT_PERCENT", "value": 20}` |
-| `DISCOUNT_FIXED` | Fixed amount discount | Discount in rubles | `{"type": "DISCOUNT_FIXED", "value": 50}` |
-| `MARKUP_PERCENT` | Percentage markup | Markup % (e.g., 10 = +10%) | `{"type": "MARKUP_PERCENT", "value": 10}` |
-| `SET_PRICE` | Fixed price | Price in rubles | `{"type": "SET_PRICE", "value": 199}` |
+| Action Type        | Description           | Value Meaning                   | Example                                     |
+| ------------------ | --------------------- | ------------------------------- | ------------------------------------------- |
+| `DISCOUNT_PERCENT` | Percentage discount   | Discount % (e.g., 20 = 20% off) | `{"type": "DISCOUNT_PERCENT", "value": 20}` |
+| `DISCOUNT_FIXED`   | Fixed amount discount | Discount in rubles              | `{"type": "DISCOUNT_FIXED", "value": 50}`   |
+| `MARKUP_PERCENT`   | Percentage markup     | Markup % (e.g., 10 = +10%)      | `{"type": "MARKUP_PERCENT", "value": 10}`   |
+| `SET_PRICE`        | Fixed price           | Price in rubles                 | `{"type": "SET_PRICE", "value": 199}`       |
 
 ## Priority System
 
@@ -188,7 +203,9 @@ Update pricing rules for a product.
 ## Frontend Pages
 
 ### /admin/pricing-rules
+
 List view with:
+
 - Search by name/description
 - Filter by active/inactive status
 - Pagination
@@ -196,7 +213,9 @@ List view with:
 - Create new rule button
 
 ### /admin/pricing-rules/new
+
 Create new rule form with:
+
 - Multi-language name and description inputs
 - Condition builder (visual selector)
 - Action editor (type + value)
@@ -204,10 +223,13 @@ Create new rule form with:
 - Active/inactive toggle
 
 ### /admin/pricing-rules/edit/:id
+
 Same as create, but pre-populated with existing rule data.
 
 ### Product Editor Integration
+
 In the product editor's "Pricing Rules" tab:
+
 - Display currently associated rules
 - "Add Rule" button opens modal
 - Modal shows all active rules
@@ -217,6 +239,7 @@ In the product editor's "Pricing Rules" tab:
 ## Internationalization
 
 All user-facing text supports three languages:
+
 - Russian (ru) - Primary language
 - Chinese (zh)
 - English (en)
@@ -226,41 +249,45 @@ Rule names and descriptions are stored as JSON objects with all three languages.
 ## Usage Examples
 
 ### Example 1: Happy Hour Discount
+
 ```json
 {
-  "name": {"zh": "欢乐时光", "ru": "Счастливые часы", "en": "Happy Hour"},
-  "condition": {"hour": [14, 15, 16, 17]},
-  "action": {"type": "DISCOUNT_PERCENT", "value": 20},
+  "name": { "zh": "欢乐时光", "ru": "Счастливые часы", "en": "Happy Hour" },
+  "condition": { "hour": [14, 15, 16, 17] },
+  "action": { "type": "DISCOUNT_PERCENT", "value": 20 },
   "priority": 5
 }
 ```
 
 ### Example 2: Weekend Special
+
 ```json
 {
-  "name": {"zh": "周末特价", "ru": "Выходные", "en": "Weekend Special"},
-  "condition": {"dayOfWeek": [0, 6]},
-  "action": {"type": "DISCOUNT_PERCENT", "value": 15},
+  "name": { "zh": "周末特价", "ru": "Выходные", "en": "Weekend Special" },
+  "condition": { "dayOfWeek": [0, 6] },
+  "action": { "type": "DISCOUNT_PERCENT", "value": 15 },
   "priority": 3
 }
 ```
 
 ### Example 3: Bulk Purchase Discount
+
 ```json
 {
-  "name": {"zh": "批量折扣", "ru": "Оптовая скидка", "en": "Bulk Discount"},
-  "condition": {"minQuantity": 5},
-  "action": {"type": "DISCOUNT_FIXED", "value": 100},
+  "name": { "zh": "批量折扣", "ru": "Оптовая скидка", "en": "Bulk Discount" },
+  "condition": { "minQuantity": 5 },
+  "action": { "type": "DISCOUNT_FIXED", "value": 100 },
   "priority": 7
 }
 ```
 
 ### Example 4: VIP Member Pricing
+
 ```json
 {
-  "name": {"zh": "VIP会员价", "ru": "VIP цена", "en": "VIP Price"},
-  "condition": {"userLevel": "Platinum"},
-  "action": {"type": "DISCOUNT_PERCENT", "value": 10},
+  "name": { "zh": "VIP会员价", "ru": "VIP цена", "en": "VIP Price" },
+  "condition": { "userLevel": "Platinum" },
+  "action": { "type": "DISCOUNT_PERCENT", "value": 10 },
   "priority": 10
 }
 ```
@@ -268,14 +295,17 @@ Rule names and descriptions are stored as JSON objects with all three languages.
 ## Testing
 
 ### Unit Tests
+
 Located at: `server/src/engines/__tests__/pricing-engine.test.ts`
 
 Run tests:
+
 ```bash
 npm test
 ```
 
 Test coverage includes:
+
 - Rule fetching
 - Price calculation
 - Condition matching
@@ -285,6 +315,7 @@ Test coverage includes:
 ### Manual Testing Checklist
 
 Backend:
+
 - [ ] Create new pricing rule via API
 - [ ] Update existing pricing rule
 - [ ] Delete pricing rule (soft delete)
@@ -295,6 +326,7 @@ Backend:
 - [ ] Get products affected by a rule
 
 Frontend:
+
 - [ ] Navigate to pricing rules list
 - [ ] Search for rules
 - [ ] Filter by status
@@ -345,17 +377,20 @@ Potential improvements for future versions:
 ### Common Issues
 
 **Issue: Rules not applying**
+
 - Check if rule is active (`isActive = true`)
 - Verify conditions match the test case
 - Check priority order
 - Ensure product has the rule associated
 
 **Issue: Database not found**
+
 - Run migration: `npm run db:push`
 - Check DATABASE_URL environment variable
 - Verify database connection
 
 **Issue: UI not loading rules**
+
 - Check API endpoint is accessible
 - Verify CORS settings
 - Check browser console for errors
@@ -391,6 +426,7 @@ npm run db:push
 ## Support
 
 For questions or issues, please refer to:
+
 - GitHub Issues: [Project Repository]
 - Documentation: This file
 - API Tests: `server/src/engines/__tests__/pricing-engine.test.ts`

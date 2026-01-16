@@ -34,6 +34,7 @@
 ```
 
 **Features:**
+
 - Search bar with real-time filtering
 - Status filter dropdown (All/Active/Inactive)
 - Sortable table columns
@@ -100,6 +101,7 @@
 ```
 
 **Features:**
+
 - Multi-language inputs (3 columns)
 - Visual condition builder
 - Day of week button selector
@@ -139,6 +141,7 @@
 ```
 
 **Features:**
+
 - Tab integration
 - Display of associated rules
 - Rule details (priority, action)
@@ -179,6 +182,7 @@
 ```
 
 **Features:**
+
 - Modal overlay
 - Clickable rule cards
 - Rule details display
@@ -223,6 +227,7 @@
 ```
 
 **Integration:**
+
 - Added under "Operations" section
 - Next to Products/SKU management
 - Icon: Target (🎯)
@@ -233,16 +238,19 @@
 ## Color Scheme
 
 ### Status Colors
+
 - **Active**: Green badge (`bg-green-100 text-green-800`)
 - **Inactive**: Gray badge (`bg-gray-100 text-gray-800`)
 - **Priority**: Blue badge (`bg-blue-100 text-blue-700`)
 
 ### Action Type Colors
+
 - **Discount**: Green (`bg-green-100 text-green-700`)
 - **Markup**: Orange (`bg-orange-100 text-orange-700`)
 - **Fixed Price**: Blue (`bg-blue-100 text-blue-700`)
 
 ### Buttons
+
 - **Primary**: Blue (`bg-blue-600 hover:bg-blue-700`)
 - **Delete**: Red (`text-red-600 hover:text-red-700`)
 - **Secondary**: Gray (`border-gray-300 hover:bg-gray-50`)
@@ -252,16 +260,19 @@
 ## Responsive Design
 
 ### Desktop (1024px+)
+
 - Full width tables
 - 3-column multi-language inputs
 - Side-by-side layouts
 
 ### Tablet (768px - 1023px)
+
 - Responsive tables with scroll
 - 3-column multi-language inputs
 - Adjusted padding
 
 ### Mobile (< 768px)
+
 - Stacked layouts
 - Single column forms
 - Hamburger menu for navigation
@@ -272,12 +283,14 @@
 ## Interaction Patterns
 
 ### Search & Filter
+
 1. User types in search box
 2. Debounced API call (after 300ms)
 3. Loading state shown
 4. Results update
 
 ### Create/Edit Rule
+
 1. User clicks "Create Rule"
 2. Form loads with empty fields
 3. User fills multi-language inputs
@@ -289,6 +302,7 @@
 9. Error → Show error message
 
 ### Add Rule to Product
+
 1. User clicks "Add Rule" in product editor
 2. Modal opens with available rules
 3. User clicks a rule card
@@ -301,18 +315,21 @@
 ## Accessibility
 
 ### Keyboard Navigation
+
 - Tab through all inputs
 - Enter to submit forms
 - Escape to close modals
 - Arrow keys for dropdowns
 
 ### Screen Readers
+
 - ARIA labels on buttons
 - Alt text on icons
 - Form labels associated
 - Error messages announced
 
 ### Visual
+
 - High contrast colors
 - Clear focus indicators
 - Large touch targets (44px min)
@@ -323,6 +340,7 @@
 ## Loading States
 
 ### List Loading
+
 ```
 ┌─────────────────────────────────────────────┐
 │                                             │
@@ -332,11 +350,13 @@
 ```
 
 ### Form Saving
+
 ```
 Button: [💾 Saving...] (disabled, opacity-50)
 ```
 
 ### Empty State
+
 ```
 ┌─────────────────────────────────────────────┐
 │                                             │
@@ -351,12 +371,14 @@ Button: [💾 Saving...] (disabled, opacity-50)
 ## Error Handling
 
 ### Form Errors
+
 ```
 Field: [invalid input]
 Error: ⚠️ Name is required in at least one language
 ```
 
 ### API Errors
+
 ```
 Toast notification:
 ┌─────────────────────────────────────────────┐
@@ -366,6 +388,7 @@ Toast notification:
 ```
 
 ### Network Errors
+
 ```
 Alert box:
 ┌─────────────────────────────────────────────┐
@@ -380,18 +403,22 @@ Alert box:
 ## Animation & Transitions
 
 ### Page Transitions
+
 - Fade in: 200ms
 - Slide in: 300ms
 
 ### Modal
+
 - Backdrop fade: 150ms
 - Modal slide up: 200ms
 
 ### Buttons
+
 - Hover: 150ms
 - Press: 100ms
 
 ### Loading
+
 - Spinner rotation: continuous
 - Pulse: 1s ease-in-out
 
@@ -400,16 +427,19 @@ Alert box:
 ## Typography
 
 ### Headings
+
 - Page title: 3xl, bold (text-3xl font-bold)
 - Section: xl, semibold (text-xl font-semibold)
 - Card title: lg, medium (text-lg font-medium)
 
 ### Body
+
 - Default: base (text-base)
 - Small: sm (text-sm)
 - Tiny: xs (text-xs)
 
 ### Colors
+
 - Primary: Gray-900 (text-gray-900)
 - Secondary: Gray-700 (text-gray-700)
 - Muted: Gray-500 (text-gray-500)

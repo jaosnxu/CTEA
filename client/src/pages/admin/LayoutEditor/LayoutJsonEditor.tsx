@@ -38,8 +38,8 @@ export function LayoutJsonEditor({
         language === "zh"
           ? "JSON 格式错误，请检查语法"
           : language === "ru"
-          ? "Неверный формат JSON, проверьте синтаксис"
-          : "Invalid JSON format, please check syntax"
+            ? "Неверный формат JSON, проверьте синтаксис"
+            : "Invalid JSON format, please check syntax"
       );
     }
   };

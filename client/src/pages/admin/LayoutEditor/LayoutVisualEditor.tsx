@@ -27,7 +27,11 @@ interface LayoutVisualEditorProps {
 const componentTypeNames = {
   banner: { zh: "横幅", ru: "Баннер", en: "Banner" },
   "product-block": { zh: "商品区块", ru: "Блок товаров", en: "Product Block" },
-  "category-nav": { zh: "分类导航", ru: "Навигация категорий", en: "Category Nav" },
+  "category-nav": {
+    zh: "分类导航",
+    ru: "Навигация категорий",
+    en: "Category Nav",
+  },
   "text-block": { zh: "文字块", ru: "Текстовый блок", en: "Text Block" },
   "image-block": { zh: "图片块", ru: "Блок изображения", en: "Image Block" },
   divider: { zh: "分隔线", ru: "Разделитель", en: "Divider" },
@@ -141,7 +145,9 @@ export function LayoutVisualEditor({
                   <div className="font-medium">
                     {componentTypeNames[block.type][language]}
                   </div>
-                  <div className="text-sm text-muted-foreground">{block.id}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {block.id}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -212,9 +218,7 @@ export function LayoutVisualEditor({
       {/* Component Props Editor */}
       {editingComponent && (
         <ComponentPropsEditor
-          component={
-            config.blocks.find(b => b.id === editingComponent)!
-          }
+          component={config.blocks.find(b => b.id === editingComponent)!}
           language={language}
           onSave={updatedComponent =>
             handleUpdateComponent(editingComponent, updatedComponent)

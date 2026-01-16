@@ -1,7 +1,7 @@
 /**
  * Pricing Rules List Page
  * /admin/pricing-rules
- * 
+ *
  * Features:
  * - List all pricing rules with pagination
  * - Filter by active status and search
@@ -21,7 +21,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { formatCurrency, type Language } from "../../../lib/i18n";
+import { formatCurrency, type Language } from "../../lib/i18n";
 
 interface PricingRule {
   id: string;
@@ -29,7 +29,11 @@ interface PricingRule {
   description: { zh?: string; ru?: string; en?: string } | string;
   condition: any;
   action: {
-    type: "DISCOUNT_PERCENT" | "DISCOUNT_FIXED" | "MARKUP_PERCENT" | "SET_PRICE";
+    type:
+      | "DISCOUNT_PERCENT"
+      | "DISCOUNT_FIXED"
+      | "MARKUP_PERCENT"
+      | "SET_PRICE";
     value: number;
   };
   priority: number;
@@ -43,10 +47,12 @@ const PricingRulesList: React.FC = () => {
   const [rules, setRules] = useState<PricingRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [language] = useState<Language>("ru"); // Can be connected to global language context
-  
+
   // Filters and pagination
   const [search, setSearch] = useState("");
-  const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(undefined);
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(
+    undefined
+  );
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const perPage = 20;
@@ -67,7 +73,8 @@ const PricingRulesList: React.FC = () => {
       });
 
       if (search) params.append("search", search);
-      if (isActiveFilter !== undefined) params.append("isActive", isActiveFilter.toString());
+      if (isActiveFilter !== undefined)
+        params.append("isActive", isActiveFilter.toString());
 
       const response = await fetch(`/api/admin/pricing-rules?${params}`);
       const data = await response.json();
@@ -104,12 +111,26 @@ const PricingRulesList: React.FC = () => {
 
   const getName = (name: any): string => {
     if (typeof name === "string") return name;
-    return name[language] || name.zh || name.ru || name.en || "";
+    if (
+      name &&
+      typeof name === "object" &&
+      language in name &&
+      typeof name[language as keyof typeof name] === "string"
+    ) {
+      return name[language as keyof typeof name];
+    }
+    return name?.zh || name?.ru || name?.en || "";
   };
 
   const getDescription = (description: any): string => {
     if (typeof description === "string") return description;
-    return description?.[language] || description?.zh || description?.ru || description?.en || "";
+    return (
+      description?.[language] ||
+      description?.zh ||
+      description?.ru ||
+      description?.en ||
+      ""
+    );
   };
 
   const getActionTypeLabel = (type: string): string => {
@@ -119,12 +140,13 @@ const PricingRulesList: React.FC = () => {
       MARKUP_PERCENT: { ru: "Наценка %", zh: "百分比加价", en: "Markup %" },
       SET_PRICE: { ru: "Фикс. цена", zh: "固定价格", en: "Set Price" },
     };
-    return labels[type as keyof typeof labels]?.[language] || type;
+    const labelObj = labels[type as keyof typeof labels];
+    return labelObj?.[language as keyof typeof labelObj] || type;
   };
 
   const getConditionSummary = (condition: any): string => {
     const parts: string[] = [];
-    
+
     if (condition.userLevel) {
       parts.push(`${t("userLevel", language)}: ${condition.userLevel}`);
     }
@@ -132,9 +154,9 @@ const PricingRulesList: React.FC = () => {
       parts.push(`${t("hours", language)}: ${condition.hour.join(", ")}`);
     }
     if (condition.dayOfWeek && condition.dayOfWeek.length > 0) {
-      const days = condition.dayOfWeek.map((d: number) => 
-        ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"][d]
-      ).join(", ");
+      const days = condition.dayOfWeek
+        .map((d: number) => ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"][d])
+        .join(", ");
       parts.push(`${t("days", language)}: ${days}`);
     }
     if (condition.storeId) {
@@ -143,7 +165,7 @@ const PricingRulesList: React.FC = () => {
     if (condition.minQuantity) {
       parts.push(`${t("minQty", language)}: ${condition.minQuantity}`);
     }
-    
+
     return parts.length > 0 ? parts.join(" • ") : t("noConditions", language);
   };
 
@@ -178,13 +200,15 @@ const PricingRulesList: React.FC = () => {
                 type="text"
                 placeholder={t("searchPlaceholder", language)}
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={e => setSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <select
-              value={isActiveFilter === undefined ? "all" : isActiveFilter.toString()}
-              onChange={(e) => {
+              value={
+                isActiveFilter === undefined ? "all" : isActiveFilter.toString()
+              }
+              onChange={e => {
                 const val = e.target.value;
                 setIsActiveFilter(val === "all" ? undefined : val === "true");
               }}
@@ -233,7 +257,7 @@ const PricingRulesList: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {rules.map((rule) => (
+                  {rules.map(rule => (
                     <tr key={rule.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
@@ -250,7 +274,8 @@ const PricingRulesList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          {getActionTypeLabel(rule.action.type)} {rule.action.value}
+                          {getActionTypeLabel(rule.action.type)}{" "}
+                          {rule.action.value}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">
@@ -264,12 +289,16 @@ const PricingRulesList: React.FC = () => {
                               : "bg-gray-100 text-gray-800"
                           }`}
                         >
-                          {rule.isActive ? t("active", language) : t("inactive", language)}
+                          {rule.isActive
+                            ? t("active", language)
+                            : t("inactive", language)}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right space-x-2">
                         <button
-                          onClick={() => navigate(`/admin/pricing-rules/edit/${rule.id}`)}
+                          onClick={() =>
+                            navigate(`/admin/pricing-rules/edit/${rule.id}`)
+                          }
                           className="inline-flex items-center p-2 text-blue-600 hover:bg-blue-50 rounded"
                           title={t("edit", language)}
                         >

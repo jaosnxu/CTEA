@@ -1,5 +1,5 @@
-import React from 'react';
-import { ProductFormData } from '../../../types/product-editor.types';
+import React from "react";
+import { ProductFormData } from "../../../types/product-editor.types";
 
 interface Props {
   data: ProductFormData;
@@ -19,9 +19,9 @@ export default function BasicInfoTab({ data, errors, onChange }: Props) {
           <input
             type="text"
             value={data.name}
-            onChange={(e) => onChange({ name: e.target.value })}
+            onChange={e => onChange({ name: e.target.value })}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-              errors.name ? 'border-red-500' : 'border-gray-300'
+              errors.name ? "border-red-500" : "border-gray-300"
             }`}
             placeholder="例如：多肉葡萄"
           />
@@ -38,9 +38,9 @@ export default function BasicInfoTab({ data, errors, onChange }: Props) {
           <input
             type="text"
             value={data.code}
-            onChange={(e) => onChange({ code: e.target.value.toUpperCase() })}
+            onChange={e => onChange({ code: e.target.value.toUpperCase() })}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-              errors.code ? 'border-red-500' : 'border-gray-300'
+              errors.code ? "border-red-500" : "border-gray-300"
             }`}
             placeholder="例如：PROD_001"
           />
@@ -56,9 +56,9 @@ export default function BasicInfoTab({ data, errors, onChange }: Props) {
           </label>
           <select
             value={data.categoryId}
-            onChange={(e) => onChange({ categoryId: e.target.value })}
+            onChange={e => onChange({ categoryId: e.target.value })}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-              errors.categoryId ? 'border-red-500' : 'border-gray-300'
+              errors.categoryId ? "border-red-500" : "border-gray-300"
             }`}
           >
             <option value="">请选择分类</option>
@@ -80,9 +80,11 @@ export default function BasicInfoTab({ data, errors, onChange }: Props) {
           <input
             type="number"
             value={data.basePrice}
-            onChange={(e) => onChange({ basePrice: parseFloat(e.target.value) || 0 })}
+            onChange={e =>
+              onChange({ basePrice: parseFloat(e.target.value) || 0 })
+            }
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-              errors.basePrice ? 'border-red-500' : 'border-gray-300'
+              errors.basePrice ? "border-red-500" : "border-gray-300"
             }`}
             placeholder="290"
             min="0"
@@ -101,7 +103,9 @@ export default function BasicInfoTab({ data, errors, onChange }: Props) {
           <input
             type="number"
             value={data.costPrice}
-            onChange={(e) => onChange({ costPrice: parseFloat(e.target.value) || 0 })}
+            onChange={e =>
+              onChange({ costPrice: parseFloat(e.target.value) || 0 })
+            }
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             placeholder="150"
             min="0"
@@ -121,8 +125,8 @@ export default function BasicInfoTab({ data, errors, onChange }: Props) {
             <label className="flex items-center">
               <input
                 type="radio"
-                checked={data.status === 'ACTIVE'}
-                onChange={() => onChange({ status: 'ACTIVE' })}
+                checked={data.status === "ACTIVE"}
+                onChange={() => onChange({ status: "ACTIVE" })}
                 className="mr-2"
               />
               <span className="text-green-600">● 在售</span>
@@ -130,8 +134,8 @@ export default function BasicInfoTab({ data, errors, onChange }: Props) {
             <label className="flex items-center">
               <input
                 type="radio"
-                checked={data.status === 'INACTIVE'}
-                onChange={() => onChange({ status: 'INACTIVE' })}
+                checked={data.status === "INACTIVE"}
+                onChange={() => onChange({ status: "INACTIVE" })}
                 className="mr-2"
               />
               <span className="text-gray-500">○ 停售</span>

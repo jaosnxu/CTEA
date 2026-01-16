@@ -56,7 +56,7 @@ export const layoutRouter = router({
    */
   list: protectedProcedure.query(async ({ ctx }) => {
     await requireAdmin(ctx);
-    
+
     const db = await getDb();
     if (!db) {
       throw new TRPCError({
@@ -88,7 +88,7 @@ export const layoutRouter = router({
     )
     .query(async ({ ctx, input }) => {
       await requireAdmin(ctx);
-      
+
       const db = await getDb();
       if (!db) {
         throw new TRPCError({
@@ -149,7 +149,7 @@ export const layoutRouter = router({
     )
     .query(async ({ ctx, input }) => {
       await requireAdmin(ctx);
-      
+
       const db = await getDb();
       if (!db) {
         throw new TRPCError({
@@ -182,7 +182,7 @@ export const layoutRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       await requireAdmin(ctx);
-      
+
       const db = await getDb();
       if (!db) {
         throw new TRPCError({
@@ -244,7 +244,7 @@ export const layoutRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       await requireAdmin(ctx);
-      
+
       const db = await getDb();
       if (!db) {
         throw new TRPCError({

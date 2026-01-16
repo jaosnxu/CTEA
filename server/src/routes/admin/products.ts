@@ -233,9 +233,7 @@ router.get("/:id/pricing-rules", async (req, res) => {
     res.status(500).json({
       success: false,
       message:
-        error instanceof Error
-          ? error.message
-          : "Failed to get pricing rules",
+        error instanceof Error ? error.message : "Failed to get pricing rules",
       timestamp: new Date().toISOString(),
     });
   }

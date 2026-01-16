@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ProductFormData } from '../../../types/product-editor.types';
+import React, { useState, useEffect } from "react";
+import { ProductFormData } from "../../../types/product-editor.types";
 
 interface Props {
   data: ProductFormData;
@@ -12,7 +12,11 @@ interface PricingRule {
   description: { zh?: string; ru?: string; en?: string } | string;
   condition: any;
   action: {
-    type: 'DISCOUNT_PERCENT' | 'DISCOUNT_FIXED' | 'MARKUP_PERCENT' | 'SET_PRICE';
+    type:
+      | "DISCOUNT_PERCENT"
+      | "DISCOUNT_FIXED"
+      | "MARKUP_PERCENT"
+      | "SET_PRICE";
     value: number;
   };
   priority: number;
@@ -41,13 +45,13 @@ export default function PricingRulesTab({ data, onChange }: Props) {
 
   const loadAvailableRules = async () => {
     try {
-      const response = await fetch('/api/admin/pricing-rules?isActive=true');
+      const response = await fetch("/api/admin/pricing-rules?isActive=true");
       const result = await response.json();
       if (result.success) {
         setAvailableRules(result.data);
       }
     } catch (error) {
-      console.error('Failed to load pricing rules:', error);
+      console.error("Failed to load pricing rules:", error);
     }
   };
 
@@ -56,7 +60,7 @@ export default function PricingRulesTab({ data, onChange }: Props) {
       setLoading(true);
       const ruleIds = data.pricingRuleIds || [];
       const rules: PricingRule[] = [];
-      
+
       for (const ruleId of ruleIds) {
         const response = await fetch(`/api/admin/pricing-rules/${ruleId}`);
         const result = await response.json();
@@ -64,10 +68,10 @@ export default function PricingRulesTab({ data, onChange }: Props) {
           rules.push(result.data);
         }
       }
-      
+
       setSelectedRules(rules);
     } catch (error) {
-      console.error('Failed to load selected rules:', error);
+      console.error("Failed to load selected rules:", error);
     } finally {
       setLoading(false);
     }
@@ -76,27 +80,29 @@ export default function PricingRulesTab({ data, onChange }: Props) {
   const toggleRule = (ruleId: string) => {
     const currentRules = data.pricingRuleIds || [];
     const newRules = currentRules.includes(ruleId)
-      ? currentRules.filter((id) => id !== ruleId)
+      ? currentRules.filter(id => id !== ruleId)
       : [...currentRules, ruleId];
     onChange({ pricingRuleIds: newRules });
   };
 
   const removeRule = (ruleId: string) => {
-    const newRules = (data.pricingRuleIds || []).filter((id) => id !== ruleId);
+    const newRules = (data.pricingRuleIds || []).filter(id => id !== ruleId);
     onChange({ pricingRuleIds: newRules });
   };
 
   const getName = (rule: PricingRule): string => {
-    if (typeof rule.name === 'string') return rule.name;
-    return rule.name.ru || rule.name.zh || rule.name.en || '';
+    if (typeof rule.name === "string") return rule.name;
+    return rule.name.ru || rule.name.zh || rule.name.en || "";
   };
 
   const getDescription = (rule: PricingRule): string => {
-    if (typeof rule.description === 'string') return rule.description;
-    return rule.description?.ru || rule.description?.zh || rule.description?.en || '';
+    if (typeof rule.description === "string") return rule.description;
+    return (
+      rule.description?.ru || rule.description?.zh || rule.description?.en || ""
+    );
   };
 
-  const getActionLabel = (action: PricingRule['action']): string => {
+  const getActionLabel = (action: PricingRule["action"]): string => {
     const labels = {
       DISCOUNT_PERCENT: `折扣 ${action.value}%`,
       DISCOUNT_FIXED: `减免 ${action.value}₽`,
@@ -107,7 +113,7 @@ export default function PricingRulesTab({ data, onChange }: Props) {
   };
 
   const filteredAvailableRules = availableRules.filter(
-    (rule) => !(data.pricingRuleIds || []).includes(rule.id)
+    rule => !(data.pricingRuleIds || []).includes(rule.id)
   );
 
   return (
@@ -139,8 +145,10 @@ export default function PricingRulesTab({ data, onChange }: Props) {
         </div>
       ) : (
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-700">已应用的规则 ({selectedRules.length})</h4>
-          {selectedRules.map((rule) => (
+          <h4 className="text-sm font-medium text-gray-700">
+            已应用的规则 ({selectedRules.length})
+          </h4>
+          {selectedRules.map(rule => (
             <div
               key={rule.id}
               className="border border-gray-200 rounded-lg p-4 flex items-start justify-between hover:border-blue-300 transition-colors"
@@ -155,7 +163,9 @@ export default function PricingRulesTab({ data, onChange }: Props) {
                     {getActionLabel(rule.action)}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 mt-1">{getDescription(rule)}</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  {getDescription(rule)}
+                </p>
               </div>
               <button
                 onClick={() => removeRule(rule.id)}
@@ -174,7 +184,9 @@ export default function PricingRulesTab({ data, onChange }: Props) {
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-gray-900">选择定价规则</h3>
+                <h3 className="text-lg font-medium text-gray-900">
+                  选择定价规则
+                </h3>
                 <button
                   onClick={() => setShowRuleList(false)}
                   className="text-gray-400 hover:text-gray-600"
@@ -188,7 +200,7 @@ export default function PricingRulesTab({ data, onChange }: Props) {
                 <p className="text-center text-gray-500 py-8">所有规则已添加</p>
               ) : (
                 <div className="space-y-3">
-                  {filteredAvailableRules.map((rule) => (
+                  {filteredAvailableRules.map(rule => (
                     <button
                       key={rule.id}
                       onClick={() => {
@@ -198,7 +210,9 @@ export default function PricingRulesTab({ data, onChange }: Props) {
                       className="w-full border border-gray-200 rounded-lg p-4 text-left hover:border-blue-500 hover:bg-blue-50 transition-colors"
                     >
                       <div className="flex items-center gap-2">
-                        <h5 className="font-medium text-gray-900">{getName(rule)}</h5>
+                        <h5 className="font-medium text-gray-900">
+                          {getName(rule)}
+                        </h5>
                         <span className="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700">
                           优先级: {rule.priority}
                         </span>
@@ -206,7 +220,9 @@ export default function PricingRulesTab({ data, onChange }: Props) {
                           {getActionLabel(rule.action)}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{getDescription(rule)}</p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {getDescription(rule)}
+                      </p>
                     </button>
                   ))}
                 </div>

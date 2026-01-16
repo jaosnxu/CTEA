@@ -7,14 +7,17 @@ SDUI (Server-Driven UI) 布局配置系统允许管理员通过可视化界面�
 ## 功能特性
 
 ### 1. 页面管理
+
 - **支持的页面**: 首页 (home)、下单页 (order)、商城页 (mall)
 - **布局列表**: `/admin/layouts` - 查看所有页面的配置状态
 - **可视化编辑器**: `/admin/layouts/edit/:page` - 拖拽式布局编辑
 
 ### 2. 组件库
+
 系统内置以下可配置组件：
 
 #### Banner（横幅）
+
 - 图片轮播
 - 自动播放设置
 - 高度可调
@@ -22,6 +25,7 @@ SDUI (Server-Driven UI) 布局配置系统允许管理员通过可视化界面�
 - 多语言 alt 文本
 
 #### Product Block（商品区块）
+
 - 标题多语言支持
 - 布局方式：网格/列表/轮播
 - 显示数量限制
@@ -29,12 +33,14 @@ SDUI (Server-Driven UI) 布局配置系统允许管理员通过可视化界面�
 - 加入购物车按钮开关
 
 #### Category Navigation（分类导航）
+
 - 网格或横向滚动布局
 - 图标 + 名称
 - 列数可调
 - 跳转链接
 
 #### Text Block（文字块）
+
 - 多语言内容
 - 对齐方式：左/中/右
 - 字体大小：sm/base/lg/xl
@@ -43,23 +49,27 @@ SDUI (Server-Driven UI) 布局配置系统允许管理员通过可视化界面�
 - 内边距
 
 #### Image Block（图片块）
+
 - 单张图片
 - 跳转链接
 - 宽高比设置
 - 对象适配方式
 
 #### Divider（分隔线）
+
 - 厚度可调
 - 颜色可选
 - 上下边距
 
 #### Spacer（间隔器）
+
 - 高度可调
 - 用于组件间距
 
 ### 3. 编辑模式
 
 #### 可视化模式
+
 - 拖拽排序组件
 - 直观的上下移动按钮
 - 显示/隐藏切换
@@ -67,24 +77,28 @@ SDUI (Server-Driven UI) 布局配置系统允许管理员通过可视化界面�
 - 删除组件
 
 #### JSON 模式
+
 - 直接编辑 JSON 配置
 - 语法高亮
 - 错误提示
 - 实时验证
 
 ### 4. 实时预览
+
 - 右侧预览面板
 - 实时反映配置更改
 - 移动端风格展示
 - 支持滚动查看完整布局
 
 ### 5. 版本管理
+
 - 自动版本号递增
 - 版本历史记录
 - 一键还原到历史版本
 - 记录修改人和修改时间
 
 ### 6. 国际化支持
+
 - 界面语言：中文、俄语、英语
 - 组件内容多语言配置
 - 语言切换无需刷新
@@ -94,7 +108,9 @@ SDUI (Server-Driven UI) 布局配置系统允许管理员通过可视化界面�
 ### 后端 API
 
 #### 1. GET /api/admin/layouts
+
 获取所有页面的布局配置列表
+
 ```typescript
 Response: {
   layouts: LayoutConfig[]
@@ -102,37 +118,45 @@ Response: {
 ```
 
 #### 2. GET /api/admin/layouts/:page
+
 获取指定页面的当前激活布局
+
 ```typescript
-Request: { page: "home" | "order" | "mall" }
+Request: {
+  page: "home" | "order" | "mall";
+}
 Response: {
-  layout: LayoutConfig
+  layout: LayoutConfig;
 }
 ```
 
 #### 3. PUT /api/admin/layouts/:page
+
 保存新版本的布局配置
+
 ```typescript
 Request: {
-  page: "home" | "order" | "mall"
-  config: PageLayoutConfig
+  page: "home" | "order" | "mall";
+  config: PageLayoutConfig;
 }
 Response: {
-  layout: LayoutConfig
-  message: string
+  layout: LayoutConfig;
+  message: string;
 }
 ```
 
 #### 4. POST /api/admin/layouts/:page/restore
+
 还原到指定历史版本
+
 ```typescript
 Request: {
-  page: "home" | "order" | "mall"
-  version: number
+  page: "home" | "order" | "mall";
+  version: number;
 }
 Response: {
-  layout: LayoutConfig
-  message: string
+  layout: LayoutConfig;
+  message: string;
 }
 ```
 
@@ -160,13 +184,13 @@ CREATE TABLE layout_configs (
 
 ```typescript
 // 组件类型
-type ComponentType = 
-  | "banner" 
-  | "product-block" 
+type ComponentType =
+  | "banner"
+  | "product-block"
   | "category-nav"
-  | "text-block" 
-  | "image-block" 
-  | "divider" 
+  | "text-block"
+  | "image-block"
+  | "divider"
   | "spacer";
 
 // 页面类型
@@ -241,18 +265,20 @@ interface PageLayoutConfig {
 #### 扩展新组件类型
 
 1. **定义组件类型和属性**
+
    ```typescript
    // shared/types/layout.ts
    export interface MyNewComponentProps {
      title: I18nText;
      // 其他属性...
    }
-   
+
    // 添加到 ComponentType
    type ComponentType = ... | "my-new-component";
    ```
 
 2. **添加默认属性**
+
    ```typescript
    // LayoutVisualEditor.tsx
    function getDefaultProps(type) {
@@ -262,6 +288,7 @@ interface PageLayoutConfig {
    ```
 
 3. **实现预览渲染**
+
    ```typescript
    // LayoutPreview.tsx
    function ComponentPreview({ component }) {
@@ -282,10 +309,11 @@ interface PageLayoutConfig {
 #### 添加新页面类型
 
 1. **更新类型定义**
+
    ```typescript
    // shared/types/layout.ts
    type PageType = ... | "new-page";
-   
+
    export const DEFAULT_NEW_PAGE_LAYOUT = {
      page: "new-page",
      blocks: [...],
@@ -293,6 +321,7 @@ interface PageLayoutConfig {
    ```
 
 2. **更新路由器**
+
    ```typescript
    // server/src/trpc/routers/layout.router.ts
    function getDefaultLayout(page) {
@@ -327,11 +356,13 @@ interface PageLayoutConfig {
 ## 测试
 
 ### 单元测试
+
 ```bash
 npm test server/src/trpc/routers/layout.router.test.ts
 ```
 
 ### 手动测试清单
+
 - [ ] 查看布局列表
 - [ ] 编辑各个页面布局
 - [ ] 添加/删除/编辑组件
@@ -346,15 +377,19 @@ npm test server/src/trpc/routers/layout.router.test.ts
 ## 常见问题
 
 ### Q: 为什么保存后页面没有立即更新？
+
 A: 前端页面需要刷新才能加载新配置。可以考虑实现 WebSocket 推送或轮询机制。
 
 ### Q: 如何批量导入配置？
+
 A: 可以使用 JSON 模式，将完整配置粘贴进去，然后点击"应用更改"。
 
 ### Q: 版本历史会无限增长吗？
+
 A: 当前版本保留所有历史。可以添加定期清理策略，保留最近 N 个版本。
 
 ### Q: 如何备份配置？
+
 A: 可以通过数据库备份，或者在 JSON 模式下复制配置内容保存到文件。
 
 ## 未来改进

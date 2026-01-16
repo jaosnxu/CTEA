@@ -55,8 +55,12 @@ router.get("/", async (req, res) => {
     if (search && typeof search === "string") {
       const searchLower = search.toLowerCase();
       filteredRules = filteredRules.filter(rule => {
-        const name = typeof rule.name === "string" ? rule.name : JSON.stringify(rule.name);
-        const description = typeof rule.description === "string" ? rule.description : JSON.stringify(rule.description);
+        const name =
+          typeof rule.name === "string" ? rule.name : JSON.stringify(rule.name);
+        const description =
+          typeof rule.description === "string"
+            ? rule.description
+            : JSON.stringify(rule.description);
         return (
           name.toLowerCase().includes(searchLower) ||
           description.toLowerCase().includes(searchLower)
@@ -243,9 +247,7 @@ router.get("/:id/products", async (req, res) => {
     res.status(500).json({
       success: false,
       message:
-        error instanceof Error
-          ? error.message
-          : "Failed to get products",
+        error instanceof Error ? error.message : "Failed to get products",
       timestamp: new Date().toISOString(),
     });
   }

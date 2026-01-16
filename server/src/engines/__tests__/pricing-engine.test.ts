@@ -22,7 +22,7 @@ describe("PricingEngine", () => {
   describe("getPricingRules", () => {
     it("should return default rules when database is not available", async () => {
       const rules = await pricingEngine.getPricingRules();
-      
+
       expect(rules).toBeInstanceOf(Array);
       expect(rules.length).toBeGreaterThan(0);
       expect(rules[0]).toHaveProperty("id");
@@ -100,7 +100,7 @@ describe("PricingEngine", () => {
 
       // Happy hour rule should apply at 3 PM
       expect(result1.appliedRules.length).toBeGreaterThan(0);
-      
+
       // No time-based rules should apply at 10 AM (unless there are other rules)
       expect(result2.savedAmount).toBeLessThanOrEqual(result1.savedAmount);
     });
@@ -125,23 +125,25 @@ describe("PricingEngine", () => {
   describe("Condition Matching", () => {
     it("should match hour condition correctly", async () => {
       const hourTests = [
-        { hour: 14, shouldMatch: true },  // 2 PM
-        { hour: 15, shouldMatch: true },  // 3 PM
-        { hour: 16, shouldMatch: true },  // 4 PM
-        { hour: 17, shouldMatch: true },  // 5 PM
+        { hour: 14, shouldMatch: true }, // 2 PM
+        { hour: 15, shouldMatch: true }, // 3 PM
+        { hour: 16, shouldMatch: true }, // 4 PM
+        { hour: 17, shouldMatch: true }, // 5 PM
         { hour: 10, shouldMatch: false }, // 10 AM
         { hour: 20, shouldMatch: false }, // 8 PM
       ];
 
       for (const test of hourTests) {
-        const date = new Date(`2024-01-01T${test.hour.toString().padStart(2, '0')}:00:00Z`);
+        const date = new Date(
+          `2024-01-01T${test.hour.toString().padStart(2, "0")}:00:00Z`
+        );
         const params: PricingParams = {
           productId: "1",
           timestamp: date.toISOString(),
         };
 
         const result = await pricingEngine.calculatePrice(params);
-        
+
         if (test.shouldMatch) {
           expect(result.savedAmount).toBeGreaterThan(0);
         } else {
