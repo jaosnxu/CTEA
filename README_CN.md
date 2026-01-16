@@ -34,7 +34,7 @@ CHUTEA 是一个功能完整的奶茶店管理系统，包含：
 
 ### 前置要求
 
-- Node.js 18+ 
+- Node.js 18+
 - pnpm 8+
 - PostgreSQL 14+
 
@@ -75,6 +75,7 @@ pnpm setup
 ```
 
 这将创建：
+
 - ✅ 1 个组织总部
 - ✅ 3 个门店（莫斯科、圣彼得堡、喀山）
 - ✅ 10 个产品（奶茶、果茶、小吃等）
@@ -143,6 +144,7 @@ pnpm test:health
 ```
 
 检查内容：
+
 - ✅ 数据库连接状态
 - ✅ 数据表访问权限
 - ✅ API 端点可用性
@@ -157,6 +159,7 @@ pnpm test:price-sync
 ```
 
 测试流程：
+
 1. 选择一个产品
 2. 记录原价格
 3. 修改产品价格
@@ -186,12 +189,14 @@ pnpm data:cleanup
 ### 技术栈
 
 **前端**
+
 - ⚛️ React 19
 - 🎨 Tailwind CSS
 - 🔄 React Query
 - 🚀 Vite
 
 **后端**
+
 - 🟢 Node.js + Express
 - 🔷 TypeScript
 - 🗄️ PostgreSQL
@@ -199,6 +204,7 @@ pnpm data:cleanup
 - 🔐 JWT 认证
 
 **工具**
+
 - 📦 pnpm
 - 🎯 ESBuild
 - 🔍 TypeScript
@@ -249,6 +255,7 @@ PORT=8080
 ### Q: 数据库连接失败？
 
 检查：
+
 1. PostgreSQL 服务是否运行
 2. `.env` 文件中的 `DATABASE_URL` 是否正确
 3. 数据库用户权限是否足够
@@ -264,6 +271,7 @@ npx prisma studio
 ### Q: 如何添加新门店？
 
 通过后台管理界面：
+
 1. 访问 http://localhost:3000/admin/dashboard
 2. 进入"门店管理"
 3. 点击"添加门店"
@@ -271,6 +279,7 @@ npx prisma studio
 ### Q: 如何修改产品价格？
 
 两种方式：
+
 1. **通过后台**: 管理界面 → 产品管理 → 编辑价格
 2. **通过脚本**: 修改 `scripts/test-price-sync.ts` 并运行
 

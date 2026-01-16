@@ -208,10 +208,11 @@ export default function LoginPage() {
       // 第二步：调用后端发送短信
       console.log("[LoginPage] 📤 调用后端发送短信...");
 
-      
-      console.log("[LoginPage] 📤 发送请求到:", window.location.origin + "/api/sms/send");
+      console.log(
+        "[LoginPage] 📤 发送请求到:",
+        window.location.origin + "/api/sms/send"
+      );
       const response = await fetch("http://localhost:3009/api/sms/send", {
-
         method: "POST",
         headers: {
           "Content-Type": "application/json",

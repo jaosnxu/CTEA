@@ -12,7 +12,8 @@
 
 import { Request, Response, NextFunction } from "express";
 import { AuditLogService } from "../services/audit-log-service";
-import { AuditAction } from "@prisma/client";
+
+type AuditAction = "INSERT" | "UPDATE" | "DELETE";
 
 export interface AuditMiddlewareOptions {
   auditLogService: AuditLogService;

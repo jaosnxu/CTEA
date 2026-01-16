@@ -45,19 +45,20 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
-  
+
   // CORS 配置 - 允许前端跨域访问
-  app.use(cors({
-    origin: "http://localhost:5173", // 前端开发服务器地址
-    methods: ["GET", "POST", "PUT", "DELETE"], // 允许的 HTTP 方法
-    credentials: true // 允许携带 Cookies 和认证信息
-  }));
-  
+  app.use(
+    cors({
+      origin: "http://localhost:5173", // 前端开发服务器地址
+      methods: ["GET", "POST", "PUT", "DELETE"], // 允许的 HTTP 方法
+      credentials: true, // 允许携带 Cookies 和认证信息
+    })
+  );
+
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
-  
-  
+
   // 全局请求日志
   app.use((req, res, next) => {
     console.log(`[Global Request] ${req.method} ${req.url}`);
@@ -68,7 +69,6 @@ async function startServer() {
     console.log("[Test Route] Hit!");
     res.json({ success: true, message: "API is working" });
   });
-
 
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
@@ -106,18 +106,18 @@ async function startServer() {
   // ============================================================
   // REST 兼容端点（为验证脚本和监控系统提供支持）
   // ============================================================
-  app.get('/api/health', (req, res) => {
+  app.get("/api/health", (req, res) => {
     res.json({
-      status: 'ok',
-      message: 'CTEA backend is running',
+      status: "ok",
+      message: "CTEA backend is running",
       time: new Date().toISOString(),
       env: process.env.NODE_ENV,
     });
   });
 
-  app.get('/api/client/products', async (req, res) => {
+  app.get("/api/client/products", async (req, res) => {
     try {
-      const { getPrismaClient } = await import('../src/db/prisma');
+      const { getPrismaClient } = await import("../src/db/prisma");
       const prisma = getPrismaClient();
       const products = await prisma.products.findMany({
         take: 5,
@@ -125,7 +125,7 @@ async function startServer() {
       });
       res.json({ success: true, count: products.length, data: products });
     } catch (err: any) {
-      console.error('[REST] /api/client/products error:', err);
+      console.error("[REST] /api/client/products error:", err);
       res.status(500).json({ success: false, error: err.message });
     }
   });
@@ -138,7 +138,6 @@ async function startServer() {
   }
 
   // development mode uses Vite, production mode uses static files
-  
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);

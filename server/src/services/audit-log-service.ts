@@ -12,9 +12,12 @@
 
 import pkg from "@prisma/client";
 const { PrismaClient } = pkg;
-import type { AuditAction, OperatorType } from "@prisma/client";
 import crypto from "crypto";
 import { getPrismaClient } from "../db/prisma";
+
+type PrismaClientType = InstanceType<typeof PrismaClient>;
+type AuditAction = "INSERT" | "UPDATE" | "DELETE";
+type OperatorType = "SYSTEM" | "ADMIN" | "USER" | "API";
 
 export interface CreateAuditLogInput {
   orgId?: string;
@@ -43,9 +46,9 @@ export interface AuditChainValidationResult {
 }
 
 export class AuditLogService {
-  private prisma: PrismaClient;
+  private prisma: PrismaClientType;
 
-  constructor(prisma: PrismaClient) {
+  constructor(prisma: PrismaClientType) {
     this.prisma = prisma;
   }
 
