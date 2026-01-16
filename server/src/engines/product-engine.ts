@@ -23,7 +23,7 @@ export interface ProductData {
   stock?: number;
   status?: string;
   category?: string;
-  orgId?: number;
+  orgId?: string | null;
   categoryId?: number;
   code?: string;
   createdBy?: string;
@@ -124,7 +124,7 @@ class ProductEngine {
       const product = await this.prisma.products.create({
         data: {
           name: data.name || "",
-          orgId: data.orgId || 1,
+          orgId: data.orgId || null,
           categoryId: data.categoryId || 1,
           code: data.code || `PROD_${Date.now()}`,
           createdBy: data.createdBy,
