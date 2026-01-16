@@ -15,8 +15,12 @@ import {
   isSqliteAvailable,
 } from "../db/sqlite";
 import { getPrismaClient } from "../db/prisma";
+import { requireAuth } from "../middleware/auth-middleware";
 
 const router = Router();
+
+// Apply authentication to all routes
+router.use(requireAuth);
 
 // ============================================================================
 // Dashboard Statistics

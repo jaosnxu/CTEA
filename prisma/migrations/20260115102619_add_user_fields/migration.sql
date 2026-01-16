@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE `users` ADD COLUMN `avatar` VARCHAR(500) NULL,
+    ADD COLUMN `last_login_at` DATETIME(3) NULL,
+    ADD COLUMN `last_login_ip` VARCHAR(50) NULL,
+    ADD COLUMN `login_count` INTEGER NULL DEFAULT 0,
+    ADD COLUMN `nickname` VARCHAR(100) NULL,
+    ADD COLUMN `status` VARCHAR(20) NULL DEFAULT 'ACTIVE';

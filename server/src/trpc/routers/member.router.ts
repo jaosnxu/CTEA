@@ -99,6 +99,22 @@ export const memberRouter = router({
       );
 
       // 记录审计日志
+      // 获取 IP 地址和 User-Agent（兼容不同的 context 类型）
+      const getClientIp = (req: any): string => {
+        const forwarded = req.headers?.["x-forwarded-for"];
+        if (typeof forwarded === "string") {
+          return forwarded.split(",")[0].trim();
+        }
+        return req.ip || req.socket?.remoteAddress || "0.0.0.0";
+      };
+
+      const ipAddress =
+        (ctx as any).auditTrail?.ipAddress || getClientIp((ctx as any).req);
+      const userAgent =
+        (ctx as any).auditTrail?.userAgent ||
+        (ctx as any).req?.headers?.["user-agent"] ||
+        "unknown";
+
       const auditService = getAuditService();
       await auditService.logAction({
         tableName: "admin_users",
@@ -108,8 +124,8 @@ export const memberRouter = router({
         operatorId: user.id,
         operatorType: mapRoleToOperatorType(user.role),
         operatorName: user.username,
-        ipAddress: ctx.auditTrail.ipAddress,
-        userAgent: ctx.auditTrail.userAgent,
+        ipAddress,
+        userAgent,
         orgId: user.orgId,
       });
 
