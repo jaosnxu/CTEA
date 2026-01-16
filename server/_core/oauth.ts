@@ -5,7 +5,7 @@ import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
 import { createLogger } from "../src/utils/logger";
 
-const logger = createLogger('OAuth');
+const logger = createLogger("OAuth");
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];

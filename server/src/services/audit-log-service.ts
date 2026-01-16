@@ -16,7 +16,7 @@ import crypto from "crypto";
 import { getPrismaClient } from "../db/prisma";
 import { createLogger } from "../utils/logger";
 
-const logger = createLogger('AuditLog');
+const logger = createLogger("AuditLog");
 
 type PrismaClientType = InstanceType<typeof PrismaClient>;
 type AuditAction = "INSERT" | "UPDATE" | "DELETE";
@@ -110,7 +110,7 @@ export class AuditLogService {
       logger.error("Failed to create audit log", error as Error, {
         tableName: input.tableName,
         recordId: input.recordId,
-        action: input.action
+        action: input.action,
       });
       // Don't throw error to prevent breaking main business logic
       // Audit logging should be non-blocking
@@ -346,7 +346,7 @@ export class AuditLogService {
       eventId,
       tableName: data.tableName,
       recordId: data.recordId,
-      action: data.action
+      action: data.action,
     });
   }
 }

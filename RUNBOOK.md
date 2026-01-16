@@ -55,6 +55,7 @@ docker compose up -d --build
 ```
 
 This command will:
+
 - Build the CTEA application Docker image
 - Start PostgreSQL database
 - Start Mock OAuth server
@@ -72,11 +73,13 @@ All three services should show as "healthy" status.
 ### 3. View Logs
 
 View logs for all services:
+
 ```bash
 docker compose logs -f
 ```
 
 View logs for a specific service:
+
 ```bash
 docker compose logs -f app        # Application logs
 docker compose logs -f mock-oauth # Mock OAuth server logs
@@ -96,6 +99,7 @@ docker compose down
 ```
 
 To stop and remove all data (including database):
+
 ```bash
 docker compose down -v
 ```
@@ -126,12 +130,14 @@ The mock OAuth server (`mock-oauth-server.cjs`) provides three endpoints:
 The mock server provides two test users:
 
 **Test User 1** (default):
+
 - OpenID: `test-open-id-001`
 - Name: `Test User 1`
 - Email: `testuser1@example.com`
 - Platform: `email`
 
 **Test User 2**:
+
 - OpenID: `test-open-id-002`
 - Name: `Test User 2`
 - Email: `testuser2@example.com`
@@ -148,6 +154,7 @@ curl "http://localhost:3000/api/oauth/callback?code=test-auth-code-123&state=aHR
 Where `state` is base64-encoded redirect URI (e.g., `http://localhost:3000/`).
 
 The application will:
+
 1. Exchange the code for an access token (via mock OAuth server)
 2. Retrieve user info using the access token
 3. Create or update the user in the database
@@ -158,11 +165,13 @@ The application will:
 ### Verifying OAuth Integration
 
 1. Check that the mock OAuth server is responding:
+
 ```bash
 curl http://localhost:4000/health
 ```
 
 2. Test token exchange directly:
+
 ```bash
 curl -X POST http://localhost:4000/webdev.v1.WebDevAuthPublicService/ExchangeToken \
   -H "Content-Type: application/json" \
@@ -175,6 +184,7 @@ curl -X POST http://localhost:4000/webdev.v1.WebDevAuthPublicService/ExchangeTok
 ```
 
 3. Test getting user info:
+
 ```bash
 # First get a token (from step 2), then:
 curl -X POST http://localhost:4000/webdev.v1.WebDevAuthPublicService/GetUserInfo \
@@ -186,19 +196,19 @@ curl -X POST http://localhost:4000/webdev.v1.WebDevAuthPublicService/GetUserInfo
 
 The application is configured with the following test environment variables:
 
-| Variable | Value | Description |
-|----------|-------|-------------|
-| `NODE_ENV` | `development` | Node environment |
-| `PORT` | `3000` | Application port |
-| `DATABASE_URL` | `postgresql://...` | PostgreSQL connection string |
-| `OAUTH_SERVER_URL` | `http://mock-oauth:4000` | Mock OAuth server URL |
-| `OAUTH_CLIENT_ID` | `test-client-id` | OAuth client ID |
-| `OAUTH_CLIENT_SECRET` | `test-client-secret` | OAuth client secret |
-| `OAUTH_CALLBACK_URL` | `http://localhost:3000/api/oauth/callback` | OAuth callback URL |
-| `VITE_APP_ID` | `ctea-test-app` | Application ID |
-| `VITE_OAUTH_PORTAL_URL` | `http://localhost:3000/oauth/login` | OAuth portal URL |
-| `COOKIE_SECRET` | `test-cookie-secret-...` | Cookie signing secret |
-| `API_KEY` | `test-api-key-...` | API key for testing |
+| Variable                | Value                                      | Description                  |
+| ----------------------- | ------------------------------------------ | ---------------------------- |
+| `NODE_ENV`              | `development`                              | Node environment             |
+| `PORT`                  | `3000`                                     | Application port             |
+| `DATABASE_URL`          | `postgresql://...`                         | PostgreSQL connection string |
+| `OAUTH_SERVER_URL`      | `http://mock-oauth:4000`                   | Mock OAuth server URL        |
+| `OAUTH_CLIENT_ID`       | `test-client-id`                           | OAuth client ID              |
+| `OAUTH_CLIENT_SECRET`   | `test-client-secret`                       | OAuth client secret          |
+| `OAUTH_CALLBACK_URL`    | `http://localhost:3000/api/oauth/callback` | OAuth callback URL           |
+| `VITE_APP_ID`           | `ctea-test-app`                            | Application ID               |
+| `VITE_OAUTH_PORTAL_URL` | `http://localhost:3000/oauth/login`        | OAuth portal URL             |
+| `COOKIE_SECRET`         | `test-cookie-secret-...`                   | Cookie signing secret        |
+| `API_KEY`               | `test-api-key-...`                         | API key for testing          |
 
 **⚠️ WARNING**: These are test values only. Never use these in production!
 
@@ -211,6 +221,7 @@ docker compose exec postgres psql -U ctea_test_user -d ctea_test
 ```
 
 Or connect using a database client:
+
 - Host: `localhost`
 - Port: `5432`
 - Database: `ctea_test`
@@ -222,6 +233,7 @@ Or connect using a database client:
 ### Service won't start
 
 1. Check if ports are already in use:
+
 ```bash
 lsof -i :3000  # Application port
 lsof -i :4000  # Mock OAuth port
@@ -229,6 +241,7 @@ lsof -i :5432  # PostgreSQL port
 ```
 
 2. Check service logs:
+
 ```bash
 docker compose logs <service-name>
 ```
@@ -236,16 +249,19 @@ docker compose logs <service-name>
 ### Application can't connect to database
 
 1. Ensure PostgreSQL is healthy:
+
 ```bash
 docker compose ps postgres
 ```
 
 2. Check database logs:
+
 ```bash
 docker compose logs postgres
 ```
 
 3. Verify database connection from app container:
+
 ```bash
 docker compose exec app wget -O- http://postgres:5432 || echo "Cannot reach database"
 ```
@@ -253,11 +269,13 @@ docker compose exec app wget -O- http://postgres:5432 || echo "Cannot reach data
 ### Mock OAuth server not responding
 
 1. Check mock OAuth logs:
+
 ```bash
 docker compose logs mock-oauth
 ```
 
 2. Verify it's listening:
+
 ```bash
 docker compose exec app wget -O- http://mock-oauth:4000/health
 ```
@@ -265,6 +283,7 @@ docker compose exec app wget -O- http://mock-oauth:4000/health
 ### Application build fails
 
 1. Check if all dependencies are available:
+
 ```bash
 docker compose build --no-cache app
 ```
@@ -301,6 +320,7 @@ docker compose up -d --build
 
 1. Make changes to your code
 2. Rebuild and restart:
+
 ```bash
 docker compose up -d --build
 ```
@@ -310,25 +330,29 @@ docker compose up -d --build
 For faster iteration, you can mount the source code as a volume:
 
 1. Stop the current environment:
+
 ```bash
 docker compose down
 ```
 
 2. Edit `docker-compose.yml` to add volumes to the `app` service:
+
 ```yaml
 app:
   volumes:
     - .:/app
-    - /app/node_modules  # Prevent overwriting node_modules
+    - /app/node_modules # Prevent overwriting node_modules
 ```
 
 3. Change the command to use dev mode:
+
 ```yaml
 app:
   command: pnpm run dev
 ```
 
 4. Restart:
+
 ```bash
 docker compose up -d
 ```
@@ -353,6 +377,7 @@ This test environment consists of:
 - Should NEVER be used in production
 
 For production deployment, see `DEPLOYMENT_GUIDE.md` and use proper:
+
 - Real OAuth provider
 - Secure credentials
 - Environment-specific configuration
