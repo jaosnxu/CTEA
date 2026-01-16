@@ -137,7 +137,7 @@ export default function AdminOrderList() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {statsData.byStatus.find((s) => s.status === "COMPLETED")
+                {statsData.byStatus.find(s => s.status === "COMPLETED")
                   ?.count || 0}
               </div>
             </CardContent>
@@ -150,8 +150,8 @@ export default function AdminOrderList() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {statsData.byStatus.find((s) => s.status === "PENDING")
-                  ?.count || 0}
+                {statsData.byStatus.find(s => s.status === "PENDING")?.count ||
+                  0}
               </div>
             </CardContent>
           </Card>
@@ -176,7 +176,7 @@ export default function AdminOrderList() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">All statuses</SelectItem>
-                  {getAllOrderStatuses().map((status) => (
+                  {getAllOrderStatuses().map(status => (
                     <SelectItem key={status} value={status}>
                       {getOrderStatusLabel(status, "en")}
                     </SelectItem>
@@ -211,7 +211,7 @@ export default function AdminOrderList() {
               <Input
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={e => setStartDate(e.target.value)}
               />
             </div>
 
@@ -220,7 +220,7 @@ export default function AdminOrderList() {
               <Input
                 type="date"
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                onChange={e => setEndDate(e.target.value)}
               />
             </div>
           </div>

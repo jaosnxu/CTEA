@@ -9,6 +9,7 @@ A comprehensive order management system has been implemented for the CTEA platfo
 ### 1. Database Schema
 
 #### OrderStatus Enum
+
 ```prisma
 enum OrderStatus {
   PENDING      // Initial state when order is created
@@ -23,7 +24,9 @@ enum OrderStatus {
 ```
 
 #### Orders Model
+
 Enhanced with the following fields:
+
 - `status` - OrderStatus enum (default: PENDING)
 - `totalAmount` - Total order amount
 - `subtotalAmount` - Subtotal before discounts/fees
@@ -37,7 +40,9 @@ Enhanced with the following fields:
 - `deletedAt` - Soft delete timestamp (nullable)
 
 #### OrderItems Model
+
 Enhanced with:
+
 - `productName` - Product name snapshot
 - `productCode` - Product code snapshot
 - `quantity` - Item quantity (default: 1)
@@ -56,39 +61,46 @@ Provides comprehensive order management functionality:
 ##### Core Methods
 
 **`list(filter: OrderListFilter)`**
+
 - Lists orders with filtering and pagination
 - Filters: storeId, userId, status, date range
 - Supports soft-deleted order filtering
 - Returns orders with related data (store, user, items)
 
 **`detail(orderId: bigint | string | number)`**
+
 - Gets complete order details
 - Includes store, user, and order items
 - Returns product information for each item
 
 **`create(input: OrderCreateInput, operatorId?: string)`**
+
 - Creates new order with items
 - Validates items and calculates totals
 - Generates order number automatically
 - Transaction-safe operation
 
 **`update(orderId, input: OrderUpdateInput, operatorId?: string)`**
+
 - Updates order information
 - Validates order exists and is not deleted
 - Updates fields like notes, address, payment info
 
 **`changeStatus(orderId, newStatus: OrderStatus, reason?: string, operatorId?: string)`**
+
 - Changes order status with validation
 - Validates status transitions
 - Prevents invalid state changes
 - Records status change reason
 
 **`remove(orderId, operatorId?: string)`**
+
 - Soft deletes order
 - Sets `deletedAt` timestamp
 - Prevents deletion of already deleted orders
 
 **`getStatistics(filter)`**
+
 - Returns order statistics
 - Total count, status breakdown
 - Revenue calculation
@@ -115,18 +127,21 @@ REFUNDED → (terminal state)
 ##### Endpoints
 
 **`adminOrder.list`**
+
 - Method: Query
 - Input: `{ storeId?, userId?, status?, startDate?, endDate?, page?, pageSize?, includeDeleted? }`
 - Returns: `{ orders: Order[], pagination: PaginationInfo }`
 - RBAC: Store staff can only see their store's orders
 
 **`adminOrder.getById`**
+
 - Method: Query
 - Input: `{ id: string | number | bigint }`
 - Returns: `Order` with full details
 - RBAC: Store staff can only access their store's orders
 
 **`adminOrder.create`**
+
 - Method: Mutation
 - Input: `{ orderNumber?, storeId, userId?, status?, items[], deliveryAddress?, notes?, paymentMethod?, deliveryFee? }`
 - Returns: Created `Order`
@@ -135,6 +150,7 @@ REFUNDED → (terminal state)
 - Audit: Logs creation in audit log
 
 **`adminOrder.update`**
+
 - Method: Mutation
 - Input: `{ id, status?, notes?, deliveryAddress?, paymentMethod?, paymentStatus? }`
 - Returns: Updated `Order`
@@ -143,6 +159,7 @@ REFUNDED → (terminal state)
 - Audit: Logs changes in audit log
 
 **`adminOrder.changeStatus`**
+
 - Method: Mutation
 - Input: `{ id, status: OrderStatus, reason? }`
 - Returns: `{ order, previousStatus, newStatus, reason }`
@@ -151,6 +168,7 @@ REFUNDED → (terminal state)
 - Audit: Logs status change with reason
 
 **`adminOrder.remove`**
+
 - Method: Mutation
 - Input: `{ id, reason? }`
 - Returns: Deleted `Order`
@@ -158,6 +176,7 @@ REFUNDED → (terminal state)
 - Audit: Logs deletion with reason
 
 **`adminOrder.getStatistics`**
+
 - Method: Query
 - Input: `{ storeId?, startDate?, endDate? }`
 - Returns: `{ total, byStatus[], revenue }`
@@ -168,25 +187,30 @@ REFUNDED → (terminal state)
 #### Order Utilities (`client/src/lib/order-utils.ts`)
 
 **`getOrderStatusLabel(status, locale)`**
+
 - Returns localized status label
 - Supports: en, ru, zh
 - Example: `getOrderStatusLabel('PENDING', 'ru')` → "В ожидании"
 
 **`getOrderStatusColor(status)`**
+
 - Returns Tailwind CSS classes for status badge
 - Color-coded by status category
 - Example: `COMPLETED` → green, `CANCELLED` → red
 
 **`getAvailableNextStatuses(currentStatus)`**
+
 - Returns array of valid next statuses
 - Used for status change dropdowns
 - Enforces business rules
 
 **`isOrderStatusFinal(status)`**
+
 - Checks if status is terminal
 - Returns `true` for COMPLETED, CANCELLED, REFUNDED
 
 **Other utilities:**
+
 - `formatOrderNumber()` - Formats order number for display
 - `calculateItemSubtotal()` - Calculates item subtotal
 - `calculateOrderTotal()` - Calculates order total
@@ -196,6 +220,7 @@ REFUNDED → (terminal state)
 #### Order List Page (`/admin/orders`)
 
 **Features:**
+
 - Comprehensive order table with columns:
   - Order number
   - Store name
@@ -224,6 +249,7 @@ REFUNDED → (terminal state)
   - Shows current page info
 
 **Usage:**
+
 ```typescript
 // Navigate to order list
 <Link href="/admin/orders">Order Management</Link>
@@ -239,6 +265,7 @@ setEndDate('2024-12-31')
 #### Order Detail Page (`/admin/orders/:id`)
 
 **Features:**
+
 - **Order Information Card:**
   - Order number
   - Store details
@@ -273,6 +300,7 @@ setEndDate('2024-12-31')
   - Total (highlighted)
 
 **Usage:**
+
 ```typescript
 // Navigate to order detail
 <Link href={`/admin/orders/${orderId}`}>View Order</Link>
@@ -290,6 +318,7 @@ changeStatusMutation.mutate({
 #### Client Types (`client/src/types/order.types.ts`)
 
 Complete type definitions for frontend:
+
 - `OrderStatus` - Status enum type
 - `Order` - Complete order interface
 - `OrderItem` - Order item interface
@@ -304,14 +333,17 @@ Complete type definitions for frontend:
 #### Role-Based Access Control
 
 **HQ Admin:**
+
 - Can view/manage all orders across all stores
 - Full access to create, update, delete operations
 
 **Organization Admin:**
+
 - Can view/manage orders in their organization's stores
 - Full access within organization scope
 
 **Store Manager/Staff:**
+
 - Can only view/manage orders in their assigned store
 - Cannot access other stores' orders
 - Create/update limited to assigned store
@@ -319,12 +351,14 @@ Complete type definitions for frontend:
 #### Audit Logging
 
 All order operations are logged:
+
 - Order creation → `INSERT` action
 - Order updates → `UPDATE` action with before/after data
 - Status changes → `UPDATE` action with status transition
 - Order deletion → `DELETE` action with reason
 
 Each log includes:
+
 - Operator ID and type
 - IP address and user agent
 - Timestamp
@@ -335,6 +369,7 @@ Each log includes:
 #### Routes Registration
 
 Added to `server/routers.ts`:
+
 ```typescript
 import { adminOrderRouter } from "./src/trpc/routers/admin-order.router";
 
@@ -345,6 +380,7 @@ export const appRouter = router({
 ```
 
 Added to `client/src/App.tsx`:
+
 ```typescript
 <Route path="/admin/orders/:id" component={AdminOrderDetail} />
 <Route path="/admin/orders" component={AdminOrderList} />
@@ -353,6 +389,7 @@ Added to `client/src/App.tsx`:
 #### Admin Menu
 
 Updated `client/src/components/admin/AdminLayout.tsx`:
+
 ```typescript
 {
   id: "ops-orders",
@@ -370,23 +407,23 @@ Updated `client/src/components/admin/AdminLayout.tsx`:
 const mutation = trpc.adminOrder.create.useMutation();
 
 mutation.mutate({
-  storeId: 'store-123',
-  userId: 'user-456',
+  storeId: "store-123",
+  userId: "user-456",
   items: [
     {
-      productId: 'prod-789',
-      productName: 'Bubble Tea',
+      productId: "prod-789",
+      productName: "Bubble Tea",
       quantity: 2,
-      unitPrice: 150.00,
-    }
+      unitPrice: 150.0,
+    },
   ],
   deliveryAddress: {
-    street: 'Moscow Street 123',
-    city: 'Moscow',
-    zipCode: '101000'
+    street: "Moscow Street 123",
+    city: "Moscow",
+    zipCode: "101000",
   },
-  paymentMethod: 'card',
-  deliveryFee: 50.00
+  paymentMethod: "card",
+  deliveryFee: 50.0,
 });
 ```
 
@@ -397,8 +434,8 @@ const mutation = trpc.adminOrder.changeStatus.useMutation();
 
 mutation.mutate({
   id: orderId,
-  status: 'CONFIRMED',
-  reason: 'Customer confirmed order via phone call'
+  status: "CONFIRMED",
+  reason: "Customer confirmed order via phone call",
 });
 ```
 
@@ -407,11 +444,11 @@ mutation.mutate({
 ```typescript
 const { data } = trpc.adminOrder.list.useQuery({
   storeId: selectedStore,
-  status: 'PENDING',
-  startDate: '2024-01-01',
-  endDate: '2024-12-31',
+  status: "PENDING",
+  startDate: "2024-01-01",
+  endDate: "2024-12-31",
   page: 1,
-  pageSize: 20
+  pageSize: 20,
 });
 ```
 
@@ -441,21 +478,25 @@ Potential improvements for future development:
 ### 12. Troubleshooting
 
 **Q: Orders not showing up in list**
+
 - Check RBAC permissions - store staff can only see their store's orders
 - Verify filters - check if status/date filters are too restrictive
 - Check `includeDeleted` parameter if looking for deleted orders
 
 **Q: Cannot change order status**
+
 - Verify status transition is valid - use `getAvailableNextStatuses()`
 - Check permissions - ensure user has `order:update` permission
 - Verify order is not deleted
 
 **Q: Order totals not calculating correctly**
+
 - Check item quantities and prices
 - Verify discount amounts are positive
 - Ensure delivery fee is included in total
 
 **Q: Type errors in frontend**
+
 - Import types from `@/types/order.types`
 - Convert BigInt to string for display: `order.id.toString()`
 - Check for undefined/null values before accessing nested properties

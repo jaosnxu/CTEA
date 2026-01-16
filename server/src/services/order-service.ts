@@ -221,7 +221,7 @@ export class OrderService {
     let subtotalAmount = 0;
     let discountAmount = 0;
 
-    const items = input.items.map((item) => {
+    const items = input.items.map(item => {
       const itemSubtotal = item.quantity * Number(item.unitPrice);
       const itemDiscount = Number(item.discountAmount || 0);
       subtotalAmount += itemSubtotal;
@@ -250,7 +250,7 @@ export class OrderService {
       input.orderNumber || this.generateOrderNumber(input.storeId);
 
     // Create order with items in transaction
-    const order = await this.prisma.$transaction(async (tx) => {
+    const order = await this.prisma.$transaction(async tx => {
       const newOrder = await tx.orders.create({
         data: {
           orderNumber,
@@ -461,7 +461,7 @@ export class OrderService {
 
     return {
       total,
-      byStatus: byStatus.map((item) => ({
+      byStatus: byStatus.map(item => ({
         status: item.status,
         count: item._count,
       })),
@@ -478,27 +478,15 @@ export class OrderService {
   ): void {
     // Define valid transitions
     const validTransitions: Record<OrderStatus, OrderStatus[]> = {
-      [OrderStatus.PENDING]: [
-        OrderStatus.CONFIRMED,
-        OrderStatus.CANCELLED,
-      ],
-      [OrderStatus.CONFIRMED]: [
-        OrderStatus.PREPARING,
-        OrderStatus.CANCELLED,
-      ],
-      [OrderStatus.PREPARING]: [
-        OrderStatus.READY,
-        OrderStatus.CANCELLED,
-      ],
+      [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+      [OrderStatus.CONFIRMED]: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
+      [OrderStatus.PREPARING]: [OrderStatus.READY, OrderStatus.CANCELLED],
       [OrderStatus.READY]: [
         OrderStatus.DELIVERING,
         OrderStatus.COMPLETED,
         OrderStatus.CANCELLED,
       ],
-      [OrderStatus.DELIVERING]: [
-        OrderStatus.COMPLETED,
-        OrderStatus.CANCELLED,
-      ],
+      [OrderStatus.DELIVERING]: [OrderStatus.COMPLETED, OrderStatus.CANCELLED],
       [OrderStatus.COMPLETED]: [OrderStatus.REFUNDED],
       [OrderStatus.CANCELLED]: [],
       [OrderStatus.REFUNDED]: [],
@@ -519,9 +507,10 @@ export class OrderService {
    */
   private generateOrderNumber(storeId: string): string {
     const timestamp = Date.now();
-    const storeCode = storeId.length >= 4 
-      ? storeId.slice(-4).toUpperCase() 
-      : storeId.padEnd(4, '0').toUpperCase();
+    const storeCode =
+      storeId.length >= 4
+        ? storeId.slice(-4).toUpperCase()
+        : storeId.padEnd(4, "0").toUpperCase();
     const random = Math.floor(Math.random() * 10000)
       .toString()
       .padStart(4, "0");

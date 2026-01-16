@@ -74,7 +74,10 @@ export const adminOrderRouter = router({
       let storeId = input.storeId;
       if (ctx.userSession?.storeId && !storeId) {
         storeId = ctx.userSession.storeId;
-      } else if (ctx.userSession?.storeId && storeId !== ctx.userSession.storeId) {
+      } else if (
+        ctx.userSession?.storeId &&
+        storeId !== ctx.userSession.storeId
+      ) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You can only view orders from your assigned store",
@@ -103,7 +106,7 @@ export const adminOrderRouter = router({
       z.object({
         id: z
           .union([z.string(), z.number(), z.bigint()])
-          .transform((v) => BigInt(v)),
+          .transform(v => BigInt(v)),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -111,7 +114,10 @@ export const adminOrderRouter = router({
       const order = await orderService.detail(input.id);
 
       // RBAC: Check if user can access this order
-      if (ctx.userSession?.storeId && order.storeId !== ctx.userSession.storeId) {
+      if (
+        ctx.userSession?.storeId &&
+        order.storeId !== ctx.userSession.storeId
+      ) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have permission to view this order",
@@ -142,7 +148,10 @@ export const adminOrderRouter = router({
       const orderService = getOrderService();
 
       // RBAC: Store staff can only create orders for their store
-      if (ctx.userSession?.storeId && input.storeId !== ctx.userSession.storeId) {
+      if (
+        ctx.userSession?.storeId &&
+        input.storeId !== ctx.userSession.storeId
+      ) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You can only create orders for your assigned store",
@@ -190,7 +199,7 @@ export const adminOrderRouter = router({
       z.object({
         id: z
           .union([z.string(), z.number(), z.bigint()])
-          .transform((v) => BigInt(v)),
+          .transform(v => BigInt(v)),
         status: OrderStatusSchema.optional(),
         notes: z.string().optional(),
         deliveryAddress: z.record(z.string(), z.unknown()).optional(),
@@ -255,7 +264,7 @@ export const adminOrderRouter = router({
       z.object({
         id: z
           .union([z.string(), z.number(), z.bigint()])
-          .transform((v) => BigInt(v)),
+          .transform(v => BigInt(v)),
         status: OrderStatusSchema,
         reason: z.string().optional(),
       })
@@ -314,7 +323,7 @@ export const adminOrderRouter = router({
       z.object({
         id: z
           .union([z.string(), z.number(), z.bigint()])
-          .transform((v) => BigInt(v)),
+          .transform(v => BigInt(v)),
         reason: z.string().optional(),
       })
     )
@@ -377,7 +386,10 @@ export const adminOrderRouter = router({
       let storeId = input.storeId;
       if (ctx.userSession?.storeId && !storeId) {
         storeId = ctx.userSession.storeId;
-      } else if (ctx.userSession?.storeId && storeId !== ctx.userSession.storeId) {
+      } else if (
+        ctx.userSession?.storeId &&
+        storeId !== ctx.userSession.storeId
+      ) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You can only view statistics from your assigned store",

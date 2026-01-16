@@ -77,7 +77,7 @@ export default function AdminOrderDetail() {
       setSelectedStatus("");
       setStatusReason("");
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Failed to update order status");
     },
   });
@@ -157,7 +157,10 @@ export default function AdminOrderDetail() {
               <div className="text-sm text-muted-foreground mb-1">
                 Current Status
               </div>
-              <Badge className={getOrderStatusColor(order.status)} variant="outline">
+              <Badge
+                className={getOrderStatusColor(order.status)}
+                variant="outline"
+              >
                 {getOrderStatusLabel(order.status, "en")}
               </Badge>
             </div>
@@ -176,7 +179,7 @@ export default function AdminOrderDetail() {
                       <SelectValue placeholder="Select new status" />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableStatuses.map((status) => (
+                      {availableStatuses.map(status => (
                         <SelectItem key={status} value={status}>
                           {getOrderStatusLabel(status, "en")}
                         </SelectItem>
@@ -188,7 +191,7 @@ export default function AdminOrderDetail() {
                   <Textarea
                     placeholder="Reason (optional)"
                     value={statusReason}
-                    onChange={(e) => setStatusReason(e.target.value)}
+                    onChange={e => setStatusReason(e.target.value)}
                     rows={1}
                   />
                 </div>
