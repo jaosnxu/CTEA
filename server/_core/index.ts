@@ -23,6 +23,12 @@ import tenantRouter from "../src/routes/tenant";
 import authRouter from "../src/routes/auth";
 import smsRouter from "../src/routes/sms";
 
+// 🆕 新增的产品和布局 API 路由
+import adminProductsRouter from "../src/routes/admin/products";
+import adminPricingRulesRouter from "../src/routes/admin/pricing-rules";
+import clientProductsRouter from "../src/routes/client/products";
+import clientLayoutsRouter from "../src/routes/client/layouts";
+
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
     const server = net.createServer();
@@ -85,6 +91,12 @@ async function startServer() {
   app.use("/api/auth", authRouter);
   app.use("/api/sms", smsRouter);
 
+  // 🆕 新增的产品和布局 API 路由
+  app.use("/api/admin/products", adminProductsRouter);
+  app.use("/api/admin/pricing-rules", adminPricingRulesRouter);
+  app.use("/api/client/products", clientProductsRouter);
+  app.use("/api/client/layouts", clientLayoutsRouter);
+
   // tRPC API (原系统)
   app.use(
     "/api/trpc",
@@ -113,21 +125,6 @@ async function startServer() {
       time: new Date().toISOString(),
       env: process.env.NODE_ENV,
     });
-  });
-
-  app.get('/api/client/products', async (req, res) => {
-    try {
-      const { getPrismaClient } = await import('../src/db/prisma');
-      const prisma = getPrismaClient();
-      const products = await prisma.products.findMany({
-        take: 5,
-        select: { id: true, name: true, code: true, orgId: true },
-      });
-      res.json({ success: true, count: products.length, data: products });
-    } catch (err: any) {
-      console.error('[REST] /api/client/products error:', err);
-      res.status(500).json({ success: false, error: err.message });
-    }
   });
 
   // development mode uses Vite, production mode uses static files
