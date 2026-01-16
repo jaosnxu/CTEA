@@ -225,7 +225,7 @@ jobs:
           DATABASE_URL: "mysql://root:root@127.0.0.1:3306/ctea"
 
       - name: Setup Test Database (Drizzle)
-        run: pnpm exec drizzle-kit push
+        run: pnpm exec drizzle-kit push --force
         env:
           DATABASE_URL: "mysql://root:root@127.0.0.1:3306/ctea"
 
