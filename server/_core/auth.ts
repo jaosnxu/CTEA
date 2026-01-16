@@ -1,6 +1,6 @@
 /**
  * OAuth 2.0 Authorization Code Flow Handler
- * 
+ *
  * This module handles OAuth callback processing for standard OAuth providers
  * (Google, VK, Telegram, etc.) using the Authorization Code Flow.
  */
@@ -26,7 +26,7 @@ interface TokenResponse {
  * Represents decoded user information from ID token
  */
 interface UserInfo {
-  sub: string;  // Subject (user ID)
+  sub: string; // Subject (user ID)
   email?: string;
   name?: string;
   picture?: string;
@@ -67,7 +67,7 @@ function getQueryParam(req: Request, key: string): string | undefined {
  * Exchanges an authorization code for access and ID tokens
  * @param code - Authorization code from OAuth provider
  * @param clientId - OAuth client ID
- * @param clientSecret - OAuth client secret  
+ * @param clientSecret - OAuth client secret
  * @param redirectUri - OAuth callback URL
  * @param tokenUrl - OAuth token endpoint URL
  * @returns Token response containing access token and optional ID token
@@ -117,7 +117,7 @@ async function exchangeCodeForTokens(
 function decodeIdToken(idToken: string): UserInfo {
   try {
     const payload = decodeJwt(idToken);
-    
+
     // Validate required fields
     if (!payload.sub || typeof payload.sub !== "string") {
       throw new Error("ID token missing required 'sub' field");
@@ -132,21 +132,21 @@ function decodeIdToken(idToken: string): UserInfo {
 
 /**
  * Registers standard OAuth 2.0 / OpenID Connect routes with the Express app
- * 
+ *
  * Note: This is separate from the existing Manus OAuth system (registerOAuthRoutes)
  * and provides standard OAuth 2.0 / OIDC compatibility for providers like Google, VK, Telegram.
- * 
+ *
  * @param app - Express application instance
  */
 export function registerStandardOAuthRoutes(app: Express): void {
   /**
    * OAuth callback endpoint
    * Handles the Authorization Code Flow callback from OAuth providers
-   * 
+   *
    * Query Parameters:
    * - code: Authorization code from the OAuth provider
    * - state: State parameter for CSRF protection
-   * 
+   *
    * Returns:
    * - 302 redirect to home page on success
    * - 400 if required parameters are missing
@@ -158,9 +158,9 @@ export function registerStandardOAuthRoutes(app: Express): void {
       validateOAuthConfig();
     } catch (error) {
       console.error("[OAuth] Configuration error:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: "OAuth not configured",
-        message: error instanceof Error ? error.message : "Unknown error"
+        message: error instanceof Error ? error.message : "Unknown error",
       });
       return;
     }
@@ -171,18 +171,18 @@ export function registerStandardOAuthRoutes(app: Express): void {
 
     if (!code) {
       console.warn("[OAuth] Missing authorization code");
-      res.status(400).json({ 
+      res.status(400).json({
         error: "Missing authorization code",
-        message: "The 'code' parameter is required"
+        message: "The 'code' parameter is required",
       });
       return;
     }
 
     if (!state) {
       console.warn("[OAuth] Missing state parameter");
-      res.status(400).json({ 
+      res.status(400).json({
         error: "Missing state parameter",
-        message: "The 'state' parameter is required for CSRF protection"
+        message: "The 'state' parameter is required for CSRF protection",
       });
       return;
     }
@@ -190,20 +190,21 @@ export function registerStandardOAuthRoutes(app: Express): void {
     try {
       // Exchange authorization code for tokens
       console.log("[OAuth] Exchanging code for tokens");
+      // These are guaranteed to be defined after validateOAuthConfig() passes
       const tokenResponse = await exchangeCodeForTokens(
         code,
-        ENV.OAUTH_CLIENT_ID,
-        ENV.OAUTH_CLIENT_SECRET,
-        ENV.OAUTH_CALLBACK_URL,
-        ENV.OAUTH_TOKEN_URL
+        ENV.OAUTH_CLIENT_ID!,
+        ENV.OAUTH_CLIENT_SECRET!,
+        ENV.OAUTH_CALLBACK_URL!,
+        ENV.OAUTH_TOKEN_URL!
       );
 
       // Extract and validate ID token
       if (!tokenResponse.id_token) {
         console.error("[OAuth] No ID token in response");
-        res.status(500).json({ 
+        res.status(500).json({
           error: "No ID token received",
-          message: "The OAuth provider did not return an ID token"
+          message: "The OAuth provider did not return an ID token",
         });
         return;
       }
@@ -225,7 +226,7 @@ export function registerStandardOAuthRoutes(app: Express): void {
       // - Create session tokens
       // - Set authentication cookies
       // - Persist user data
-      // 
+      //
       // To complete the implementation, you need to:
       // 1. Import or implement user database operations
       // 2. Call user creation/update function with userInfo
@@ -237,9 +238,12 @@ export function registerStandardOAuthRoutes(app: Express): void {
       res.redirect(302, "/?oauth=success");
     } catch (error) {
       console.error("[OAuth] Callback processing failed:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: "OAuth callback failed",
-        message: error instanceof Error ? error.message : "Unknown error occurred during authentication"
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unknown error occurred during authentication",
       });
     }
   });

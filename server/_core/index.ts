@@ -125,7 +125,7 @@ async function startServer() {
 
   // OAuth callback under /api/oauth/callback (Manus OAuth)
   registerOAuthRoutes(app);
-  
+
   // Standard OAuth 2.0 / OIDC routes under /oauth/callback
   registerStandardOAuthRoutes(app);
 

@@ -52,7 +52,9 @@ describe("OAuth Callback Processing", () => {
   /**
    * Helper to create a valid ID token (JWT)
    */
-  async function createIdToken(payload: Record<string, unknown>): Promise<string> {
+  async function createIdToken(
+    payload: Record<string, unknown>
+  ): Promise<string> {
     const secret = new TextEncoder().encode("test-secret");
     return new SignJWT(payload)
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
@@ -64,17 +66,17 @@ describe("OAuth Callback Processing", () => {
     it("should return 500 when OAUTH_CLIENT_ID is not set", async () => {
       const originalValue = process.env.OAUTH_CLIENT_ID;
       delete process.env.OAUTH_CLIENT_ID;
-      
+
       // Force re-import to pick up changed env
       vi.resetModules();
       const { registerStandardOAuthRoutes } = await import("./auth");
-      
+
       const app = { get: vi.fn() } as any;
       registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
-      
+
       await handler(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
@@ -83,7 +85,7 @@ describe("OAuth Callback Processing", () => {
           error: "OAuth not configured",
         })
       );
-      
+
       // Restore and reload
       process.env.OAUTH_CLIENT_ID = originalValue;
       vi.resetModules();
@@ -92,16 +94,16 @@ describe("OAuth Callback Processing", () => {
     it("should return 500 when OAUTH_CLIENT_SECRET is not set", async () => {
       const originalValue = process.env.OAUTH_CLIENT_SECRET;
       delete process.env.OAUTH_CLIENT_SECRET;
-      
+
       vi.resetModules();
       const { registerStandardOAuthRoutes } = await import("./auth");
-      
+
       const app = { get: vi.fn() } as any;
       registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
-      
+
       await handler(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
@@ -110,7 +112,7 @@ describe("OAuth Callback Processing", () => {
           error: "OAuth not configured",
         })
       );
-      
+
       // Restore and reload
       process.env.OAUTH_CLIENT_SECRET = originalValue;
       vi.resetModules();
@@ -119,16 +121,16 @@ describe("OAuth Callback Processing", () => {
     it("should return 500 when OAUTH_CALLBACK_URL is not set", async () => {
       const originalValue = process.env.OAUTH_CALLBACK_URL;
       delete process.env.OAUTH_CALLBACK_URL;
-      
+
       vi.resetModules();
       const { registerStandardOAuthRoutes } = await import("./auth");
-      
+
       const app = { get: vi.fn() } as any;
       registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
-      
+
       await handler(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
@@ -137,7 +139,7 @@ describe("OAuth Callback Processing", () => {
           error: "OAuth not configured",
         })
       );
-      
+
       // Restore and reload
       process.env.OAUTH_CALLBACK_URL = originalValue;
       vi.resetModules();
@@ -153,7 +155,7 @@ describe("OAuth Callback Processing", () => {
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ state: "test-state" });
       const res = createMockResponse();
-      
+
       await handler(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
@@ -172,7 +174,7 @@ describe("OAuth Callback Processing", () => {
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code" });
       const res = createMockResponse();
-      
+
       await handler(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
@@ -208,7 +210,7 @@ describe("OAuth Callback Processing", () => {
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
-      
+
       await handler(req, res);
 
       expect(mockedAxios.post).toHaveBeenCalledWith(
@@ -238,9 +240,12 @@ describe("OAuth Callback Processing", () => {
 
       registerStandardOAuthRoutes(app);
       const handler = app.get.mock.calls[0][1];
-      const req = createMockRequest({ code: "invalid-code", state: "test-state" });
+      const req = createMockRequest({
+        code: "invalid-code",
+        state: "test-state",
+      });
       const res = createMockResponse();
-      
+
       await handler(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
@@ -267,7 +272,7 @@ describe("OAuth Callback Processing", () => {
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
-      
+
       await handler(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
@@ -303,7 +308,7 @@ describe("OAuth Callback Processing", () => {
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
-      
+
       await handler(req, res);
 
       expect(res.redirect).toHaveBeenCalledWith(302, "/?oauth=success");
@@ -331,7 +336,7 @@ describe("OAuth Callback Processing", () => {
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
-      
+
       await handler(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
@@ -363,7 +368,7 @@ describe("OAuth Callback Processing", () => {
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
-      
+
       await handler(req, res);
 
       expect(res.redirect).toHaveBeenCalledWith(302, "/?oauth=success");
@@ -381,7 +386,7 @@ describe("OAuth Callback Processing", () => {
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
-      
+
       await handler(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
@@ -408,7 +413,7 @@ describe("OAuth Callback Processing", () => {
       const handler = app.get.mock.calls[0][1];
       const req = createMockRequest({ code: "test-code", state: "test-state" });
       const res = createMockResponse();
-      
+
       await handler(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);

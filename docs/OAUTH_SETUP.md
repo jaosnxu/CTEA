@@ -48,12 +48,12 @@ User → OAuth Provider → Authorization → Redirect with code
 
 The following environment variables must be set for OAuth to function:
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `OAUTH_CLIENT_ID` | Client ID from your OAuth provider | `1234567890-abcdefg.apps.googleusercontent.com` |
-| `OAUTH_CLIENT_SECRET` | Client secret from your OAuth provider | `GOCSPX-abc123xyz` |
-| `OAUTH_CALLBACK_URL` | The callback URL registered with your OAuth provider | `https://your-domain.com/oauth/callback` |
-| `OAUTH_TOKEN_URL` | Token endpoint of your OAuth provider | `https://oauth2.googleapis.com/token` |
+| Variable              | Description                                          | Example                                         |
+| --------------------- | ---------------------------------------------------- | ----------------------------------------------- |
+| `OAUTH_CLIENT_ID`     | Client ID from your OAuth provider                   | `1234567890-abcdefg.apps.googleusercontent.com` |
+| `OAUTH_CLIENT_SECRET` | Client secret from your OAuth provider               | `GOCSPX-abc123xyz`                              |
+| `OAUTH_CALLBACK_URL`  | The callback URL registered with your OAuth provider | `https://your-domain.com/oauth/callback`        |
+| `OAUTH_TOKEN_URL`     | Token endpoint of your OAuth provider                | `https://oauth2.googleapis.com/token`           |
 
 ### Optional Variables
 
@@ -71,6 +71,7 @@ These variables are used by the existing Manus OAuth system:
 Register your application with your chosen OAuth provider:
 
 #### Google OAuth 2.0
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select existing one
 3. Enable "Google+ API"
@@ -80,12 +81,14 @@ Register your application with your chosen OAuth provider:
 7. Save the Client ID and Client Secret
 
 #### VK OAuth
+
 1. Go to [VK Developers](https://vk.com/dev)
 2. Create a new application
 3. Set redirect URI: `https://your-domain.com/oauth/callback`
 4. Get your Application ID and Secure Key
 
 #### Telegram Login
+
 1. Create a bot via [@BotFather](https://t.me/BotFather)
 2. Use `/setdomain` to set your domain
 3. Get bot token and configure Telegram Login Widget
@@ -154,6 +157,7 @@ https://your-domain.com/oauth/callback?
 ```
 
 The `/oauth/callback` endpoint will:
+
 1. Validate the `code` and `state` parameters
 2. Exchange the code for access and ID tokens
 3. Decode the ID token to extract user information
@@ -168,19 +172,21 @@ Handles OAuth authorization callbacks.
 
 #### Query Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `code` | string | Yes | Authorization code from OAuth provider |
-| `state` | string | Yes | State parameter for CSRF protection |
+| Parameter | Type   | Required | Description                            |
+| --------- | ------ | -------- | -------------------------------------- |
+| `code`    | string | Yes      | Authorization code from OAuth provider |
+| `state`   | string | Yes      | State parameter for CSRF protection    |
 
 #### Response
 
 **Success (302 Redirect)**
+
 ```
 Location: /?oauth=success
 ```
 
 **Error (400)**
+
 ```json
 {
   "error": "Missing authorization code",
@@ -189,6 +195,7 @@ Location: /?oauth=success
 ```
 
 **Error (500)**
+
 ```json
 {
   "error": "OAuth callback failed",
@@ -217,18 +224,22 @@ Location: /?oauth=success
 ### Common Issues
 
 #### "OAuth not configured" Error
+
 - **Cause**: Required environment variables are not set
 - **Solution**: Verify all required environment variables are present
 
 #### "Missing authorization code" Error
+
 - **Cause**: OAuth provider didn't return a code
 - **Solution**: Check OAuth provider configuration and redirect URI
 
 #### "Token exchange failed" Error
+
 - **Cause**: Invalid code, client credentials, or redirect URI mismatch
 - **Solution**: Verify `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`, and `OAUTH_CALLBACK_URL` match your provider's configuration
 
 #### "Invalid ID token" Error
+
 - **Cause**: Malformed or invalid ID token from provider
 - **Solution**: Ensure your OAuth provider supports OpenID Connect and returns ID tokens
 
@@ -247,6 +258,7 @@ npm test -- server/_core/auth.test.ts
 ### Test Coverage
 
 The test suite includes:
+
 - Environment variable validation
 - Query parameter validation
 - Token exchange success and failure cases
@@ -281,6 +293,7 @@ Both systems can coexist. Choose the appropriate endpoint based on your authenti
 ## Support
 
 For issues or questions:
+
 1. Check the troubleshooting section above
 2. Review server logs for detailed error messages
 3. Verify your OAuth provider configuration

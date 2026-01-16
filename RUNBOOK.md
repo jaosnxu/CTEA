@@ -106,6 +106,7 @@ http://localhost:3000/oauth/callback?code=mock-auth-code-xxxxx&state=random-stat
 #### 步骤 3: 验证令牌交换
 
 应用会自动：
+
 1. 验证 `state` 参数
 2. 使用 `code` 交换访问令牌和 ID 令牌
 3. 解码 ID 令牌获取用户信息
@@ -166,16 +167,16 @@ curl -X POST http://localhost:9000/webdev.v1.WebDevAuthPublicService/GetUserInfo
 
 所有环境变量在 `docker-compose.yml` 中配置：
 
-| 变量名 | 值 | 说明 |
-|--------|-----|------|
-| `NODE_ENV` | `development` | 运行环境 |
-| `PORT` | `3000` / `3001` | 服务端口 |
-| `DATABASE_URL` | `postgresql://...` | 数据库连接字符串 |
-| `API_KEY` | `test-api-key-12345` | API 密钥 |
-| `OAUTH_CLIENT_ID` | `test-client-id` | OAuth 客户端 ID |
-| `OAUTH_CLIENT_SECRET` | `test-client-secret` | OAuth 客户端密钥 |
-| `OAUTH_CALLBACK_URL` | `http://localhost:3000/oauth/callback` | OAuth 回调 URL |
-| `OAUTH_TOKEN_URL` | `http://mock-oauth:9000/oauth/token` | OAuth 令牌端点 |
+| 变量名                | 值                                     | 说明             |
+| --------------------- | -------------------------------------- | ---------------- |
+| `NODE_ENV`            | `development`                          | 运行环境         |
+| `PORT`                | `3000` / `3001`                        | 服务端口         |
+| `DATABASE_URL`        | `postgresql://...`                     | 数据库连接字符串 |
+| `API_KEY`             | `test-api-key-12345`                   | API 密钥         |
+| `OAUTH_CLIENT_ID`     | `test-client-id`                       | OAuth 客户端 ID  |
+| `OAUTH_CLIENT_SECRET` | `test-client-secret`                   | OAuth 客户端密钥 |
+| `OAUTH_CALLBACK_URL`  | `http://localhost:3000/oauth/callback` | OAuth 回调 URL   |
+| `OAUTH_TOKEN_URL`     | `http://mock-oauth:9000/oauth/token`   | OAuth 令牌端点   |
 
 ### 修改环境变量 (Modify Environment Variables)
 
@@ -260,6 +261,7 @@ docker volume prune
 ### 问题 1: 端口已被占用
 
 **错误信息:**
+
 ```
 Error: bind: address already in use
 ```
@@ -267,6 +269,7 @@ Error: bind: address already in use
 **解决方案:**
 
 1. 检查端口占用：
+
 ```bash
 lsof -i :3000
 lsof -i :3001
@@ -281,16 +284,19 @@ lsof -i :9000
 **解决方案:**
 
 1. 查看服务日志：
+
 ```bash
 docker compose logs app
 ```
 
 2. 检查依赖服务是否健康：
+
 ```bash
 docker compose ps
 ```
 
 3. 重新构建镜像：
+
 ```bash
 docker compose build --no-cache
 docker compose up -d
@@ -299,6 +305,7 @@ docker compose up -d
 ### 问题 3: 数据库连接失败
 
 **错误信息:**
+
 ```
 Error: connect ECONNREFUSED
 ```
@@ -306,6 +313,7 @@ Error: connect ECONNREFUSED
 **解决方案:**
 
 1. 确保 PostgreSQL 服务已启动且健康：
+
 ```bash
 docker compose ps postgres
 ```
@@ -319,11 +327,13 @@ docker compose ps postgres
 **解决方案:**
 
 1. 确认 Mock OAuth 服务正在运行：
+
 ```bash
 curl http://localhost:9000/health
 ```
 
 2. 检查应用日志中的错误信息：
+
 ```bash
 docker compose logs -f app | grep OAuth
 ```
@@ -346,16 +356,16 @@ docker compose logs -f app | grep OAuth
 
 ## 与生产环境的区别 (Differences from Production)
 
-| 方面 | Docker Compose (测试) | PM2 + Nginx (生产) |
-|------|----------------------|-------------------|
-| 用途 | 本地开发和测试 | 生产部署 |
-| 数据库 | 容器内 PostgreSQL | 独立 PostgreSQL 服务器 |
-| OAuth | Mock OAuth 服务器 | 真实 OAuth 提供商 |
-| HTTPS | 不支持 | 支持（通过 Nginx + SSL） |
-| 负载均衡 | 无 | Nginx 反向代理 |
-| 进程管理 | Docker Compose | PM2 |
-| 日志 | Docker logs | PM2 logs + 系统日志 |
-| 持久化 | Docker 卷 | 文件系统 |
+| 方面     | Docker Compose (测试) | PM2 + Nginx (生产)       |
+| -------- | --------------------- | ------------------------ |
+| 用途     | 本地开发和测试        | 生产部署                 |
+| 数据库   | 容器内 PostgreSQL     | 独立 PostgreSQL 服务器   |
+| OAuth    | Mock OAuth 服务器     | 真实 OAuth 提供商        |
+| HTTPS    | 不支持                | 支持（通过 Nginx + SSL） |
+| 负载均衡 | 无                    | Nginx 反向代理           |
+| 进程管理 | Docker Compose        | PM2                      |
+| 日志     | Docker logs           | PM2 logs + 系统日志      |
+| 持久化   | Docker 卷             | 文件系统                 |
 
 ## 下一步 (Next Steps)
 

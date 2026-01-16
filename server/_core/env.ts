@@ -6,7 +6,9 @@ const logger = createLogger("Environment");
 
 // Define the environment variables schema
 const EnvSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  NODE_ENV: z
+    .enum(["development", "test", "production"])
+    .default("development"),
   PORT: z.string().regex(/^\d+$/, "PORT must be a number").default("3000"),
 
   // Database configuration - optional for test environments
@@ -15,13 +17,28 @@ const EnvSchema = z.object({
 
   // Standard OAuth 2.0 / OIDC Configuration (Google, VK, Telegram)
   // Optional - only required if using standard OAuth 2.0 authentication
-  OAUTH_CLIENT_ID: z.string().min(1, "OAUTH_CLIENT_ID cannot be empty").optional(),
-  OAUTH_CLIENT_SECRET: z.string().min(1, "OAUTH_CLIENT_SECRET cannot be empty").optional(),
-  OAUTH_CALLBACK_URL: z.string().url("OAUTH_CALLBACK_URL must be a valid URL").optional(),
-  OAUTH_TOKEN_URL: z.string().url("OAUTH_TOKEN_URL must be a valid URL").optional(),
+  OAUTH_CLIENT_ID: z
+    .string()
+    .min(1, "OAUTH_CLIENT_ID cannot be empty")
+    .optional(),
+  OAUTH_CLIENT_SECRET: z
+    .string()
+    .min(1, "OAUTH_CLIENT_SECRET cannot be empty")
+    .optional(),
+  OAUTH_CALLBACK_URL: z
+    .string()
+    .url("OAUTH_CALLBACK_URL must be a valid URL")
+    .optional(),
+  OAUTH_TOKEN_URL: z
+    .string()
+    .url("OAUTH_TOKEN_URL must be a valid URL")
+    .optional(),
 
   // Manus OAuth Configuration (existing custom OAuth system)
-  OAUTH_SERVER_URL: z.string().url("OAUTH_SERVER_URL must be a valid URL").optional(),
+  OAUTH_SERVER_URL: z
+    .string()
+    .url("OAUTH_SERVER_URL must be a valid URL")
+    .optional(),
   VITE_APP_ID: z.string().min(1, "VITE_APP_ID cannot be empty").optional(),
   COOKIE_SECRET: z.string().min(1, "COOKIE_SECRET cannot be empty").optional(),
 
