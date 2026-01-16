@@ -1,14 +1,14 @@
 /**
  * Layout Engine - SDUI (Server-Driven UI) Configuration System
- * 
+ *
  * Responsibilities:
  * - Manage page layout configurations
  * - Provide default layouts
  * - Store and retrieve custom layouts
  */
 
-import { getPrismaClient } from '../db/prisma';
-import type { PrismaClient } from '@prisma/client';
+import { getPrismaClient } from "../db/prisma";
+import type { PrismaClient } from "@prisma/client";
 
 export interface LayoutSection {
   type: string;
@@ -25,63 +25,63 @@ export interface LayoutConfig {
  */
 const DEFAULT_LAYOUTS: Record<string, LayoutConfig> = {
   home: {
-    page: 'home',
+    page: "home",
     sections: [
-      { 
-        type: 'banner', 
-        imageUrl: '/banners/home.jpg', 
-        autoPlay: true, 
-        interval: 3000 
+      {
+        type: "banner",
+        imageUrl: "/banners/home.jpg",
+        autoPlay: true,
+        interval: 3000,
       },
-      { 
-        type: 'categories', 
-        columns: 4, 
-        showIcon: true 
+      {
+        type: "categories",
+        columns: 4,
+        showIcon: true,
       },
-      { 
-        type: 'hotProducts', 
-        title: 'Популярное', 
-        limit: 6, 
-        algorithm: 'sales_rank' 
+      {
+        type: "hotProducts",
+        title: "Популярное",
+        limit: 6,
+        algorithm: "sales_rank",
       },
-      { 
-        type: 'memberCard' 
+      {
+        type: "memberCard",
       },
-      { 
-        type: 'couponSection', 
-        limit: 3 
-      }
-    ]
+      {
+        type: "couponSection",
+        limit: 3,
+      },
+    ],
   },
   order: {
-    page: 'order',
+    page: "order",
     sections: [
-      { 
-        type: 'categoryTabs' 
+      {
+        type: "categoryTabs",
       },
-      { 
-        type: 'productGrid', 
-        columns: 2 
+      {
+        type: "productGrid",
+        columns: 2,
       },
-      { 
-        type: 'floatingCart' 
-      }
-    ]
+      {
+        type: "floatingCart",
+      },
+    ],
   },
   mall: {
-    page: 'mall',
+    page: "mall",
     sections: [
-      { 
-        type: 'banner', 
-        imageUrl: '/banners/mall.jpg' 
+      {
+        type: "banner",
+        imageUrl: "/banners/mall.jpg",
       },
-      { 
-        type: 'productGrid', 
-        columns: 2, 
-        showFilters: true 
-      }
-    ]
-  }
+      {
+        type: "productGrid",
+        columns: 2,
+        showFilters: true,
+      },
+    ],
+  },
 };
 
 /**
@@ -113,8 +113,8 @@ class LayoutEngine {
       // Try to get layout from database
       const dbLayout = await this.prisma.sduilayouts.findFirst({
         where: {
-          layoutCode: pageName
-        }
+          layoutCode: pageName,
+        },
       });
 
       if (dbLayout) {
@@ -124,7 +124,10 @@ class LayoutEngine {
           // Since schema doesn't show the exact fields, we'll use default for now
           return DEFAULT_LAYOUTS[pageName] || null;
         } catch (parseError) {
-          console.error('[LayoutEngine] Error parsing layout JSON:', parseError);
+          console.error(
+            "[LayoutEngine] Error parsing layout JSON:",
+            parseError
+          );
           // Fall back to default
         }
       }
@@ -132,7 +135,7 @@ class LayoutEngine {
       // Return default layout if not found in database
       return DEFAULT_LAYOUTS[pageName] || null;
     } catch (error) {
-      console.error('[LayoutEngine] Error getting layout:', error);
+      console.error("[LayoutEngine] Error getting layout:", error);
       // On error, return default layout
       return DEFAULT_LAYOUTS[pageName] || null;
     }
@@ -141,13 +144,16 @@ class LayoutEngine {
   /**
    * Save layout configuration
    */
-  async saveLayout(pageName: string, config: LayoutConfig): Promise<LayoutConfig> {
+  async saveLayout(
+    pageName: string,
+    config: LayoutConfig
+  ): Promise<LayoutConfig> {
     try {
       // Try to find existing layout
       const existing = await this.prisma.sduilayouts.findFirst({
         where: {
-          layoutCode: pageName
-        }
+          layoutCode: pageName,
+        },
       });
 
       if (existing) {
@@ -156,25 +162,25 @@ class LayoutEngine {
           where: { id: existing.id },
           data: {
             layoutCode: pageName,
-            updatedAt: new Date()
+            updatedAt: new Date(),
             // Add more fields based on schema
-          }
+          },
         });
       } else {
         // Create new layout
         await this.prisma.sduilayouts.create({
           data: {
             layoutCode: pageName,
-            orgId: 1 // Default org ID
+            orgId: 1, // Default org ID
             // Add more fields based on schema
-          }
+          },
         });
       }
 
       return config;
     } catch (error) {
-      console.error('[LayoutEngine] Error saving layout:', error);
-      throw new Error('Failed to save layout');
+      console.error("[LayoutEngine] Error saving layout:", error);
+      throw new Error("Failed to save layout");
     }
   }
 
@@ -189,7 +195,7 @@ class LayoutEngine {
       // For now, return default layouts
       return Object.values(DEFAULT_LAYOUTS);
     } catch (error) {
-      console.error('[LayoutEngine] Error getting all layouts:', error);
+      console.error("[LayoutEngine] Error getting all layouts:", error);
       // On error, return default layouts
       return Object.values(DEFAULT_LAYOUTS);
     }
@@ -201,13 +207,13 @@ class LayoutEngine {
   async deleteLayout(id: string): Promise<{ success: boolean }> {
     try {
       await this.prisma.sduilayouts.delete({
-        where: { id }
+        where: { id },
       });
 
       return { success: true };
     } catch (error) {
-      console.error('[LayoutEngine] Error deleting layout:', error);
-      throw new Error('Failed to delete layout');
+      console.error("[LayoutEngine] Error deleting layout:", error);
+      throw new Error("Failed to delete layout");
     }
   }
 

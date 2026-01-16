@@ -1,6 +1,6 @@
 /**
  * API Client - Unified API communication layer
- * 
+ *
  * Singleton pattern for consistent API calls across the application
  */
 
@@ -69,7 +69,7 @@ class ApiClient {
 
   private constructor() {
     // Use relative URLs for same-origin requests
-    this.baseURL = '';
+    this.baseURL = "";
   }
 
   /**
@@ -93,7 +93,7 @@ class ApiClient {
       const response = await fetch(`${this.baseURL}${url}`, {
         ...options,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...options?.headers,
         },
       });
@@ -101,12 +101,12 @@ class ApiClient {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'API request failed');
+        throw new Error(data.message || "API request failed");
       }
 
       return data;
     } catch (error) {
-      console.error('[ApiClient] Fetch error:', error);
+      console.error("[ApiClient] Fetch error:", error);
       throw error;
     }
   }
@@ -123,11 +123,11 @@ class ApiClient {
     search?: string;
   }): Promise<ApiResponse<Product[]>> {
     const params = new URLSearchParams();
-    if (filters?.category) params.append('category', filters.category);
-    if (filters?.search) params.append('search', filters.search);
+    if (filters?.category) params.append("category", filters.category);
+    if (filters?.search) params.append("search", filters.search);
 
     const queryString = params.toString();
-    const url = `/api/client/products${queryString ? `?${queryString}` : ''}`;
+    const url = `/api/client/products${queryString ? `?${queryString}` : ""}`;
 
     return this.fetch<Product[]>(url);
   }
@@ -154,7 +154,7 @@ class ApiClient {
     return this.fetch<PricingResult>(
       `/api/client/products/${productId}/calculate-price`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(params),
       }
     );
@@ -179,7 +179,7 @@ class ApiClient {
    * Get product statistics (Admin)
    */
   async getProductStats(): Promise<ApiResponse<ProductStats>> {
-    return this.fetch<ProductStats>('/api/admin/products/stats/summary');
+    return this.fetch<ProductStats>("/api/admin/products/stats/summary");
   }
 
   /**
@@ -191,12 +191,12 @@ class ApiClient {
     status?: string;
   }): Promise<ApiResponse<Product[]>> {
     const params = new URLSearchParams();
-    if (filters?.category) params.append('category', filters.category);
-    if (filters?.search) params.append('search', filters.search);
-    if (filters?.status) params.append('status', filters.status);
+    if (filters?.category) params.append("category", filters.category);
+    if (filters?.search) params.append("search", filters.search);
+    if (filters?.status) params.append("status", filters.status);
 
     const queryString = params.toString();
-    const url = `/api/admin/products${queryString ? `?${queryString}` : ''}`;
+    const url = `/api/admin/products${queryString ? `?${queryString}` : ""}`;
 
     return this.fetch<Product[]>(url);
   }
@@ -209,7 +209,7 @@ class ApiClient {
     updates: Partial<Product>
   ): Promise<ApiResponse<Product>> {
     return this.fetch<Product>(`/api/admin/products/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(updates),
     });
   }
@@ -219,7 +219,7 @@ class ApiClient {
    */
   async deleteProduct(id: string): Promise<ApiResponse<void>> {
     return this.fetch<void>(`/api/admin/products/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 
@@ -227,17 +227,17 @@ class ApiClient {
    * Get pricing rules (Admin)
    */
   async getPricingRules(): Promise<ApiResponse<PricingRule[]>> {
-    return this.fetch<PricingRule[]>('/api/admin/pricing-rules');
+    return this.fetch<PricingRule[]>("/api/admin/pricing-rules");
   }
 
   /**
    * Create pricing rule (Admin)
    */
   async createPricingRule(
-    rule: Omit<PricingRule, 'id'>
+    rule: Omit<PricingRule, "id">
   ): Promise<ApiResponse<PricingRule>> {
-    return this.fetch<PricingRule>('/api/admin/pricing-rules', {
-      method: 'POST',
+    return this.fetch<PricingRule>("/api/admin/pricing-rules", {
+      method: "POST",
       body: JSON.stringify(rule),
     });
   }
@@ -250,7 +250,7 @@ class ApiClient {
     updates: Partial<PricingRule>
   ): Promise<ApiResponse<PricingRule>> {
     return this.fetch<PricingRule>(`/api/admin/pricing-rules/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(updates),
     });
   }
@@ -260,7 +260,7 @@ class ApiClient {
    */
   async deletePricingRule(id: string): Promise<ApiResponse<void>> {
     return this.fetch<void>(`/api/admin/pricing-rules/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 }

@@ -164,7 +164,7 @@ export class SmsVerificationService {
     console.log("\n[Step 1] Captcha 校验...");
 
     // 开发环境跳过 Captcha 验证
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.NODE_ENV !== "development") {
       if (!ticket || !randstr) {
         console.log("❌ 缺少验证码票据");
         return {
@@ -309,7 +309,8 @@ export class SmsVerificationService {
       // ==================== 第一步：查找有效的验证码 ====================
       console.log("\n[Step 1] 查找有效验证码...");
 
-      const result = await db.execute(sql`SELECT id, verification_code AS code, expires_at, status, attempts AS attempt_count 
+      const result =
+        await db.execute(sql`SELECT id, verification_code AS code, expires_at, status, attempts AS attempt_count 
          FROM sms_verification_logs 
          WHERE phone = ${phone} AND purpose = ${purpose} AND status != 'VERIFIED'
          ORDER BY created_at DESC LIMIT 1`);
@@ -423,7 +424,8 @@ export class SmsVerificationService {
     }
 
     try {
-      const result = await db.execute(sql`SELECT UNIX_TIMESTAMP(created_at) AS created_at FROM sms_verification_logs 
+      const result =
+        await db.execute(sql`SELECT UNIX_TIMESTAMP(created_at) AS created_at FROM sms_verification_logs 
          WHERE phone = ${phone} AND purpose = ${purpose} ORDER BY created_at DESC LIMIT 1`);
       const rows = result[0];
 
@@ -530,7 +532,9 @@ export class SmsVerificationService {
     if (!db) return;
 
     try {
-      await db.execute(sql`UPDATE sms_verification_logs SET attempts = ${newCount} WHERE id = ${id}`);
+      await db.execute(
+        sql`UPDATE sms_verification_logs SET attempts = ${newCount} WHERE id = ${id}`
+      );
     } catch (error) {
       console.error("[SmsVerificationService] 增加尝试次数失败:", error);
     }

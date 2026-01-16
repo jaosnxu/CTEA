@@ -4,7 +4,9 @@ export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 export const getLoginUrl = () => {
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
   if (!oauthPortalUrl) {
-    throw new Error("CRITICAL: VITE_OAUTH_PORTAL_URL is not defined in environment variables. Safari login will fail.");
+    throw new Error(
+      "CRITICAL: VITE_OAUTH_PORTAL_URL is not defined in environment variables. Safari login will fail."
+    );
   }
   const appId = import.meta.env.VITE_APP_ID;
   const redirectUri = `${window.location.origin}/api/oauth/callback`;

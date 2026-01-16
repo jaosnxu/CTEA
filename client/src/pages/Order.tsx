@@ -17,7 +17,13 @@ export default function Order() {
   const [isSpecModalOpen, setIsSpecModalOpen] = useState(false);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
 
-  const { drinkCart, drinkCartCount, products, isLoadingProducts, productsError } = useApp();
+  const {
+    drinkCart,
+    drinkCartCount,
+    products,
+    isLoadingProducts,
+    productsError,
+  } = useApp();
   const { t } = useLanguage();
 
   // Refs for scroll sync
@@ -179,18 +185,14 @@ export default function Order() {
         {/* Loading State */}
         {isLoadingProducts && (
           <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-3">
-            <p className="text-sm text-yellow-800">
-              ⏳ 正在加载产品数据...
-            </p>
+            <p className="text-sm text-yellow-800">⏳ 正在加载产品数据...</p>
           </div>
         )}
 
         {/* Error State */}
         {productsError && (
           <div className="bg-red-50 border-b border-red-200 px-4 py-3">
-            <p className="text-sm text-red-800">
-              ❌ 加载失败: {productsError}
-            </p>
+            <p className="text-sm text-red-800">❌ 加载失败: {productsError}</p>
           </div>
         )}
 

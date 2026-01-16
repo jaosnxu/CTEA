@@ -105,7 +105,14 @@ router.post("/send", async (req: Request, res: Response) => {
   console.log(`IP: ${userIp}`);
 
   try {
-    const { phone, purpose = "LOGIN", ticket, randstr, captchaTicket, captchaRandstr } = req.body as any;
+    const {
+      phone,
+      purpose = "LOGIN",
+      ticket,
+      randstr,
+      captchaTicket,
+      captchaRandstr,
+    } = req.body as any;
     const finalTicket = ticket || captchaTicket;
     const finalRandstr = randstr || captchaRandstr;
 
@@ -132,7 +139,7 @@ router.post("/send", async (req: Request, res: Response) => {
 
     // 🔥 安全铁律：必须提供 Captcha 票据（生产环境）
     // 开发环境跳过 Captcha 验证
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.NODE_ENV !== "development") {
       if (!finalTicket || !finalRandstr) {
         console.log("❌ 缺少 Captcha 票据，拒绝请求！");
         return res.status(403).json({

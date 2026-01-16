@@ -1,11 +1,11 @@
 /**
  * useAdminProducts Hook
- * 
+ *
  * Hook for managing products in the admin panel
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { apiClient, type Product, type ProductStats } from '@/lib/api-client';
+import { useState, useEffect, useCallback } from "react";
+import { apiClient, type Product, type ProductStats } from "@/lib/api-client";
 
 export interface UseAdminProductsResult {
   products: Product[];
@@ -48,9 +48,10 @@ export function useAdminProducts(): UseAdminProductsResult {
         setStats(statsResponse.data);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load products';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load products";
       setError(errorMessage);
-      console.error('[useAdminProducts] Error:', err);
+      console.error("[useAdminProducts] Error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +73,7 @@ export function useAdminProducts(): UseAdminProductsResult {
 
         return false;
       } catch (err) {
-        console.error('[useAdminProducts] Update error:', err);
+        console.error("[useAdminProducts] Update error:", err);
         return false;
       }
     },
@@ -95,7 +96,7 @@ export function useAdminProducts(): UseAdminProductsResult {
 
         return false;
       } catch (err) {
-        console.error('[useAdminProducts] Delete error:', err);
+        console.error("[useAdminProducts] Delete error:", err);
         return false;
       }
     },

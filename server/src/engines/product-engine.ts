@@ -1,14 +1,14 @@
 /**
  * Product Engine - Product CRUD, Statistics, and Batch Operations
- * 
+ *
  * Responsibilities:
  * - Product management (CRUD operations)
  * - Product statistics
  * - Batch operations
  */
 
-import { getPrismaClient } from '../db/prisma';
-import type { PrismaClient } from '@prisma/client';
+import { getPrismaClient } from "../db/prisma";
+import type { PrismaClient } from "@prisma/client";
 
 export interface ProductFilters {
   category?: string;
@@ -72,7 +72,7 @@ class ProductEngine {
 
       if (filters?.search) {
         where.name = {
-          contains: filters.search
+          contains: filters.search,
         };
       }
 
@@ -84,14 +84,14 @@ class ProductEngine {
       const products = await this.prisma.products.findMany({
         where,
         orderBy: {
-          createdAt: 'desc'
-        }
+          createdAt: "desc",
+        },
       });
 
       return products;
     } catch (error) {
-      console.error('[ProductEngine] Error getting products:', error);
-      throw new Error('Failed to get products');
+      console.error("[ProductEngine] Error getting products:", error);
+      throw new Error("Failed to get products");
     }
   }
 
@@ -101,16 +101,16 @@ class ProductEngine {
   async getProductById(id: string) {
     try {
       const product = await this.prisma.products.findUnique({
-        where: { id }
+        where: { id },
       });
 
       if (!product) {
-        throw new Error('Product not found');
+        throw new Error("Product not found");
       }
 
       return product;
     } catch (error) {
-      console.error('[ProductEngine] Error getting product:', error);
+      console.error("[ProductEngine] Error getting product:", error);
       throw error;
     }
   }
@@ -122,19 +122,19 @@ class ProductEngine {
     try {
       const product = await this.prisma.products.create({
         data: {
-          name: data.name || '',
+          name: data.name || "",
           orgId: data.orgId || 1,
           categoryId: data.categoryId || 1,
           code: data.code || `PROD_${Date.now()}`,
           createdBy: data.createdBy,
-          updatedBy: data.updatedBy
-        }
+          updatedBy: data.updatedBy,
+        },
       });
 
       return product;
     } catch (error) {
-      console.error('[ProductEngine] Error creating product:', error);
-      throw new Error('Failed to create product');
+      console.error("[ProductEngine] Error creating product:", error);
+      throw new Error("Failed to create product");
     }
   }
 
@@ -149,14 +149,14 @@ class ProductEngine {
           name: updates.name,
           code: updates.code,
           updatedBy: updates.updatedBy,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       });
 
       return product;
     } catch (error) {
-      console.error('[ProductEngine] Error updating product:', error);
-      throw new Error('Failed to update product');
+      console.error("[ProductEngine] Error updating product:", error);
+      throw new Error("Failed to update product");
     }
   }
 
@@ -168,13 +168,13 @@ class ProductEngine {
       // Since there's no soft delete field in schema, we'll do hard delete
       // In production, you should add a 'deletedAt' field
       await this.prisma.products.delete({
-        where: { id }
+        where: { id },
       });
 
       return { success: true };
     } catch (error) {
-      console.error('[ProductEngine] Error deleting product:', error);
-      throw new Error('Failed to delete product');
+      console.error("[ProductEngine] Error deleting product:", error);
+      throw new Error("Failed to delete product");
     }
   }
 
@@ -186,23 +186,23 @@ class ProductEngine {
       const result = await this.prisma.products.updateMany({
         where: {
           id: {
-            in: ids
-          }
+            in: ids,
+          },
         },
         data: {
           name: updates.name,
           code: updates.code,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       });
 
       return {
         success: true,
-        updated: result.count
+        updated: result.count,
       };
     } catch (error) {
-      console.error('[ProductEngine] Error batch updating products:', error);
-      throw new Error('Failed to batch update products');
+      console.error("[ProductEngine] Error batch updating products:", error);
+      throw new Error("Failed to batch update products");
     }
   }
 
@@ -226,12 +226,12 @@ class ProductEngine {
       // Get total revenue
       const ordersWithTotal = await this.prisma.orders.aggregate({
         _sum: {
-          totalAmount: true
-        }
+          totalAmount: true,
+        },
       });
 
-      const totalRevenue = ordersWithTotal._sum.totalAmount 
-        ? Number(ordersWithTotal._sum.totalAmount) 
+      const totalRevenue = ordersWithTotal._sum.totalAmount
+        ? Number(ordersWithTotal._sum.totalAmount)
         : 0;
 
       return {
@@ -239,11 +239,11 @@ class ProductEngine {
         activeProducts,
         categories,
         orders,
-        totalRevenue
+        totalRevenue,
       };
     } catch (error) {
-      console.error('[ProductEngine] Error getting product stats:', error);
-      throw new Error('Failed to get product stats');
+      console.error("[ProductEngine] Error getting product stats:", error);
+      throw new Error("Failed to get product stats");
     }
   }
 }

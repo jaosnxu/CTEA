@@ -1,14 +1,14 @@
 /**
  * Pricing Engine - Rule-Driven Dynamic Pricing System
- * 
+ *
  * Responsibilities:
  * - Calculate product prices based on dynamic rules
  * - Manage pricing rules (CRUD operations)
  * - Apply priority-based rule stacking
  */
 
-import { getPrismaClient } from '../db/prisma';
-import type { PrismaClient } from '@prisma/client';
+import { getPrismaClient } from "../db/prisma";
+import type { PrismaClient } from "@prisma/client";
 
 export interface PricingParams {
   productId: string;
@@ -41,7 +41,7 @@ export interface PricingRuleCondition {
 }
 
 export interface PricingRuleAction {
-  type: 'DISCOUNT_PERCENT' | 'DISCOUNT_FIXED' | 'MARKUP_PERCENT' | 'SET_PRICE';
+  type: "DISCOUNT_PERCENT" | "DISCOUNT_FIXED" | "MARKUP_PERCENT" | "SET_PRICE";
   value: number;
 }
 
@@ -60,23 +60,23 @@ export interface PricingRule {
  */
 const DEFAULT_PRICING_RULES: PricingRule[] = [
   {
-    id: 'rule_001',
-    name: '欢乐时光',
-    description: '下午2-5点享8折',
+    id: "rule_001",
+    name: "欢乐时光",
+    description: "下午2-5点享8折",
     condition: { hour: [14, 15, 16, 17] },
-    action: { type: 'DISCOUNT_PERCENT', value: 20 },
+    action: { type: "DISCOUNT_PERCENT", value: 20 },
     priority: 5,
-    isActive: true
+    isActive: true,
   },
   {
-    id: 'rule_002',
-    name: '会员折扣 - 金卡',
-    description: '金卡会员享95折',
-    condition: { userLevel: 'Gold' },
-    action: { type: 'DISCOUNT_PERCENT', value: 5 },
+    id: "rule_002",
+    name: "会员折扣 - 金卡",
+    description: "金卡会员享95折",
+    condition: { userLevel: "Gold" },
+    action: { type: "DISCOUNT_PERCENT", value: 5 },
     priority: 10,
-    isActive: true
-  }
+    isActive: true,
+  },
 ];
 
 /**
@@ -107,11 +107,11 @@ class PricingEngine {
     try {
       // Get product original price
       const product = await this.prisma.products.findUnique({
-        where: { id: params.productId }
+        where: { id: params.productId },
       });
 
       if (!product) {
-        throw new Error('Product not found');
+        throw new Error("Product not found");
       }
 
       // For now, use a default price since products table doesn't have price field
@@ -119,10 +119,12 @@ class PricingEngine {
 
       // Get applicable rules
       const rules = await this.getPricingRules(params.productId);
-      
+
       // Filter and sort rules by priority
       const applicableRules = this.filterApplicableRules(rules, params);
-      const sortedRules = applicableRules.sort((a, b) => b.priority - a.priority);
+      const sortedRules = applicableRules.sort(
+        (a, b) => b.priority - a.priority
+      );
 
       // Apply rules
       let finalPrice = originalPrice;
@@ -131,13 +133,13 @@ class PricingEngine {
       for (const rule of sortedRules) {
         const { newPrice, discount } = this.applyRule(finalPrice, rule);
         finalPrice = newPrice;
-        
+
         if (discount > 0) {
           appliedRules.push({
             id: rule.id,
             name: rule.name,
             description: rule.description,
-            discount
+            discount,
           });
         }
       }
@@ -148,10 +150,10 @@ class PricingEngine {
         originalPrice,
         finalPrice: Math.round(finalPrice * 100) / 100, // Round to 2 decimals
         savedAmount: Math.round(savedAmount * 100) / 100,
-        appliedRules
+        appliedRules,
       };
     } catch (error) {
-      console.error('[PricingEngine] Error calculating price:', error);
+      console.error("[PricingEngine] Error calculating price:", error);
       throw error;
     }
   }
@@ -165,7 +167,7 @@ class PricingEngine {
       // Since there's no pricing_rules table in schema, return default rules
       return DEFAULT_PRICING_RULES;
     } catch (error) {
-      console.error('[PricingEngine] Error getting pricing rules:', error);
+      console.error("[PricingEngine] Error getting pricing rules:", error);
       return DEFAULT_PRICING_RULES;
     }
   }
@@ -173,41 +175,44 @@ class PricingEngine {
   /**
    * Create pricing rule
    */
-  async createPricingRule(data: Omit<PricingRule, 'id'>): Promise<PricingRule> {
+  async createPricingRule(data: Omit<PricingRule, "id">): Promise<PricingRule> {
     try {
       // Since there's no pricing_rules table, we'll store in memory
       // In production, this should be stored in database
       const newRule: PricingRule = {
         id: `rule_${Date.now()}`,
-        ...data
+        ...data,
       };
 
       return newRule;
     } catch (error) {
-      console.error('[PricingEngine] Error creating pricing rule:', error);
-      throw new Error('Failed to create pricing rule');
+      console.error("[PricingEngine] Error creating pricing rule:", error);
+      throw new Error("Failed to create pricing rule");
     }
   }
 
   /**
    * Update pricing rule
    */
-  async updatePricingRule(id: string, updates: Partial<PricingRule>): Promise<PricingRule> {
+  async updatePricingRule(
+    id: string,
+    updates: Partial<PricingRule>
+  ): Promise<PricingRule> {
     try {
       // Since there's no pricing_rules table, we'll return mock data
       // In production, this should update database
       const rule = DEFAULT_PRICING_RULES.find(r => r.id === id);
-      
+
       if (!rule) {
-        throw new Error('Pricing rule not found');
+        throw new Error("Pricing rule not found");
       }
 
       return {
         ...rule,
-        ...updates
+        ...updates,
       };
     } catch (error) {
-      console.error('[PricingEngine] Error updating pricing rule:', error);
+      console.error("[PricingEngine] Error updating pricing rule:", error);
       throw error;
     }
   }
@@ -221,16 +226,21 @@ class PricingEngine {
       // In production, this should delete from database
       return { success: true };
     } catch (error) {
-      console.error('[PricingEngine] Error deleting pricing rule:', error);
-      throw new Error('Failed to delete pricing rule');
+      console.error("[PricingEngine] Error deleting pricing rule:", error);
+      throw new Error("Failed to delete pricing rule");
     }
   }
 
   /**
    * Filter applicable rules based on conditions
    */
-  private filterApplicableRules(rules: PricingRule[], params: PricingParams): PricingRule[] {
-    const timestamp = params.timestamp ? new Date(params.timestamp) : new Date();
+  private filterApplicableRules(
+    rules: PricingRule[],
+    params: PricingParams
+  ): PricingRule[] {
+    const timestamp = params.timestamp
+      ? new Date(params.timestamp)
+      : new Date();
     const hour = timestamp.getHours();
     const dayOfWeek = timestamp.getDay();
 
@@ -255,7 +265,10 @@ class PricingEngine {
       }
 
       // Check quantity condition
-      if (condition.minQuantity && (!params.quantity || params.quantity < condition.minQuantity)) {
+      if (
+        condition.minQuantity &&
+        (!params.quantity || params.quantity < condition.minQuantity)
+      ) {
         return false;
       }
 
@@ -269,28 +282,31 @@ class PricingEngine {
   /**
    * Apply a single rule to a price
    */
-  private applyRule(currentPrice: number, rule: PricingRule): { newPrice: number; discount: number } {
+  private applyRule(
+    currentPrice: number,
+    rule: PricingRule
+  ): { newPrice: number; discount: number } {
     const { action } = rule;
     let newPrice = currentPrice;
     let discount = 0;
 
     switch (action.type) {
-      case 'DISCOUNT_PERCENT':
+      case "DISCOUNT_PERCENT":
         discount = currentPrice * (action.value / 100);
         newPrice = currentPrice - discount;
         break;
 
-      case 'DISCOUNT_FIXED':
+      case "DISCOUNT_FIXED":
         discount = action.value;
         newPrice = currentPrice - action.value;
         break;
 
-      case 'MARKUP_PERCENT':
+      case "MARKUP_PERCENT":
         newPrice = currentPrice * (1 + action.value / 100);
         discount = -(newPrice - currentPrice); // Negative discount for markup
         break;
 
-      case 'SET_PRICE':
+      case "SET_PRICE":
         discount = currentPrice - action.value;
         newPrice = action.value;
         break;

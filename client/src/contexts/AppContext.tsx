@@ -160,7 +160,7 @@ interface AppContextType {
   city: string;
   favorites: FavoriteItem[];
   giftCards: GiftCard[]; // 礼品卡列表
-  
+
   // Database products
   products: Product[];
   isLoadingProducts: boolean;
@@ -579,20 +579,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoadingProducts(true);
       setProductsError(null);
-      
-      const response = await fetch('/api/client/products');
+
+      const response = await fetch("/api/client/products");
       const result = await response.json();
-      
+
       if (result.success && result.data) {
         setProducts(result.data);
-        console.log('✅ [数据库] 已加载', result.data.length, '款产品');
+        console.log("✅ [数据库] 已加载", result.data.length, "款产品");
       } else {
-        setProductsError('Failed to load products');
-        console.error('❌ [数据库] 加载产品失败');
+        setProductsError("Failed to load products");
+        console.error("❌ [数据库] 加载产品失败");
       }
     } catch (error) {
-      setProductsError(error instanceof Error ? error.message : 'Unknown error');
-      console.error('❌ [数据库] 加载产品出错:', error);
+      setProductsError(
+        error instanceof Error ? error.message : "Unknown error"
+      );
+      console.error("❌ [数据库] 加载产品出错:", error);
     } finally {
       setIsLoadingProducts(false);
     }
