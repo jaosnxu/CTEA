@@ -1,9 +1,9 @@
 /**
  * CTEA Dashboard Router - Combined Statistics
  *
- * Purpose: Aggregate data from both local SQLite and cloud PostgreSQL
+ * Purpose: Aggregate data from both local SQLite and cloud MySQL
  * - Reads local SQLite amounts for resilient local orders
- * - Reads cloud PostgreSQL amounts for synced orders
+ * - Reads cloud MySQL amounts for synced orders
  * - Combines both sources for accurate dashboard display
  */
 
@@ -47,7 +47,7 @@ router.get("/stats", async (req: Request, res: Response) => {
       console.warn("[Dashboard] Local SQLite unavailable:", localError);
     }
 
-    // Get cloud PostgreSQL statistics (with timeout to handle network issues)
+    // Get cloud MySQL statistics (with timeout to handle network issues)
     let cloudStats = { total: 0, count: 0 };
     let cloudAvailable = false;
 
@@ -79,7 +79,7 @@ router.get("/stats", async (req: Request, res: Response) => {
       cloudAvailable = true;
     } catch (cloudError) {
       console.warn(
-        "[Dashboard] Cloud PostgreSQL unavailable:",
+        "[Dashboard] Cloud MySQL unavailable:",
         cloudError instanceof Error ? cloudError.message : cloudError
       );
     }
@@ -256,7 +256,7 @@ router.get("/revenue", async (req: Request, res: Response) => {
 router.get("/health", async (req: Request, res: Response) => {
   const health = {
     sqlite: false,
-    postgresql: false,
+    mysql: false,
     timestamp: new Date().toISOString(),
   };
 
@@ -267,7 +267,7 @@ router.get("/health", async (req: Request, res: Response) => {
     health.sqlite = false;
   }
 
-  // Check PostgreSQL (with timeout)
+  // Check MySQL (with timeout)
   try {
     const prisma = getPrismaClient();
     const healthPromise = prisma.$queryRaw`SELECT 1`;
@@ -275,19 +275,19 @@ router.get("/health", async (req: Request, res: Response) => {
       setTimeout(() => reject(new Error("Cloud DB timeout")), 3000)
     );
     await Promise.race([healthPromise, timeoutPromise]);
-    health.postgresql = true;
+    health.mysql = true;
   } catch {
-    health.postgresql = false;
+    health.mysql = false;
   }
 
-  const allHealthy = health.sqlite && health.postgresql;
+  const allHealthy = health.sqlite && health.mysql;
 
   res.status(allHealthy ? 200 : 503).json({
     success: allHealthy,
     data: health,
     message: allHealthy
       ? "All systems operational"
-      : `Degraded: SQLite=${health.sqlite}, PostgreSQL=${health.postgresql}`,
+      : `Degraded: SQLite=${health.sqlite}, MySQL=${health.mysql}`,
   });
 });
 

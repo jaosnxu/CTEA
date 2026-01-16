@@ -7,8 +7,10 @@ import { createLogger } from "./src/utils/logger";
 const logger = createLogger("Database");
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _connectionAttempted = false;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
+// Drizzle ORM connection - MySQL database
+// For new operations, prefer using Prisma client (getPrismaClient)
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -18,6 +20,7 @@ export async function getDb() {
       _db = null;
     }
   }
+  // Return null - routes should handle this gracefully
   return _db;
 }
 

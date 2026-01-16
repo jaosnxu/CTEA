@@ -51,6 +51,7 @@ import sduiRouter from "../src/routes/sdui";
 import operationsRouter from "../src/routes/operations";
 import brainRouter from "../src/routes/brain";
 import tenantRouter from "../src/routes/tenant";
+import healthCheckRouter from "../src/routes/health-check";
 import ordersRouter, { startBackgroundSync } from "../src/routes/orders";
 import dashboardRouter from "../src/routes/dashboard";
 import authRouter from "../src/routes/auth";
@@ -135,6 +136,7 @@ async function startServer() {
   app.use("/api/operations", operationsRouter);
   app.use("/api/brain", brainRouter);
   app.use("/api/tenant", tenantRouter);
+  app.use("/api/v1/health-check", healthCheckRouter);
   app.use("/api/orders", ordersRouter);
   app.use("/api/dashboard", dashboardRouter);
   app.use("/api/auth", authRouter);

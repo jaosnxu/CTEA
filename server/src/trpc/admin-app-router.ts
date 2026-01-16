@@ -15,6 +15,7 @@ import { auditRouter } from "./routers/audit.router";
 import { rbacRouter } from "./routers/rbac.router";
 import { memberRouter } from "./routers/member.router";
 import { orderRouter } from "./routers/order.router";
+import { dashboardRouter } from "./routers/dashboard.router";
 
 /**
  * 管理后台主 Router
@@ -25,6 +26,7 @@ export const adminAppRouter = router({
   rbac: rbacRouter,
   member: memberRouter,
   order: orderRouter,
+  dashboard: dashboardRouter,
 });
 
 /**
