@@ -1,92 +1,123 @@
 version: "3.8"
 
 services:
-  # PostgreSQL Database for testing
+  # PostgreSQL database for local testing
   postgres:
-    image: postgres:16-alpine
-    container_name: ctea-test-postgres
+    image: postgres:15-alpine
+    container_name: chutea-postgres
     environment:
-      POSTGRES_DB: ctea_test
-      POSTGRES_USER: ctea_test_user
-      POSTGRES_PASSWORD: ctea_test_password
+      POSTGRES_DB: chutea_test
+      POSTGRES_USER: chutea_test
+      POSTGRES_PASSWORD: test_password
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ctea_test_user -d ctea_test"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U chutea_test"]
+      interval: 5s
       timeout: 5s
       retries: 5
 
-  # Mock OAuth Server for testing
+  # Mock OAuth server for testing
   mock-oauth:
     image: node:20-alpine
-    container_name: ctea-test-mock-oauth
+    container_name: chutea-mock-oauth
     working_dir: /app
     volumes:
-      - ./mock-oauth-server.cjs:/app/server.cjs
-    command: sh -c "npm install express && node /app/server.cjs"
+      - ./test-utils/mock-oauth:/app
+    command: node server.js
     ports:
-      - "4000:4000"
+      - "9000:9000"
     environment:
-      PORT: 4000
-      NODE_ENV: production
+      PORT: 9000
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget --no-verbose --tries=1 --spider http://localhost:4000/health || exit 1",
-        ]
-      interval: 10s
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9000/health"]
+      interval: 5s
       timeout: 5s
       retries: 5
-      start_period: 15s
 
-  # Main CTEA Application
+  # Main application (port 3000)
   app:
     build:
       context: .
       dockerfile: Dockerfile.test
-    container_name: ctea-test-app
-    ports:
-      - "3000:3000"
-    environment:
-      # Node environment
-      NODE_ENV: development
-      PORT: 3000
-
-      # Database configuration
-      DATABASE_URL: postgresql://ctea_test_user:ctea_test_password@postgres:5432/ctea_test
-
-      # OAuth configuration (pointing to mock server)
-      OAUTH_SERVER_URL: http://mock-oauth:4000
-      OAUTH_CLIENT_ID: test-client-id
-      OAUTH_CLIENT_SECRET: test-client-secret
-      OAUTH_CALLBACK_URL: http://localhost:3000/api/oauth/callback
-
-      # App configuration
-      VITE_APP_ID: ctea-test-app
-      VITE_OAUTH_PORTAL_URL: http://localhost:3000/oauth/login
-
-      # Security
-      COOKIE_SECRET: test-cookie-secret-change-in-production
-      API_KEY: test-api-key-change-in-production
+    container_name: chutea-app
     depends_on:
       postgres:
         condition: service_healthy
       mock-oauth:
         condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://chutea_test:test_password@postgres:5432/chutea_test
+      API_KEY: test-api-key-12345
+
+      # Standard OAuth 2.0 Configuration (pointing to mock server)
+      OAUTH_CLIENT_ID: test-client-id
+      OAUTH_CLIENT_SECRET: test-client-secret
+      OAUTH_CALLBACK_URL: http://localhost:3000/oauth/callback
+      OAUTH_TOKEN_URL: http://mock-oauth:9000/oauth/token
+
+      # Manus OAuth Configuration
+      OAUTH_SERVER_URL: http://mock-oauth:9000
+      VITE_APP_ID: test-app-id
+      COOKIE_SECRET: test-cookie-secret-min-32-chars-long-secure
+
+      # Legacy compatibility
+      appId: test-app-id
+      oAuthServerUrl: http://mock-oauth:9000
+      cookieSecret: test-cookie-secret-min-32-chars-long-secure
+      ownerOpenId: test-owner-123
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Secondary app instance (port 3001) - for testing load balancing
+  app-secondary:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: chutea-app-secondary
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mock-oauth:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://chutea_test:test_password@postgres:5432/chutea_test
+      API_KEY: test-api-key-12345
+
+      # Standard OAuth 2.0 Configuration (pointing to mock server)
+      OAUTH_CLIENT_ID: test-client-id
+      OAUTH_CLIENT_SECRET: test-client-secret
+      OAUTH_CALLBACK_URL: http://localhost:3001/oauth/callback
+      OAUTH_TOKEN_URL: http://mock-oauth:9000/oauth/token
+
+      # Manus OAuth Configuration
+      OAUTH_SERVER_URL: http://mock-oauth:9000
+      VITE_APP_ID: test-app-id
+      COOKIE_SECRET: test-cookie-secret-min-32-chars-long-secure
+
+      # Legacy compatibility
+      appId: test-app-id
+      oAuthServerUrl: http://mock-oauth:9000
+      cookieSecret: test-cookie-secret-min-32-chars-long-secure
+      ownerOpenId: test-owner-123
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

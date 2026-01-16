@@ -5,6 +5,7 @@ import net from "net";
 import cors from "cors";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
+import { registerStandardOAuthRoutes } from "./auth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { adminAppRouter } from "../src/trpc/admin-app-router";
@@ -89,6 +90,16 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
+  // Health check endpoint (for Docker and monitoring)
+  app.get("/health", (req, res) => {
+    res.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      service: "chutea-backend",
+      version: "1.0.0",
+    });
+  });
+
   // CORS 配置 - 允许前端跨域访问
   app.use(
     cors({
@@ -113,8 +124,11 @@ async function startServer() {
     res.json({ success: true, message: "API is working" });
   });
 
-  // OAuth callback under /api/oauth/callback
+  // OAuth callback under /api/oauth/callback (Manus OAuth)
   registerOAuthRoutes(app);
+
+  // Standard OAuth 2.0 / OIDC routes under /oauth/callback
+  registerStandardOAuthRoutes(app);
 
   // Initialize SQLite database on startup
   try {
