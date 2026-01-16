@@ -130,6 +130,70 @@ async function startServer() {
     }
   });
 
+  app.get('/api/admin/products/stats/summary', async (req, res) => {
+    try {
+      const { getPrismaClient } = await import('../src/db/prisma');
+      const prisma = getPrismaClient();
+      const totalProducts = await prisma.products.count();
+      const totalCategories = await prisma.categories.count();
+      const totalOrders = await prisma.orders.count();
+      res.json({
+        success: true,
+        data: {
+          totalProducts,
+          totalCategories,
+          totalOrders,
+          lastUpdated: new Date().toISOString(),
+        },
+      });
+    } catch (err: any) {
+      console.error('[REST] /api/admin/products/stats/summary error:', err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.get('/api/client/layouts/home', async (req, res) => {
+    try {
+      const { getPrismaClient } = await import('../src/db/prisma');
+      const prisma = getPrismaClient();
+      const layouts = await prisma.sduilayouts.findMany({
+        take: 5,
+        select: { id: true, orgId: true, layoutCode: true, createdAt: true },
+      });
+      res.json({
+        success: true,
+        count: layouts.length,
+        data: layouts.length > 0 ? layouts : [
+          { id: 'default', layoutCode: 'HOME_DEFAULT', sections: ['banner', 'categories', 'featured', 'promotions'] }
+        ],
+      });
+    } catch (err: any) {
+      console.error('[REST] /api/client/layouts/home error:', err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.get('/api/admin/pricing-rules', async (req, res) => {
+    try {
+      const { getPrismaClient } = await import('../src/db/prisma');
+      const prisma = getPrismaClient();
+      const storePrices = await prisma.storeprices.findMany({
+        take: 10,
+        select: { id: true, productId: true, storeId: true, price: true, createdAt: true },
+      });
+      res.json({
+        success: true,
+        count: storePrices.length,
+        data: storePrices.length > 0 ? storePrices : [
+          { id: 'default', rule: 'BASE_PRICE', description: 'Default pricing rule' }
+        ],
+      });
+    } catch (err: any) {
+      console.error('[REST] /api/admin/pricing-rules error:', err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
