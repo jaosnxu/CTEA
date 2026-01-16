@@ -102,6 +102,34 @@ async function startServer() {
       createContext: createAdminContext,
     })
   );
+
+  // ============================================================
+  // REST 兼容端点（为验证脚本和监控系统提供支持）
+  // ============================================================
+  app.get('/api/health', (req, res) => {
+    res.json({
+      status: 'ok',
+      message: 'CTEA backend is running',
+      time: new Date().toISOString(),
+      env: process.env.NODE_ENV,
+    });
+  });
+
+  app.get('/api/client/products', async (req, res) => {
+    try {
+      const { getPrismaClient } = await import('../src/db/prisma');
+      const prisma = getPrismaClient();
+      const products = await prisma.products.findMany({
+        take: 5,
+        select: { id: true, name: true, code: true, orgId: true },
+      });
+      res.json({ success: true, count: products.length, data: products });
+    } catch (err: any) {
+      console.error('[REST] /api/client/products error:', err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
