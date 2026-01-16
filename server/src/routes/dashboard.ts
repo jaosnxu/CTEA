@@ -28,7 +28,7 @@ router.use(requireAuth);
 
 /**
  * GET /api/dashboard/stats
- * Get combined statistics from local SQLite and cloud PostgreSQL
+ * Get combined statistics from local SQLite and cloud MySQL
  */
 router.get("/stats", async (req: Request, res: Response) => {
   try {
