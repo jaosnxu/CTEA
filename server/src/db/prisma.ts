@@ -5,7 +5,6 @@
  */
 
 import { PrismaClient } from "@prisma/client";
-import type { PrismaClient as PrismaClientType } from "@prisma/client";
 
 type PrismaClientType = InstanceType<typeof PrismaClient>;
 
