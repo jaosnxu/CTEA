@@ -4,18 +4,18 @@
  * Singleton pattern to ensure only one Prisma Client instance is created
  */
 
-import pkg from "@prisma/client";
-const { PrismaClient } = pkg;
+import { PrismaClient } from "@prisma/client";
+import type { PrismaClient as PrismaClientType } from "@prisma/client";
 
 /**
  * Global Prisma Client instance
  */
-let prismaInstance: PrismaClient | null = null;
+let prismaInstance: PrismaClientType | null = null;
 
 /**
  * Get or create Prisma Client instance
  */
-export function getPrismaClient(): PrismaClient {
+export function getPrismaClient(): PrismaClientType {
   if (!prismaInstance) {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
