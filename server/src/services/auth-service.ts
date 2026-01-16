@@ -49,7 +49,7 @@ export interface LoginResponse {
   success: boolean;
   isNewUser?: boolean;
   user?: {
-    id: number;
+    id: string;
     phone: string;
     nickname: string | null;
     avatar: string | null;
@@ -151,8 +151,12 @@ export class AuthService {
 
     try {
       // 查找用户
-      const result = await db.execute(sql.raw(`SELECT * FROM users WHERE phone = '${phone}' AND status = 'ACTIVE'`));
-      const existingUsers = result[0];
+      const result = await db.execute(
+        sql.raw(
+          `SELECT * FROM users WHERE phone = '${phone}' AND status = 'ACTIVE'`
+        )
+      );
+      const existingUsers = result[0] as unknown as Record<string, unknown>[];
 
       let user: User;
       let isNewUser = false;
@@ -179,15 +183,24 @@ export class AuthService {
         // 生成默认昵称
         const defaultNickname = this.generateDefaultNickname(phone);
 
-        const insertResult = await db.execute(sql.raw(`INSERT INTO users (id, phone, nickname, last_login_at, last_login_ip, login_count)
-           VALUES (UUID(), '${phone}', '${defaultNickname}', NOW(), ${userIp ? `'${userIp}'` : 'NULL'}, 1)`));
+        const insertResult = await db.execute(
+          sql.raw(`INSERT INTO users (id, phone, nickname, last_login_at, last_login_ip, login_count)
+           VALUES (UUID(), '${phone}', '${defaultNickname}', NOW(), ${userIp ? `'${userIp}'` : "NULL"}, 1)`)
+        );
 
         console.log(`   新用户创建成功`);
         console.log(`   默认昵称: ${defaultNickname}`);
 
         // 查询新创建的用户（按 phone 查询，因为 UUID 由数据库生成）
-        const newUserResult = await db.execute(sql.raw(`SELECT * FROM users WHERE phone = '${phone}' ORDER BY createdAt DESC LIMIT 1`));
-        const newUsers = newUserResult[0];
+        const newUserResult = await db.execute(
+          sql.raw(
+            `SELECT * FROM users WHERE phone = '${phone}' ORDER BY createdAt DESC LIMIT 1`
+          )
+        );
+        const newUsers = newUserResult[0] as unknown as Record<
+          string,
+          unknown
+        >[];
 
         user = this.mapRowToUser(newUsers[0]);
       }
@@ -281,8 +294,10 @@ export class AuthService {
     if (!db) return null;
 
     try {
-      const result = await db.execute(sql`SELECT * FROM users WHERE id = ${payload.userId} AND status = 'ACTIVE'`);
-      const users = result[0];
+      const result = await db.execute(
+        sql`SELECT * FROM users WHERE id = ${payload.userId} AND status = 'ACTIVE'`
+      );
+      const users = result[0] as unknown as Record<string, unknown>[];
 
       if (!users || users.length === 0) {
         return null;
@@ -307,8 +322,10 @@ export class AuthService {
     if (!db) return null;
 
     try {
-      const result = await db.execute(sql`SELECT * FROM users WHERE id = ${userId} AND status = 'ACTIVE'`);
-      const users = result[0];
+      const result = await db.execute(
+        sql`SELECT * FROM users WHERE id = ${userId} AND status = 'ACTIVE'`
+      );
+      const users = result[0] as unknown as Record<string, unknown>[];
 
       if (!users || users.length === 0) {
         return null;
@@ -329,8 +346,10 @@ export class AuthService {
     if (!db) return null;
 
     try {
-      const result = await db.execute(sql`SELECT * FROM users WHERE phone = ${phone} AND status = 'ACTIVE'`);
-      const users = result[0];
+      const result = await db.execute(
+        sql`SELECT * FROM users WHERE phone = ${phone} AND status = 'ACTIVE'`
+      );
+      const users = result[0] as unknown as Record<string, unknown>[];
 
       if (!users || users.length === 0) {
         return null;
@@ -358,18 +377,24 @@ export class AuthService {
       const values: any[] = [];
 
       if (updates.nickname !== undefined) {
-        fields.push(`nickname = ${sql.raw(`'${updates.nickname.replace(/'/g, "''")}'`)}`);
+        fields.push(
+          `nickname = ${sql.raw(`'${updates.nickname.replace(/'/g, "''")}'`)}`
+        );
       }
 
       if (updates.avatar !== undefined) {
-        fields.push(`avatar = ${sql.raw(`'${updates.avatar.replace(/'/g, "''")}'`)}`);
+        fields.push(
+          `avatar = ${sql.raw(`'${updates.avatar.replace(/'/g, "''")}'`)}`
+        );
       }
 
       if (fields.length === 0) {
         return true;
       }
 
-      await db.execute(sql.raw(`UPDATE users SET ${fields.join(", ")} WHERE id = ${userId}`));
+      await db.execute(
+        sql.raw(`UPDATE users SET ${fields.join(", ")} WHERE id = ${userId}`)
+      );
 
       return true;
     } catch (error) {
@@ -399,7 +424,6 @@ export class AuthService {
         nickname: user.nickname,
         userId: user.id,
       },
-      userId: user.id,
     });
   }
 

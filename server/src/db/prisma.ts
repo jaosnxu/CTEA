@@ -7,21 +7,23 @@
 import pkg from "@prisma/client";
 const { PrismaClient } = pkg;
 
+type PrismaClientType = InstanceType<typeof PrismaClient>;
+
 /**
  * Global Prisma Client instance
  */
-let prismaInstance: PrismaClient | null = null;
+let prismaInstance: PrismaClientType | null = null;
 
 /**
  * Get or create Prisma Client instance
  */
-export function getPrismaClient(): PrismaClient {
+export function getPrismaClient(): PrismaClientType {
   if (!prismaInstance) {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-      throw new Error('DATABASE_URL environment variable is not set');
+      throw new Error("DATABASE_URL environment variable is not set");
     }
-    
+
     // Prisma 7.x with MySQL - direct connection using DATABASE_URL from env
     prismaInstance = new PrismaClient({
       log:
