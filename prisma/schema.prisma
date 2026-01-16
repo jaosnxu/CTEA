@@ -527,7 +527,7 @@ model FinancialReport {
 /// Campaigns
 model Campaigns {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   code                 String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -538,7 +538,7 @@ model Campaigns {
 /// Coupons
 model Coupons {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   campaignId           Int?
   code                 String?
   createdAt            DateTime @default(now())
@@ -563,7 +563,7 @@ model Usercoupons {
 /// Sduilayouts
 model Sduilayouts {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   layoutCode           String?
   layoutConfig         String?  @db.Text
   createdAt            DateTime @default(now())
@@ -575,7 +575,7 @@ model Sduilayouts {
 /// Geofencerules
 model Geofencerules {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   name                 Json
   fenceType            FenceType
   centerLat            Decimal? @db.Decimal(10, 7)
@@ -588,7 +588,7 @@ model Geofencerules {
 /// Weathertriggers
 model Weathertriggers {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   name                 Json
   weatherCondition     Json?
   createdAt            DateTime @default(now())
@@ -600,7 +600,7 @@ model Weathertriggers {
 /// Categories
 model Categories {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   parentId             Int?
   code                 String?
   createdAt            DateTime @default(now())
@@ -612,7 +612,7 @@ model Categories {
 /// Products
 model Products {
   id                   Int @id @default(autoincrement())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   categoryId           Int
   code                 String?  @db.VarChar(50)
   name                 Json?
@@ -652,7 +652,7 @@ model PricingRules {
 /// Skuattributes
 model Skuattributes {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   attributeCode        String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -686,7 +686,7 @@ model Storeprices {
 /// Timeslotmenus
 model Timeslotmenus {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   storeId              Int?
   name                 Json
   menuType             MenuType
@@ -700,7 +700,7 @@ model Timeslotmenus {
 /// Iikoshadowmenu
 model Iikoshadowmenu {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   productId            Int
   iikoProductId        String?
   createdAt            DateTime @default(now())
@@ -721,7 +721,7 @@ model Pricechangelogs {
 /// Datapipelines
 model Datapipelines {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   pipelineCode         String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -732,7 +732,7 @@ model Datapipelines {
 /// Aireports
 model Aireports {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   storeId              Int?
   reportType           ReportType
   reportDate           String?
@@ -745,7 +745,7 @@ model Aireports {
 /// Translationreviews
 model Translationreviews {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   sourceType           String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -756,7 +756,7 @@ model Translationreviews {
 /// Aisuggestions
 model Aisuggestions {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   storeId              Int?
   suggestionType       SuggestionType
   title                Json
@@ -834,7 +834,7 @@ model Orderdiscounts {
 /// Reviews
 model Reviews {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   storeId              Int
   orderId              BigInt?
   createdAt            DateTime @default(now())
@@ -857,7 +857,7 @@ model Reviewimages {
 /// Mallproducts
 model Mallproducts {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   categoryId           Int?
   code                 String?
   createdAt            DateTime @default(now())
@@ -910,7 +910,7 @@ model Logisticstracking {
 /// Influencers
 model Influencers {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   userId               Int
   code                 String?
   createdAt            DateTime @default(now())
@@ -922,7 +922,7 @@ model Influencers {
 /// Influencertasks
 model Influencertasks {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   name                 Json
   description          Json?
   taskType             TaskType
@@ -1008,7 +1008,7 @@ model Aiintents {
 /// Quickreplies
 model Quickreplies {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   category             String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -1019,7 +1019,7 @@ model Quickreplies {
 /// Faqentries
 model Faqentries {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   category             String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -1030,7 +1030,7 @@ model Faqentries {
 /// Telegrambotconfig
 model Telegrambotconfig {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   botToken             String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -1083,7 +1083,7 @@ model Userpoints {
 /// Giftcards
 model Giftcards {
   id                   String @id @default(uuid())
-  orgId                Int
+  orgId                String?   @db.VarChar(36)
   cardCode             String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt

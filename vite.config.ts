@@ -20,6 +20,7 @@ const plugins = [
       cleanupOutdatedCaches: true, // 自动清理旧缓存
       skipWaiting: true, // 立即激活新的Service Worker
       clientsClaim: true, // 立即控制所有客户端
+      maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB - allow larger JS bundles
       // 缓存策略：优先使用缓存，减少插件干扰
       runtimeCaching: [
         {
