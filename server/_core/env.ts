@@ -1,5 +1,8 @@
 // Import Zod for schema validation
 import { z } from "zod";
+import { createLogger } from "../src/utils/logger";
+
+const logger = createLogger("Environment");
 
 // Define the environment variables schema
 const EnvSchema = z.object({
@@ -21,4 +24,7 @@ const EnvSchema = z.object({
 // Parse and validate environment variables
 export const ENV = EnvSchema.parse(process.env);
 
-console.log("Environment variables validated successfully:", ENV);
+logger.info("Environment variables validated successfully", {
+  nodeEnv: ENV.NODE_ENV,
+  port: ENV.PORT,
+});

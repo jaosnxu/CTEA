@@ -171,7 +171,7 @@ class LayoutEngine {
         await this.prisma.sduilayouts.create({
           data: {
             layoutCode: pageName,
-            orgId: 1, // Default org ID
+            orgId: null, // Default org ID (null for UUID compatibility)
             // Add more fields based on schema
           },
         });

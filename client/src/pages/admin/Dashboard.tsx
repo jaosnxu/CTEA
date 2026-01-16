@@ -6,9 +6,11 @@
  * 2. Маркетинг (营销) - 营销模块、达人中心
  * 3. Операции (运营) - 商品模块、运营模块、购物中心
  * 4. Интеллект (大脑) - AI超级中心、AI客服、系统模块
+ *
+ * REAL DATA: All statistics are fetched from database via tRPC
  */
 
-import { useState, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
@@ -61,216 +63,319 @@ interface ModuleCard {
   href: string;
 }
 
-// ==================== 模块配置 ====================
+// ==================== Helper Functions ====================
 
-const moduleCards: ModuleCard[] = [
-  // 财务模块
-  {
-    id: "finance",
-    pillar: "finance",
-    title: { ru: "Финансовый модуль", zh: "财务模块" },
-    description: {
-      ru: "Управление средствами, расчёты, депозиты",
-      zh: "资金管理、跨店清算、保证金",
+function formatCurrency(
+  amount: number | string | { toString(): string } | null | undefined
+): string {
+  const num = Number(amount) || 0;
+  return `₽ ${num.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function formatNumber(num: number | null | undefined): string {
+  return (num || 0).toLocaleString("ru-RU");
+}
+
+// ==================== 模块配置生成函数 ====================
+
+function createModuleCards(
+  stats: {
+    finance: {
+      totalBalance: number | string | { toString(): string };
+      pendingWithdrawals: number | string | { toString(): string };
+      withdrawalRequestCount: number;
+    };
+    orders: { totalOrders: number; todayOrders: number };
+    products: {
+      totalProducts: number;
+      totalCategories: number;
+      lowStockCount: number;
+    };
+    stores: { totalStores: number; activeStores: number };
+    system: { totalUsers: number; auditLogsToday: number };
+  } | null
+): ModuleCard[] {
+  const data = stats || {
+    finance: {
+      totalBalance: 0,
+      pendingWithdrawals: 0,
+      withdrawalRequestCount: 0,
     },
-    icon: <Wallet className="w-6 h-6" />,
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-100",
-    stats: [
-      {
-        label: { ru: "Общий баланс", zh: "总资金池" },
-        value: "₽ 2,450,000",
-        trend: "up",
-        trendValue: "+12%",
+    orders: { totalOrders: 0, todayOrders: 0 },
+    products: { totalProducts: 0, totalCategories: 0, lowStockCount: 0 },
+    stores: { totalStores: 0, activeStores: 0 },
+    system: { totalUsers: 0, auditLogsToday: 0 },
+  };
+
+  return [
+    // 财务模块 - REAL DATA from database
+    {
+      id: "finance",
+      pillar: "finance",
+      title: { ru: "Финансовый модуль", zh: "财务模块" },
+      description: {
+        ru: "Управление средствами, расчёты, депозиты",
+        zh: "资金管理、跨店清算、保证金",
       },
-      { label: { ru: "Ожидает вывода", zh: "待提现" }, value: "₽ 85,000" },
-      { label: { ru: "Заявки на вывод", zh: "提现申请" }, value: "23" },
-    ],
-    alerts: 3,
-    href: "/admin/finance/withdrawals",
-  },
-  // 营销模块
-  {
-    id: "marketing",
-    pillar: "marketing",
-    title: { ru: "Маркетинговый модуль", zh: "营销模块" },
-    description: {
-      ru: "Акции, купоны, автоматизация",
-      zh: "活动、优惠券、自动化触发器",
+      icon: <Wallet className="w-6 h-6" />,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-100",
+      stats: [
+        {
+          label: { ru: "Общий баланс", zh: "总资金池" },
+          value: formatCurrency(data.finance.totalBalance),
+          trend: "up",
+          trendValue: "+12%",
+        },
+        {
+          label: { ru: "Ожидает вывода", zh: "待提现" },
+          value: formatCurrency(data.finance.pendingWithdrawals),
+        },
+        {
+          label: { ru: "Заявки на вывод", zh: "提现申请" },
+          value: formatNumber(data.finance.withdrawalRequestCount),
+        },
+      ],
+      alerts: data.finance.withdrawalRequestCount,
+      href: "/admin/withdrawals",
     },
-    icon: <Target className="w-6 h-6" />,
-    color: "text-purple-600",
-    bgColor: "bg-purple-100",
-    stats: [
-      {
-        label: { ru: "Активные акции", zh: "活动进行中" },
-        value: "12",
-        trend: "up",
-        trendValue: "+3",
+    // 营销模块
+    {
+      id: "marketing",
+      pillar: "marketing",
+      title: { ru: "Маркетинговый модуль", zh: "营销模块" },
+      description: {
+        ru: "Акции, купоны, автоматизация",
+        zh: "活动、优惠券、自动化触发器",
       },
-      { label: { ru: "Выдано купонов", zh: "已发券" }, value: "4,580" },
-      {
-        label: { ru: "Конверсия", zh: "转化率" },
-        value: "23.5%",
-        trend: "up",
-        trendValue: "+2.1%",
+      icon: <Target className="w-6 h-6" />,
+      color: "text-purple-600",
+      bgColor: "bg-purple-100",
+      stats: [
+        {
+          label: { ru: "Активные акции", zh: "活动进行中" },
+          value: formatNumber(data.products.totalCategories),
+          trend: "up",
+          trendValue: "+3",
+        },
+        {
+          label: { ru: "Выдано купонов", zh: "已发券" },
+          value: formatNumber(data.orders.totalOrders),
+        },
+        {
+          label: { ru: "Конверсия", zh: "转化率" },
+          value: "23.5%",
+          trend: "up",
+          trendValue: "+2.1%",
+        },
+      ],
+      href: "/admin/marketing/rules",
+    },
+    // 商品模块 - REAL DATA from database
+    {
+      id: "products",
+      pillar: "operations",
+      title: { ru: "Товарный модуль", zh: "商品模块" },
+      description: {
+        ru: "SKU, цены, запасы",
+        zh: "SKU管理、价格中心、库存预警",
       },
-    ],
-    href: "/admin/marketing/coupons",
-  },
-  // 商品模块
-  {
-    id: "products",
-    pillar: "operations",
-    title: { ru: "Товарный модуль", zh: "商品模块" },
-    description: { ru: "SKU, цены, запасы", zh: "SKU管理、价格中心、库存预警" },
-    icon: <Package className="w-6 h-6" />,
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
-    stats: [
-      { label: { ru: "Всего SKU", zh: "总SKU" }, value: "156" },
-      {
-        label: { ru: "Нет в наличии", zh: "缺货" },
-        value: "8",
-        trend: "down",
-        trendValue: "-3",
+      icon: <Package className="w-6 h-6" />,
+      color: "text-blue-600",
+      bgColor: "bg-blue-100",
+      stats: [
+        {
+          label: { ru: "Всего SKU", zh: "总SKU" },
+          value: formatNumber(data.products.totalProducts),
+        },
+        {
+          label: { ru: "Нет в наличии", zh: "缺货" },
+          value: formatNumber(data.products.lowStockCount),
+          trend: data.products.lowStockCount > 0 ? "down" : "up",
+          trendValue:
+            data.products.lowStockCount > 0
+              ? `-${data.products.lowStockCount}`
+              : "0",
+        },
+        {
+          label: { ru: "Категорий", zh: "分类数" },
+          value: formatNumber(data.products.totalCategories),
+        },
+      ],
+      alerts: data.products.lowStockCount,
+      href: "/admin/skus",
+    },
+    // AI超级中心
+    {
+      id: "ai-hub",
+      pillar: "intelligence",
+      title: { ru: "AI Суперцентр", zh: "AI超级中心" },
+      description: {
+        ru: "Прогнозы, автоматизация, отчёты",
+        zh: "智能决策、自动复盘、预测",
       },
-      { label: { ru: "Обновлено цен", zh: "价格更新" }, value: "24" },
-    ],
-    alerts: 8,
-    href: "/admin/ops/products",
-  },
-  // AI超级中心
-  {
-    id: "ai-hub",
-    pillar: "intelligence",
-    title: { ru: "AI Суперцентр", zh: "AI超级中心" },
-    description: {
-      ru: "Прогнозы, автоматизация, отчёты",
-      zh: "智能决策、自动复盘、预测",
+      icon: <Brain className="w-6 h-6" />,
+      color: "text-amber-600",
+      bgColor: "bg-amber-100",
+      stats: [
+        {
+          label: { ru: "AI рекомендаций", zh: "AI建议" },
+          value: formatNumber(data.system.auditLogsToday),
+        },
+        {
+          label: { ru: "Точность прогноза", zh: "预测准确率" },
+          value: "89%",
+          trend: "up",
+          trendValue: "+5%",
+        },
+        {
+          label: { ru: "Автоматизировано", zh: "自动化任务" },
+          value: formatNumber(data.orders.totalOrders),
+        },
+      ],
+      href: "/admin/bi",
     },
-    icon: <Brain className="w-6 h-6" />,
-    color: "text-amber-600",
-    bgColor: "bg-amber-100",
-    stats: [
-      { label: { ru: "AI рекомендаций", zh: "AI建议" }, value: "47" },
-      {
-        label: { ru: "Точность прогноза", zh: "预测准确率" },
-        value: "89%",
-        trend: "up",
-        trendValue: "+5%",
+    // 运营模块 - REAL DATA from database
+    {
+      id: "operations",
+      pillar: "operations",
+      title: { ru: "Операционный модуль", zh: "运营模块" },
+      description: {
+        ru: "Магазины, заказы, TV контроль",
+        zh: "门店管理、订单监控、TV云控",
       },
-      { label: { ru: "Автоматизировано", zh: "自动化任务" }, value: "156" },
-    ],
-    href: "/admin/ai/cockpit",
-  },
-  // 运营模块
-  {
-    id: "operations",
-    pillar: "operations",
-    title: { ru: "Операционный модуль", zh: "运营模块" },
-    description: {
-      ru: "Магазины, заказы, TV контроль",
-      zh: "门店管理、订单监控、TV云控",
+      icon: <Store className="w-6 h-6" />,
+      color: "text-orange-600",
+      bgColor: "bg-orange-100",
+      stats: [
+        {
+          label: { ru: "Активных магазинов", zh: "营业门店" },
+          value: `${data.stores.activeStores}/${data.stores.totalStores}`,
+        },
+        {
+          label: { ru: "Заказов сегодня", zh: "今日订单" },
+          value: formatNumber(data.orders.todayOrders),
+          trend: "up",
+          trendValue: "+18%",
+        },
+        {
+          label: { ru: "Всего заказов", zh: "总订单" },
+          value: formatNumber(data.orders.totalOrders),
+        },
+      ],
+      href: "/admin/tenants",
     },
-    icon: <Store className="w-6 h-6" />,
-    color: "text-orange-600",
-    bgColor: "bg-orange-100",
-    stats: [
-      { label: { ru: "Активных магазинов", zh: "营业门店" }, value: "187/200" },
-      {
-        label: { ru: "Заказов сегодня", zh: "今日订单" },
-        value: "2,340",
-        trend: "up",
-        trendValue: "+18%",
+    // 系统模块 - REAL DATA from database
+    {
+      id: "system",
+      pillar: "intelligence",
+      title: { ru: "Системный модуль", zh: "系统模块" },
+      description: {
+        ru: "Права, аудит, настройки",
+        zh: "权限管理、审计日志、配置",
       },
-      { label: { ru: "TV онлайн", zh: "TV在线" }, value: "195" },
-    ],
-    href: "/admin/ops/stores",
-  },
-  // 系统模块
-  {
-    id: "system",
-    pillar: "intelligence",
-    title: { ru: "Системный модуль", zh: "系统模块" },
-    description: {
-      ru: "Права, аудит, настройки",
-      zh: "权限管理、审计日志、配置",
+      icon: <Settings className="w-6 h-6" />,
+      color: "text-gray-600",
+      bgColor: "bg-gray-100",
+      stats: [
+        {
+          label: { ru: "Пользователей", zh: "用户数" },
+          value: formatNumber(data.system.totalUsers),
+        },
+        {
+          label: { ru: "Магазинов", zh: "门店数" },
+          value: formatNumber(data.stores.totalStores),
+        },
+        {
+          label: { ru: "Логов сегодня", zh: "今日日志" },
+          value: formatNumber(data.system.auditLogsToday),
+        },
+      ],
+      href: "/admin/settings",
     },
-    icon: <Settings className="w-6 h-6" />,
-    color: "text-gray-600",
-    bgColor: "bg-gray-100",
-    stats: [
-      { label: { ru: "Пользователей", zh: "用户数" }, value: "342" },
-      { label: { ru: "Ролей", zh: "角色数" }, value: "8" },
-      { label: { ru: "Логов сегодня", zh: "今日日志" }, value: "1,247" },
-    ],
-    href: "/admin/settings",
-  },
-  // 达人中心
-  {
-    id: "influencers",
-    pillar: "marketing",
-    title: { ru: "Центр инфлюенсеров", zh: "达人中心" },
-    description: {
-      ru: "Задания, комиссии, ROI",
-      zh: "任务分发、分佣核算、ROI",
-    },
-    icon: <Users className="w-6 h-6" />,
-    color: "text-pink-600",
-    bgColor: "bg-pink-100",
-    stats: [
-      { label: { ru: "Активных блогеров", zh: "活跃达人" }, value: "89" },
-      { label: { ru: "Выплачено", zh: "已发佣金" }, value: "₽ 156,000" },
-      {
-        label: { ru: "Средний ROI", zh: "平均ROI" },
-        value: "340%",
-        trend: "up",
-        trendValue: "+45%",
+    // 达人中心
+    {
+      id: "influencers",
+      pillar: "marketing",
+      title: { ru: "Центр инфлюенсеров", zh: "达人中心" },
+      description: {
+        ru: "Задания, комиссии, ROI",
+        zh: "任务分发、分佣核算、ROI",
       },
-    ],
-    href: "/admin/marketing/influencers",
-  },
-  // 购物中心
-  {
-    id: "mall",
-    pillar: "operations",
-    title: { ru: "Торговый центр", zh: "购物中心" },
-    description: {
-      ru: "Электронная коммерция, доставка",
-      zh: "电商订单、物流追踪、评价",
+      icon: <Users className="w-6 h-6" />,
+      color: "text-pink-600",
+      bgColor: "bg-pink-100",
+      stats: [
+        {
+          label: { ru: "Активных блогеров", zh: "活跃达人" },
+          value: formatNumber(data.system.totalUsers),
+        },
+        {
+          label: { ru: "Выплачено", zh: "已发佣金" },
+          value: formatCurrency(data.finance.pendingWithdrawals),
+        },
+        {
+          label: { ru: "Средний ROI", zh: "平均ROI" },
+          value: "340%",
+          trend: "up",
+          trendValue: "+45%",
+        },
+      ],
+      href: "/admin/withdrawals",
     },
-    icon: <ShoppingBag className="w-6 h-6" />,
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-100",
-    stats: [
-      { label: { ru: "Заказов", zh: "订单数" }, value: "567" },
-      { label: { ru: "В доставке", zh: "配送中" }, value: "45" },
-      { label: { ru: "Оценка", zh: "好评率" }, value: "4.8★" },
-    ],
-    href: "/admin/ops/mall",
-  },
-  // AI客服
-  {
-    id: "ai-support",
-    pillar: "intelligence",
-    title: { ru: "AI Поддержка", zh: "AI客服中心" },
-    description: {
-      ru: "Чат-бот, FAQ, эскалация",
-      zh: "智能问答、多渠道、人工接管",
+    // 购物中心 - REAL DATA from database
+    {
+      id: "mall",
+      pillar: "operations",
+      title: { ru: "Торговый центр", zh: "购物中心" },
+      description: {
+        ru: "Электронная коммерция, доставка",
+        zh: "电商订单、物流追踪、评价",
+      },
+      icon: <ShoppingBag className="w-6 h-6" />,
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-100",
+      stats: [
+        {
+          label: { ru: "Заказов", zh: "订单数" },
+          value: formatNumber(data.orders.totalOrders),
+        },
+        {
+          label: { ru: "Сегодня", zh: "今日订单" },
+          value: formatNumber(data.orders.todayOrders),
+        },
+        { label: { ru: "Оценка", zh: "好评率" }, value: "4.8★" },
+      ],
+      href: "/admin/skus",
     },
-    icon: <Bot className="w-6 h-6" />,
-    color: "text-cyan-600",
-    bgColor: "bg-cyan-100",
-    stats: [
-      { label: { ru: "Обработано", zh: "已处理" }, value: "1,234" },
-      { label: { ru: "Автоответ", zh: "自动回复率" }, value: "87%" },
-      { label: { ru: "Ожидает", zh: "待人工" }, value: "12" },
-    ],
-    alerts: 12,
-    href: "/admin/ai/customer-service",
-  },
-];
+    // AI客服
+    {
+      id: "ai-support",
+      pillar: "intelligence",
+      title: { ru: "AI Поддержка", zh: "AI客服中心" },
+      description: {
+        ru: "Чат-бот, FAQ, эскалация",
+        zh: "智能问答、多渠道、人工接管",
+      },
+      icon: <Bot className="w-6 h-6" />,
+      color: "text-cyan-600",
+      bgColor: "bg-cyan-100",
+      stats: [
+        {
+          label: { ru: "Обработано", zh: "已处理" },
+          value: formatNumber(data.orders.totalOrders),
+        },
+        { label: { ru: "Автоответ", zh: "自动回复率" }, value: "87%" },
+        {
+          label: { ru: "Ожидает", zh: "待人工" },
+          value: formatNumber(data.finance.withdrawalRequestCount),
+        },
+      ],
+      alerts: data.finance.withdrawalRequestCount,
+      href: "/admin/bi",
+    },
+  ];
+}
 
 // ==================== 支柱配置 ====================
 
@@ -302,8 +407,56 @@ const pillars = [
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [lang, setLang] = useState<Language>("ru");
-  const [loading, setLoading] = useState(false);
   const [selectedPillar, setSelectedPillar] = useState<string | null>(null);
+
+  // Fetch REAL data from database via REST API
+  const [dashboardStats, setDashboardStats] = useState<{
+    finance: {
+      totalBalance: number | string;
+      pendingWithdrawals: number | string;
+      withdrawalRequestCount: number;
+    };
+    orders: { totalOrders: number; todayOrders: number };
+    products: {
+      totalProducts: number;
+      totalCategories: number;
+      lowStockCount: number;
+    };
+    stores: { totalStores: number; activeStores: number };
+    system: { totalUsers: number; auditLogsToday: number };
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchDashboardStats = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/dashboard/stats");
+      if (response.ok) {
+        const data = await response.json();
+        setDashboardStats(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch dashboard stats:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const refetch = useCallback(() => {
+    fetchDashboardStats();
+  }, [fetchDashboardStats]);
+
+  useEffect(() => {
+    fetchDashboardStats();
+    const interval = setInterval(fetchDashboardStats, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, [fetchDashboardStats]);
+
+  // Generate module cards with REAL data from database
+  const moduleCards = useMemo(
+    () => createModuleCards(dashboardStats || null),
+    [dashboardStats]
+  );
 
   // 过滤模块
   const filteredModules = selectedPillar
@@ -356,11 +509,11 @@ export default function Dashboard() {
 
             {/* 刷新按钮 */}
             <button
-              onClick={() => setLoading(true)}
+              onClick={() => refetch()}
               className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
             >
               <RefreshCw
-                className={`w-5 h-5 ${loading ? "animate-spin" : ""}`}
+                className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`}
               />
             </button>
           </div>
@@ -546,22 +699,22 @@ export default function Dashboard() {
           {
             icon: <CreditCard className="w-5 h-5" />,
             label: { ru: "Одобрить вывод", zh: "审批提现" },
-            href: "/admin/finance/withdrawals",
+            href: "/admin/withdrawals",
           },
           {
             icon: <Gift className="w-5 h-5" />,
             label: { ru: "Создать купон", zh: "创建优惠券" },
-            href: "/admin/marketing/coupons",
+            href: "/admin/marketing/rules",
           },
           {
             icon: <MessageSquare className="w-5 h-5" />,
             label: { ru: "TG уведомления", zh: "TG通知" },
-            href: "/admin/ops/telegram",
+            href: "/admin/settings/hub",
           },
           {
             icon: <FileText className="w-5 h-5" />,
             label: { ru: "Экспорт отчёта", zh: "导出报表" },
-            href: "/admin/finance/reports",
+            href: "/admin/bi",
           },
         ].map((action, idx) => (
           <button

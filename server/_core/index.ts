@@ -10,6 +10,37 @@ import { createContext } from "./context";
 import { adminAppRouter } from "../src/trpc/admin-app-router";
 import { createContext as createAdminContext } from "../src/trpc/context";
 import { serveStatic, setupVite } from "./vite";
+import { createLogger } from "../src/utils/logger";
+import {
+  loggingMiddleware,
+  errorLoggingMiddleware,
+  requestIdMiddleware,
+} from "../src/middleware/logging-middleware";
+
+// Initialize logger
+const logger = createLogger("Server");
+
+// Node.js version compatibility check
+const nodeVersion = process.versions.node;
+const majorVersion = parseInt(nodeVersion.split(".")[0], 10);
+
+if (majorVersion >= 24) {
+  console.warn(`
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  WARNING: Node.js v${nodeVersion} detected                                          ║
+║                                                                              ║
+║  Node.js v24+ has known compatibility issues with esbuild/Vite that may     ║
+║  cause "stream read error" during development server startup.               ║
+║                                                                              ║
+║  RECOMMENDED: Use Node.js v22 LTS for best compatibility.                   ║
+║                                                                              ║
+║  To switch Node.js version:                                                 ║
+║    nvm install 22 && nvm use 22                                             ║
+║    # or                                                                     ║
+║    fnm install 22 && fnm use 22                                             ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+  `);
+}
 
 // 业务 API 路由
 import withdrawalsRouter from "../src/routes/withdrawals";
@@ -20,6 +51,9 @@ import sduiRouter from "../src/routes/sdui";
 import operationsRouter from "../src/routes/operations";
 import brainRouter from "../src/routes/brain";
 import tenantRouter from "../src/routes/tenant";
+import healthCheckRouter from "../src/routes/health-check";
+import ordersRouter, { startBackgroundSync } from "../src/routes/orders";
+import dashboardRouter from "../src/routes/dashboard";
 import authRouter from "../src/routes/auth";
 import smsRouter from "../src/routes/sms";
 
@@ -28,6 +62,9 @@ import adminProductsRouter from "../src/routes/admin/products";
 import adminPricingRulesRouter from "../src/routes/admin/pricing-rules";
 import clientProductsRouter from "../src/routes/client/products";
 import clientLayoutsRouter from "../src/routes/client/layouts";
+
+// Initialize SQLite database
+import { getSqliteDb } from "../src/db/sqlite";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -65,19 +102,30 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // 全局请求日志
-  app.use((req, res, next) => {
-    console.log(`[Global Request] ${req.method} ${req.url}`);
-    next();
-  });
+  // Request ID middleware (add request ID to all requests)
+  app.use(requestIdMiddleware);
+
+  // Logging middleware (replaces simple console.log)
+  app.use(loggingMiddleware);
 
   app.get("/api/test", (req, res) => {
-    console.log("[Test Route] Hit!");
+    logger.info("Test route accessed");
     res.json({ success: true, message: "API is working" });
   });
 
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+
+  // Initialize SQLite database on startup
+  try {
+    getSqliteDb();
+    console.log("[Server] SQLite database initialized");
+  } catch (err) {
+    console.warn(
+      "[Server] SQLite initialization failed, continuing with cloud-only mode:",
+      err
+    );
+  }
 
   // 业务 API 路由
   app.use("/api/withdrawals", withdrawalsRouter);
@@ -88,6 +136,9 @@ async function startServer() {
   app.use("/api/operations", operationsRouter);
   app.use("/api/brain", brainRouter);
   app.use("/api/tenant", tenantRouter);
+  app.use("/api/v1/health-check", healthCheckRouter);
+  app.use("/api/orders", ordersRouter);
+  app.use("/api/dashboard", dashboardRouter);
   app.use("/api/auth", authRouter);
   app.use("/api/sms", smsRouter);
 
@@ -129,23 +180,57 @@ async function startServer() {
 
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
-    await setupVite(app, server);
+    try {
+      await setupVite(app, server);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      if (
+        errorMessage.includes("stream") ||
+        errorMessage.includes("esbuild") ||
+        errorMessage.includes("EPERM")
+      ) {
+        console.error(`
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  ERROR: Vite/esbuild initialization failed                                   ║
+║                                                                              ║
+║  This is likely due to Node.js v24+ compatibility issues with esbuild.      ║
+║                                                                              ║
+║  SOLUTION: Switch to Node.js v22 LTS:                                        ║
+║    nvm install 22 && nvm use 22 && pnpm run dev                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+        `);
+      }
+      throw err;
+    }
   } else {
     serveStatic(app);
   }
 
-  // development mode uses Vite, production mode uses static files
+  // Error logging middleware (must be after all routes)
+  app.use(errorLoggingMiddleware);
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
 
   if (port !== preferredPort) {
-    console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
+    logger.warn(`Port ${preferredPort} is busy, using port ${port} instead`, {
+      preferredPort,
+      actualPort: port,
+    });
   }
 
   server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
+    logger.info(`Server running on http://localhost:${port}/`, {
+      port,
+      environment: process.env.NODE_ENV || "development",
+    });
+
+    // Start background sync for local orders
+    startBackgroundSync();
   });
 }
 
-startServer().catch(console.error);
+startServer().catch(error => {
+  logger.error("Failed to start server", error);
+  process.exit(1);
+});

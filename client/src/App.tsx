@@ -44,6 +44,13 @@ import SDUIConfig from "./pages/admin/SDUIConfig";
 import SKUManagement from "./pages/admin/SKUManagement";
 import BrainDashboard from "./pages/admin/BrainDashboard";
 import TenantManagement from "./pages/admin/TenantManagement";
+import ProductManagement from "./pages/admin/ProductManagement";
+import BannerManagement from "./pages/admin/BannerManagement";
+import MarketingRules from "./pages/admin/MarketingRules";
+import InfluencerManagement from "./pages/admin/InfluencerManagement";
+import OrganizationSettings from "./pages/admin/OrganizationSettings";
+import BIAnalysisHub from "./pages/admin/BIAnalysisHub";
+import IntegrationHub from "./pages/admin/IntegrationHub";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import ProductList from "./pages/admin/ProductList";
 import ProductEditor from "./pages/admin/ProductEditor";
@@ -104,6 +111,27 @@ function Router() {
       <Route path="/admin/skus" component={SKUManagement} />
       <Route path="/admin/brain" component={BrainDashboard} />
       <Route path="/admin/tenants" component={TenantManagement} />
+      <Route
+        path="/admin/ops/product-management"
+        component={ProductManagement}
+      />
+      <Route path="/admin/marketing/banners" component={BannerManagement} />
+      <Route path="/admin/marketing/rules" component={MarketingRules} />
+      <Route
+        path="/admin/marketing/influencers"
+        component={InfluencerManagement}
+      />
+      <Route
+        path="/admin/system/organizations"
+        component={OrganizationSettings}
+      />
+      <Route path="/admin/bi" component={BIAnalysisHub} />
+      {/* Integration Hub - Global Control Center */}
+      <Route path="/admin/settings/hub" component={IntegrationHub} />
+      {/* AI routes - redirect to BI Analysis Hub */}
+      <Route path="/admin/ai/cockpit" component={BIAnalysisHub} />
+      <Route path="/admin/ai/reports" component={BIAnalysisHub} />
+      <Route path="/admin/ai/customer-service" component={BIAnalysisHub} />
       <Route path="/admin/login" component={AdminLoginPage} />
       <Route path="/admin/products/new" component={ProductEditor} />
       <Route path="/admin/products/edit/:id" component={ProductEditor} />
