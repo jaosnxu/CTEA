@@ -111,8 +111,16 @@ enum RefundStatus {
   FAILED
 }
 
-
-
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  DELIVERING
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
 
 enum AddressType {
   HOME
@@ -772,8 +780,17 @@ model Orders {
   store                Store?   @relation(fields: [storeId], references: [id])
   userId               String?
   user                 Users?   @relation(fields: [userId], references: [id])
-  status               String   @default("pending") @db.VarChar(50)
-  totalAmount          Decimal? @db.Decimal(10, 2)
+  status               OrderStatus @default(PENDING)
+  totalAmount          Decimal? @db.Decimal(15, 2)
+  subtotalAmount       Decimal? @db.Decimal(15, 2)
+  discountAmount       Decimal? @db.Decimal(15, 2) @default(0.00)
+  taxAmount            Decimal? @db.Decimal(15, 2) @default(0.00)
+  deliveryFee          Decimal? @db.Decimal(15, 2) @default(0.00)
+  notes                String?  @db.Text
+  deliveryAddress      Json?
+  paymentMethod        String?  @db.VarChar(50)
+  paymentStatus        String?  @db.VarChar(50)
+  deletedAt            DateTime?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   createdBy            String?
@@ -781,6 +798,11 @@ model Orders {
   
   orderItems           Orderitems[]
   
+  @@index([storeId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
   @@map("orders")
 }
 /// Orderitems
@@ -790,10 +812,21 @@ model Orderitems {
   order                Orders?  @relation(fields: [orderId], references: [id])
   productId            String?
   product              Products? @relation(fields: [productId], references: [id])
+  productName          String?  @db.VarChar(200)
+  productCode          String?  @db.VarChar(100)
+  quantity             Int      @default(1)
+  unitPrice            Decimal  @db.Decimal(15, 2)
+  subtotal             Decimal  @db.Decimal(15, 2)
+  discountAmount       Decimal? @db.Decimal(15, 2) @default(0.00)
+  specifications       Json?
+  notes                String?  @db.Text
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   createdBy            String?
   updatedBy            String?
+  
+  @@index([orderId])
+  @@index([productId])
   @@map("order_items")
 }
 /// Orderdiscounts
