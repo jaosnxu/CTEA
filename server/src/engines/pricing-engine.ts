@@ -7,8 +7,10 @@
  * - Apply priority-based rule stacking
  */
 
-import { getPrismaClient } from "../db/prisma";
-import type { PrismaClient } from "@prisma/client";
+import { getDb } from "../../db";
+import { pricingRules, productPricingRules } from "../../../drizzle/schema";
+import { eq, and, desc, sql, inArray } from "drizzle-orm";
+import { nanoid } from "nanoid";
 
 export interface PricingParams {
   productId: string;
@@ -47,12 +49,15 @@ export interface PricingRuleAction {
 
 export interface PricingRule {
   id: string;
-  name: string;
-  description: string;
+  name: string | { zh?: string; ru?: string; en?: string };
+  description: string | { zh?: string; ru?: string; en?: string };
   condition: PricingRuleCondition;
   action: PricingRuleAction;
   priority: number;
   isActive?: boolean;
+  orgId?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 /**
@@ -84,11 +89,8 @@ const DEFAULT_PRICING_RULES: PricingRule[] = [
  */
 class PricingEngine {
   private static instance: PricingEngine;
-  private prisma: PrismaClient;
 
-  private constructor() {
-    this.prisma = getPrismaClient();
-  }
+  private constructor() {}
 
   /**
    * Get singleton instance
@@ -105,16 +107,12 @@ class PricingEngine {
    */
   async calculatePrice(params: PricingParams): Promise<PricingResult> {
     try {
-      // Get product original price
-      const product = await this.prisma.products.findUnique({
-        where: { id: params.productId },
-      });
-
-      if (!product) {
-        throw new Error("Product not found");
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database not available");
       }
 
-      // For now, use a default price since products table doesn't have price field
+      // For now, use a default price since we need to implement proper product price lookup
       const originalPrice = 290; // Default price in rubles
 
       // Get applicable rules
@@ -135,10 +133,13 @@ class PricingEngine {
         finalPrice = newPrice;
 
         if (discount > 0) {
+          const name = typeof rule.name === "string" ? rule.name : rule.name.ru || rule.name.zh || rule.name.en || "";
+          const description = typeof rule.description === "string" ? rule.description : (rule.description?.ru || rule.description?.zh || rule.description?.en || "");
+          
           appliedRules.push({
             id: rule.id,
-            name: rule.name,
-            description: rule.description,
+            name,
+            description,
             discount,
           });
         }
@@ -163,9 +164,54 @@ class PricingEngine {
    */
   async getPricingRules(productId?: string): Promise<PricingRule[]> {
     try {
-      // Try to get rules from database
-      // Since there's no pricing_rules table in schema, return default rules
-      return DEFAULT_PRICING_RULES;
+      const db = await getDb();
+      if (!db) {
+        console.warn("[PricingEngine] Database not available, using default rules");
+        return DEFAULT_PRICING_RULES;
+      }
+
+      let query;
+      
+      if (productId) {
+        // Get rules associated with a specific product
+        const productRuleLinks = await db
+          .select()
+          .from(productPricingRules)
+          .where(eq(productPricingRules.productId, parseInt(productId)));
+        
+        if (productRuleLinks.length === 0) {
+          return [];
+        }
+        
+        const ruleIds = productRuleLinks.map(link => link.ruleId);
+        query = db
+          .select()
+          .from(pricingRules)
+          .where(inArray(pricingRules.id, ruleIds));
+      } else {
+        // Get all active rules
+        query = db
+          .select()
+          .from(pricingRules)
+          .where(eq(pricingRules.isActive, true))
+          .orderBy(desc(pricingRules.priority));
+      }
+
+      const dbRules = await query;
+      
+      // Transform database rules to PricingRule format
+      return dbRules.map(rule => ({
+        id: rule.id,
+        name: rule.name as any,
+        description: rule.description as any,
+        condition: rule.condition as PricingRuleCondition,
+        action: rule.action as PricingRuleAction,
+        priority: rule.priority,
+        isActive: rule.isActive ?? true,
+        orgId: rule.orgId,
+        createdAt: rule.createdAt,
+        updatedAt: rule.updatedAt,
+      }));
     } catch (error) {
       console.error("[PricingEngine] Error getting pricing rules:", error);
       return DEFAULT_PRICING_RULES;
@@ -177,14 +223,29 @@ class PricingEngine {
    */
   async createPricingRule(data: Omit<PricingRule, "id">): Promise<PricingRule> {
     try {
-      // Since there's no pricing_rules table, we'll store in memory
-      // In production, this should be stored in database
-      const newRule: PricingRule = {
-        id: `rule_${Date.now()}`,
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database not available");
+      }
+
+      const ruleId = `rule_${nanoid(10)}`;
+      const orgId = data.orgId || 1; // Default to org 1 if not specified
+
+      await db.insert(pricingRules).values({
+        id: ruleId,
+        orgId,
+        name: data.name as any,
+        description: data.description as any,
+        condition: data.condition as any,
+        action: data.action as any,
+        priority: data.priority,
+        isActive: data.isActive ?? true,
+      });
+
+      return {
+        id: ruleId,
         ...data,
       };
-
-      return newRule;
     } catch (error) {
       console.error("[PricingEngine] Error creating pricing rule:", error);
       throw new Error("Failed to create pricing rule");
@@ -199,17 +260,50 @@ class PricingEngine {
     updates: Partial<PricingRule>
   ): Promise<PricingRule> {
     try {
-      // Since there's no pricing_rules table, we'll return mock data
-      // In production, this should update database
-      const rule = DEFAULT_PRICING_RULES.find(r => r.id === id);
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database not available");
+      }
 
-      if (!rule) {
+      // Get existing rule first
+      const existingRules = await db
+        .select()
+        .from(pricingRules)
+        .where(eq(pricingRules.id, id))
+        .limit(1);
+
+      if (existingRules.length === 0) {
         throw new Error("Pricing rule not found");
       }
 
+      const existingRule = existingRules[0];
+
+      // Build update object
+      const updateData: any = {};
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.condition !== undefined) updateData.condition = updates.condition;
+      if (updates.action !== undefined) updateData.action = updates.action;
+      if (updates.priority !== undefined) updateData.priority = updates.priority;
+      if (updates.isActive !== undefined) updateData.isActive = updates.isActive;
+
+      if (Object.keys(updateData).length > 0) {
+        await db
+          .update(pricingRules)
+          .set(updateData)
+          .where(eq(pricingRules.id, id));
+      }
+
+      // Return updated rule
       return {
-        ...rule,
-        ...updates,
+        id,
+        name: updates.name ?? existingRule.name,
+        description: updates.description ?? existingRule.description,
+        condition: (updates.condition ?? existingRule.condition) as PricingRuleCondition,
+        action: (updates.action ?? existingRule.action) as PricingRuleAction,
+        priority: updates.priority ?? existingRule.priority,
+        isActive: updates.isActive ?? existingRule.isActive ?? true,
+        orgId: existingRule.orgId,
       };
     } catch (error) {
       console.error("[PricingEngine] Error updating pricing rule:", error);
@@ -218,16 +312,91 @@ class PricingEngine {
   }
 
   /**
-   * Delete pricing rule
+   * Delete pricing rule (soft delete - set isActive to false)
    */
   async deletePricingRule(id: string): Promise<{ success: boolean }> {
     try {
-      // Since there's no pricing_rules table, we'll return success
-      // In production, this should delete from database
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database not available");
+      }
+
+      // Soft delete - set isActive to false
+      await db
+        .update(pricingRules)
+        .set({ isActive: false })
+        .where(eq(pricingRules.id, id));
+
       return { success: true };
     } catch (error) {
       console.error("[PricingEngine] Error deleting pricing rule:", error);
       throw new Error("Failed to delete pricing rule");
+    }
+  }
+
+  /**
+   * Associate pricing rule with a product
+   */
+  async addRuleToProduct(productId: number, ruleId: string): Promise<void> {
+    try {
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database not available");
+      }
+
+      await db.insert(productPricingRules).values({
+        productId,
+        ruleId,
+      });
+    } catch (error) {
+      console.error("[PricingEngine] Error adding rule to product:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Remove pricing rule from a product
+   */
+  async removeRuleFromProduct(productId: number, ruleId: string): Promise<void> {
+    try {
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database not available");
+      }
+
+      await db
+        .delete(productPricingRules)
+        .where(
+          and(
+            eq(productPricingRules.productId, productId),
+            eq(productPricingRules.ruleId, ruleId)
+          )
+        );
+    } catch (error) {
+      console.error("[PricingEngine] Error removing rule from product:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get products affected by a pricing rule
+   */
+  async getProductsByRule(ruleId: string): Promise<number[]> {
+    try {
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database not available");
+      }
+
+      const links = await db
+        .select()
+        .from(productPricingRules)
+        .where(eq(productPricingRules.ruleId, ruleId));
+
+      return links.map(link => link.productId);
+    } catch (error) {
+      console.error("[PricingEngine] Error getting products by rule:", error);
+      return [];
     }
   }
 
