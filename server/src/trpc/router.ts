@@ -11,6 +11,7 @@ import { rbacRouter } from "./routers/rbac.router";
 import { memberRouter } from "./routers/member.router";
 import { orderRouter } from "./routers/order.router";
 import { layoutRouter } from "./routers/layout.router";
+import { authRouter } from "./routers/auth.router";
 
 /**
  * 主 Router
@@ -22,6 +23,7 @@ export const appRouter = router({
   member: memberRouter,
   order: orderRouter,
   layout: layoutRouter,
+  auth: authRouter,
 });
 
 /**
