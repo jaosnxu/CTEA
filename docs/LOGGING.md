@@ -379,7 +379,7 @@ export async function processPayments() {
   
   jobLogger.info('Starting payment processing job');
   
-  const pendingPayments = await getpendingPayments();
+  const pendingPayments = await getPendingPayments();
   jobLogger.info('Found pending payments', { count: pendingPayments.length });
   
   for (const payment of pendingPayments) {

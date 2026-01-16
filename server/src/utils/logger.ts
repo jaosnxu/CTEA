@@ -3,7 +3,7 @@
  * 
  * Features:
  * - Structured logging with Winston
- * - Multiple log levels (error, warn, info, debug)
+ * - Multiple log levels (error, warn, info, http, debug)
  * - File-based logging with daily rotation
  * - Console logging with colored output
  * - Request context tracking
@@ -25,14 +25,20 @@ const logFormat = winston.format.combine(
   winston.format.json()
 );
 
+// Helper function to format metadata
+const formatMetadata = (meta: any): string => {
+  if (!meta.metadata || Object.keys(meta.metadata).length === 0) {
+    return '';
+  }
+  return `\n${JSON.stringify(meta.metadata, null, 2)}`;
+};
+
 // Console format for development (pretty print)
 const consoleFormat = winston.format.combine(
   winston.format.colorize(),
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.printf(({ timestamp, level, message, ...meta }) => {
-    const metaStr = Object.keys(meta).length > 0 && meta.metadata && Object.keys(meta.metadata).length > 0
-      ? `\n${JSON.stringify(meta.metadata, null, 2)}`
-      : '';
+    const metaStr = formatMetadata(meta);
     return `${timestamp} [${level}]: ${message}${metaStr}`;
   })
 );

@@ -17,6 +17,7 @@ const logger = createLogger('HTTP');
 export interface RequestWithId extends Request {
   id?: string;
   startTime?: number;
+  _logged?: boolean;  // Flag to prevent duplicate logging
 }
 
 /**
@@ -71,6 +72,12 @@ export function loggingMiddleware(req: RequestWithId, res: Response, next: NextF
  * Log response details
  */
 function logResponse(req: RequestWithId, res: Response, body?: any) {
+  // Prevent duplicate logging
+  if (req._logged) {
+    return;
+  }
+  req._logged = true;
+
   const duration = req.startTime ? Date.now() - req.startTime : 0;
   const requestLogger = logger.withRequest(req.id || 'unknown');
 
