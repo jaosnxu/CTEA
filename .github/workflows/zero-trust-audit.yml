@@ -143,6 +143,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
+        env:
+          DATABASE_URL: "mysql://user:pass@localhost:3306/db"
         run: pnpm exec prisma generate
 
       - name: Run TypeScript Type Check
@@ -191,6 +193,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
+        env:
+          DATABASE_URL: "mysql://user:pass@localhost:3306/db"
         run: pnpm exec prisma generate
 
       - name: Run Unit Tests
@@ -239,6 +243,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
+        env:
+          DATABASE_URL: "mysql://user:pass@localhost:3306/db"
         run: pnpm exec prisma generate
 
       - name: Build Application
@@ -294,9 +300,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Validate Prisma Schema
+        env:
+          DATABASE_URL: "mysql://user:pass@localhost:3306/db"
         run: pnpm exec prisma validate
 
       - name: Generate Prisma Client (Validation)
+        env:
+          DATABASE_URL: "mysql://user:pass@localhost:3306/db"
         run: pnpm exec prisma generate
 
       - name: "PROOF: Prisma Schema Validation Complete"
