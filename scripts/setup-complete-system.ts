@@ -174,9 +174,8 @@ async function createOrganizationAndStores() {
 async function createProducts(orgId: string) {
   console.log("\n🍵 Creating products...");
 
-  // Validate orgId
-  const orgIdInt = parseInt(orgId);
-  if (isNaN(orgIdInt)) {
+  // Validate orgId (now a UUID string)
+  if (!orgId || orgId.length === 0) {
     throw new Error(
       `Invalid organization ID: ${orgId}. Cannot create products.`
     );
@@ -263,7 +262,7 @@ async function createProducts(orgId: string) {
   for (const data of productData) {
     const product = await prisma.products.create({
       data: {
-        orgId: orgIdInt,
+        orgId: orgId,
         categoryId: data.categoryId,
         code: data.code,
         name: JSON.stringify(data.name),
@@ -279,9 +278,8 @@ async function createProducts(orgId: string) {
 async function createCoupons(orgId: string) {
   console.log("\n🎫 Creating coupons...");
 
-  // Validate orgId
-  const orgIdInt = parseInt(orgId);
-  if (isNaN(orgIdInt)) {
+  // Validate orgId (now a UUID string)
+  if (!orgId || orgId.length === 0) {
     throw new Error(
       `Invalid organization ID: ${orgId}. Cannot create coupons.`
     );
@@ -299,7 +297,7 @@ async function createCoupons(orgId: string) {
   for (const data of couponData) {
     const coupon = await prisma.coupons.create({
       data: {
-        orgId: orgIdInt,
+        orgId: orgId,
         campaignId: data.campaignId,
         code: data.code,
       },

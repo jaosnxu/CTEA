@@ -6,6 +6,8 @@
 dist/
 build/
 *.dist
+dev-dist/
+client/dev-dist/
 
 # Environment variables
 .env
@@ -103,6 +105,8 @@ temp/
 
 # Database
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
 
