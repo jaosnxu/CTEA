@@ -214,19 +214,25 @@ export default function ProductList() {
               <div className="text-2xl font-bold text-gray-900">
                 {stats.totalProducts || 0}
               </div>
-              <div className="text-sm text-gray-500">{t.stats.totalProducts}</div>
+              <div className="text-sm text-gray-500">
+                {t.stats.totalProducts}
+              </div>
             </div>
             <div className="bg-white rounded-xl p-4 shadow-sm border">
               <div className="text-2xl font-bold text-green-600">
                 {stats.activeProducts || 0}
               </div>
-              <div className="text-sm text-gray-500">{t.stats.activeProducts}</div>
+              <div className="text-sm text-gray-500">
+                {t.stats.activeProducts}
+              </div>
             </div>
             <div className="bg-white rounded-xl p-4 shadow-sm border">
               <div className="text-2xl font-bold text-red-600">
                 {stats.inactiveProducts || 0}
               </div>
-              <div className="text-sm text-gray-500">{t.stats.inactiveProducts}</div>
+              <div className="text-sm text-gray-500">
+                {t.stats.inactiveProducts}
+              </div>
             </div>
             <div className="bg-white rounded-xl p-4 shadow-sm border">
               <div className="text-2xl font-bold text-blue-600">
