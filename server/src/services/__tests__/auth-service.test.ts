@@ -9,11 +9,30 @@
 
 import { describe, it, expect, beforeAll, vi, beforeEach } from "vitest";
 
+// Helper function to extract SQL string from drizzle-orm SQL object
+function extractSqlString(sqlObj: unknown): string {
+  if (typeof sqlObj === "string") {
+    return sqlObj;
+  }
+  if (sqlObj && typeof sqlObj === "object" && "queryChunks" in sqlObj) {
+    const chunks = (sqlObj as { queryChunks: unknown[] }).queryChunks;
+    return chunks
+      .map(chunk => {
+        if (chunk && typeof chunk === "object" && "value" in chunk) {
+          return (chunk as { value: string[] }).value.join("");
+        }
+        return "";
+      })
+      .join("");
+  }
+  return String(sqlObj);
+}
+
 // Mock 数据库
 const mockExecute = vi.fn();
 vi.mock("../../../db", () => ({
   getDb: vi.fn().mockResolvedValue({
-    execute: (...args: any[]) => mockExecute(...args),
+    execute: (...args: unknown[]) => mockExecute(...args),
   }),
 }));
 
@@ -43,34 +62,42 @@ describe("AuthService - 用户体系与身份认证测试", () => {
       console.log("测试场景：新用户自动注册");
       console.log("=".repeat(70));
 
+      // Track if user has been created
+      let userCreated = false;
+
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
-        // 查找用户 - 返回空（用户不存在）
+      mockExecute.mockImplementation((sqlObj: unknown) => {
+        const query = extractSqlString(sqlObj);
+        // 查找用户 - 返回空（用户不存在）或返回新创建的用户
         if (query.includes("SELECT") && query.includes("FROM users")) {
           if (query.includes("WHERE phone")) {
-            return Promise.resolve([[]]);
-          }
-          if (query.includes("WHERE id")) {
-            return Promise.resolve([
-              [
-                {
-                  id: 1,
-                  phone: "+79001234567",
-                  nickname: "Гость4567",
-                  avatar: null,
-                  status: "ACTIVE",
-                  last_login_at: new Date(),
-                  last_login_ip: "192.168.1.100",
-                  login_count: 1,
-                  created_at: new Date(),
-                  updated_at: new Date(),
-                },
-              ],
-            ]);
+            // First query: user doesn't exist yet
+            // Second query (after INSERT): return the created user
+            if (!userCreated) {
+              return Promise.resolve([[]]);
+            } else {
+              return Promise.resolve([
+                [
+                  {
+                    id: "uuid-1234",
+                    phone: "+79001234567",
+                    nickname: "Гость4567",
+                    avatar: null,
+                    status: "ACTIVE",
+                    last_login_at: new Date(),
+                    last_login_ip: "192.168.1.100",
+                    login_count: 1,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                  },
+                ],
+              ]);
+            }
           }
         }
         // 创建用户
         if (query.includes("INSERT INTO users")) {
+          userCreated = true;
           return Promise.resolve([{ insertId: 1 }]);
         }
         return Promise.resolve([[]]);
@@ -112,7 +139,8 @@ describe("AuthService - 用户体系与身份认证测试", () => {
       console.log("=".repeat(70));
 
       // Mock 数据库操作
-      mockExecute.mockImplementation((query: string) => {
+      mockExecute.mockImplementation((sqlObj: unknown) => {
+        const query = extractSqlString(sqlObj);
         // 查找用户 - 返回已存在用户
         if (
           query.includes("SELECT") &&
