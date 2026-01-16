@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
+import type { Order, OrderItem, OrderStatus } from "@/types/order.types";
 
 export default function AdminOrderDetail() {
   const [, params] = useRoute("/admin/orders/:id");
@@ -310,12 +311,13 @@ export default function AdminOrderDetail() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {order.orderItems?.map((item: any) => (
-                  <TableRow key={item.id}>
+                {order.orderItems?.map((item: OrderItem) => (
+                  <TableRow key={item.id.toString()}>
                     <TableCell className="font-medium">
                       {item.productName ||
-                        item.product?.name?.en ||
-                        item.product?.name ||
+                        (typeof item.product?.name === "string"
+                          ? item.product.name
+                          : item.product?.name?.en) ||
                         "N/A"}
                     </TableCell>
                     <TableCell>{item.productCode || "N/A"}</TableCell>

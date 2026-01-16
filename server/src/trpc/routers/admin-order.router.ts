@@ -43,7 +43,7 @@ const OrderItemSchema = z.object({
   quantity: z.number().int().min(1),
   unitPrice: z.number(),
   discountAmount: z.number().optional(),
-  specifications: z.any().optional(),
+  specifications: z.record(z.unknown()).optional(),
   notes: z.string().optional(),
 });
 
@@ -132,7 +132,7 @@ export const adminOrderRouter = router({
         userId: z.string().optional(),
         status: OrderStatusSchema.optional(),
         items: z.array(OrderItemSchema).min(1),
-        deliveryAddress: z.any().optional(),
+        deliveryAddress: z.record(z.unknown()).optional(),
         notes: z.string().optional(),
         paymentMethod: z.string().optional(),
         deliveryFee: z.number().optional(),
@@ -193,7 +193,7 @@ export const adminOrderRouter = router({
           .transform((v) => BigInt(v)),
         status: OrderStatusSchema.optional(),
         notes: z.string().optional(),
-        deliveryAddress: z.any().optional(),
+        deliveryAddress: z.record(z.unknown()).optional(),
         paymentMethod: z.string().optional(),
         paymentStatus: z.string().optional(),
       })

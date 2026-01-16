@@ -40,6 +40,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Filter, RefreshCw, Eye, Package } from "lucide-react";
 import { format } from "date-fns";
+import type { Order, OrderStore } from "@/types/order.types";
 
 export default function AdminOrderList() {
   const [page, setPage] = useState(1);
@@ -192,7 +193,7 @@ export default function AdminOrderList() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">All stores</SelectItem>
-                  {storesData?.stores.map((store: any) => (
+                  {storesData?.stores.map((store: OrderStore) => (
                     <SelectItem key={store.id} value={store.id}>
                       {typeof store.name === "string"
                         ? store.name
@@ -264,8 +265,8 @@ export default function AdminOrderList() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {ordersData?.orders.map((order: any) => (
-                      <TableRow key={order.id}>
+                    {ordersData?.orders.map((order: Order) => (
+                      <TableRow key={order.id.toString()}>
                         <TableCell className="font-medium">
                           {formatOrderNumber(order.orderNumber)}
                         </TableCell>

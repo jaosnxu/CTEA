@@ -31,7 +31,7 @@ export interface OrderCreateInput {
   userId?: string;
   status?: OrderStatus;
   items: OrderItemInput[];
-  deliveryAddress?: any;
+  deliveryAddress?: Record<string, unknown>;
   notes?: string;
   paymentMethod?: string;
   deliveryFee?: number;
@@ -44,14 +44,14 @@ export interface OrderItemInput {
   quantity: number;
   unitPrice: number;
   discountAmount?: number;
-  specifications?: any;
+  specifications?: Record<string, unknown>;
   notes?: string;
 }
 
 export interface OrderUpdateInput {
   status?: OrderStatus;
   notes?: string;
-  deliveryAddress?: any;
+  deliveryAddress?: Record<string, unknown>;
   paymentMethod?: string;
   paymentStatus?: string;
 }
@@ -519,7 +519,9 @@ export class OrderService {
    */
   private generateOrderNumber(storeId: string): string {
     const timestamp = Date.now();
-    const storeCode = storeId.slice(-4).toUpperCase();
+    const storeCode = storeId.length >= 4 
+      ? storeId.slice(-4).toUpperCase() 
+      : storeId.padEnd(4, '0').toUpperCase();
     const random = Math.floor(Math.random() * 10000)
       .toString()
       .padStart(4, "0");
