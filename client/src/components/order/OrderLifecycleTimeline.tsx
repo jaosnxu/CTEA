@@ -66,21 +66,21 @@ export function OrderLifecycleTimeline({
   const getActionColor = (action: string) => {
     switch (action.toUpperCase()) {
       case "CREATE":
-        return "text-green-600 bg-green-50 dark:bg-green-950";
+        return "text-primary bg-secondary dark:bg-secondary";
       case "UPDATE":
-        return "text-blue-600 bg-blue-50 dark:bg-blue-950";
+        return "text-primary bg-secondary dark:bg-secondary";
       case "DELETE":
-        return "text-red-600 bg-red-50 dark:bg-red-950";
+        return "text-destructive bg-destructive/10 dark:bg-destructive/20";
       case "STATUS_CHANGE":
-        return "text-purple-600 bg-purple-50 dark:bg-purple-950";
+        return "text-accent-foreground bg-accent dark:bg-accent";
       case "APPROVE":
-        return "text-green-600 bg-green-50 dark:bg-green-950";
+        return "text-primary bg-secondary dark:bg-secondary";
       case "REJECT":
-        return "text-red-600 bg-red-50 dark:bg-red-950";
+        return "text-destructive bg-destructive/10 dark:bg-destructive/20";
       case "NOTE_ADD":
-        return "text-gray-600 bg-gray-50 dark:bg-gray-950";
+        return "text-muted-foreground bg-muted dark:bg-muted";
       default:
-        return "text-gray-600 bg-gray-50 dark:bg-gray-950";
+        return "text-muted-foreground bg-muted dark:bg-muted";
     }
   };
 
@@ -144,7 +144,7 @@ export function OrderLifecycleTimeline({
           {data.logs.map((log, index) => (
             <div
               key={log.id.toString()}
-              className="relative pl-8 pb-6 border-l-2 border-gray-200 dark:border-gray-700 last:border-0 last:pb-0"
+              className="relative pl-8 pb-6 border-l-2 border-border dark:border-border last:border-0 last:pb-0"
             >
               {/* Timeline Icon */}
               <div
@@ -183,7 +183,7 @@ export function OrderLifecycleTimeline({
                     )}
 
                     {log.changes && typeof log.changes === "object" && (
-                      <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-900 rounded text-xs font-mono">
+                      <div className="mt-2 p-2 bg-muted dark:bg-muted rounded text-xs font-mono">
                         <pre className="whitespace-pre-wrap break-words">
                           {JSON.stringify(log.changes, null, 2)}
                         </pre>

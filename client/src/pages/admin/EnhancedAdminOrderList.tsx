@@ -63,6 +63,8 @@ import {
   Edit,
   CheckSquare,
   Square,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { format } from "date-fns";
 import type { Order, OrderStore, OrderStatus } from "@/types/order.types";
@@ -86,6 +88,9 @@ export default function EnhancedAdminOrderList() {
   const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState(false);
   const [batchNewStatus, setBatchNewStatus] = useState<OrderStatus | "">("");
   const [batchReason, setBatchReason] = useState("");
+
+  // Advanced filter panel state
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Fetch orders with advanced search
   const {
@@ -324,12 +329,33 @@ export default function EnhancedAdminOrderList() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            Filters & Search
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              Filters & Search
+            </CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className="text-muted-foreground"
+            >
+              {showAdvancedFilters ? (
+                <>
+                  <ChevronUp className="h-4 w-4 mr-1" />
+                  Hide Advanced
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-4 w-4 mr-1" />
+                  Show Advanced
+                </>
+              )}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
+          {/* Basic Filters - Always Visible */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="text-sm font-medium mb-2 block">
@@ -371,46 +397,49 @@ export default function EnhancedAdminOrderList() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Store</label>
-              <Select value={storeFilter} onValueChange={setStoreFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All stores" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All stores</SelectItem>
-                  {storesData?.stores.map((store: OrderStore) => (
-                    <SelectItem key={store.id} value={store.id}>
-                      {typeof store.name === "string"
-                        ? store.name
-                        : store.name?.en || store.code}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Advanced Filters - Collapsible with animate-fadein */}
+          {showAdvancedFilters && (
+            <div className="animate-in fade-in duration-300 grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-border">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Store</label>
+                <Select value={storeFilter} onValueChange={setStoreFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All stores" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All stores</SelectItem>
+                    {storesData?.stores.map((store: OrderStore) => (
+                      <SelectItem key={store.id} value={store.id}>
+                        {typeof store.name === "string"
+                          ? store.name
+                          : store.name?.en || store.code}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Start Date
-              </label>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Start Date
+                </label>
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
 
-            <div>
-              <label className="text-sm font-medium mb-2 block">End Date</label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
+              <div>
+                <label className="text-sm font-medium mb-2 block">End Date</label>
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="flex gap-2 mt-4">
             <Button onClick={handleResetFilters} variant="outline">
@@ -422,11 +451,11 @@ export default function EnhancedAdminOrderList() {
 
       {/* Bulk Operations Bar */}
       {selectedOrders.size > 0 && (
-        <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+        <Card className="bg-secondary dark:bg-secondary border-border">
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CheckSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <CheckSquare className="h-5 w-5 text-primary dark:text-primary" />
                 <span className="font-medium">
                   {selectedOrders.size} order(s) selected
                 </span>

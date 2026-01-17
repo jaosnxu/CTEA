@@ -329,6 +329,7 @@ model Store {
   businessHours   Json?               // 营业时间配置
   cutoffHour      Int                 @default(5)
   iikoTerminalId  String?             @db.VarChar(100)
+  taxRate         Decimal?            @db.Decimal(5, 4) @default(0.0000)  // Tax rate for order snapshots (e.g., 0.2000 = 20%)
   status          OrganizationStatus  @default(ACTIVE)
   config          Json?               // 门店级配置
   
@@ -957,7 +958,7 @@ model Orderdiscounts {
   @@map("order_discounts")
 }
 
-/// Order Lifecycle Logs - Track all order operations and state changes
+/// Order Lifecycle Logs - Track all order operations and state changes with SHA-256 audit chain
 model OrderLifecycleLogs {
   id                   BigInt @id @default(autoincrement())
   orderId              BigInt
@@ -972,12 +973,15 @@ model OrderLifecycleLogs {
   notes                String?  @db.Text
   ipAddress            String?  @db.VarChar(100)
   userAgent            String?  @db.Text
+  prevHash             String?  @db.VarChar(64)   // SHA-256 hash of previous log entry (null for first entry)
+  sha256Hash           String   @db.VarChar(64)   // SHA-256 hash of this log entry for audit chain integrity
   createdAt            DateTime @default(now())
   
   @@index([orderId])
   @@index([operatorId])
   @@index([action])
   @@index([createdAt])
+  @@index([sha256Hash])
   @@map("order_lifecycle_logs")
 }
 
