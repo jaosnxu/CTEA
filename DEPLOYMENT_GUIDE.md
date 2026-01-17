@@ -119,7 +119,7 @@ Replace the following placeholders with actual values:
 
 ```bash
 # Database (from deploy-tencent.sh output)
-DATABASE_URL=mysql://chutea_admin:ACTUAL_PASSWORD_HERE@localhost:5432/chutea_prod
+DATABASE_URL=mysql://chutea_admin:ACTUAL_PASSWORD_HERE@localhost:3306/chutea_prod
 
 # JWT Secret (generate new)
 JWT_SECRET=$(openssl rand -base64 64)
@@ -236,7 +236,7 @@ Log in to Tencent Cloud Console and configure the following inbound rules:
 | TCP      | 22   | Your IP only | SSH access                  |
 | TCP      | 80   | 0.0.0.0/0    | HTTP (redirect to HTTPS)    |
 | TCP      | 443  | 0.0.0.0/0    | HTTPS                       |
-| TCP      | 5432 | 127.0.0.1    | MySQL (localhost only) |
+| TCP      | 3306 | 127.0.0.1    | MySQL (localhost only) |
 
 **Important:** Do NOT expose port 3000 (Node.js) directly. All traffic should go through Nginx.
 
@@ -260,7 +260,7 @@ After deployment, verify each component is working correctly:
 
 ```bash
 # Connect to MySQL
-sudo -u postgres mysql -d chutea_prod
+mysql -u chutea_admin -p -D chutea_prod
 
 # Check tables exist
 \dt
@@ -420,7 +420,7 @@ pm2 restart chutea-backend
 cat .env.production | grep DATABASE_URL
 
 # Test database connection
-mysql mysql://chutea_admin:PASSWORD@localhost:5432/chutea_prod -c "SELECT 1;"
+mysql -h localhost -u chutea_admin -p -D chutea_prod -e "SELECT 1;"
 ```
 
 ### Issue 2: Frontend Not Loading
@@ -509,7 +509,7 @@ cat .env.production | grep DATABASE_URL
 
 ```bash
 # Verify password is correct
-sudo -u postgres mysql -c "\du chutea_admin"
+sudo -u postgres mysql -c "SELECT User, Host FROM mysql.user; chutea_admin"
 
 # Reset password if needed
 sudo -u postgres mysql -c "ALTER USER chutea_admin WITH PASSWORD 'new_password';"

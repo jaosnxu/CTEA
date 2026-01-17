@@ -14,9 +14,9 @@ This Docker Compose setup is for **internal testing only**. It provides an isola
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │   Postgres   │  │  Mock OAuth  │  │  App:3000    │     │
+│  │   MySQL   │  │  Mock OAuth  │  │  App:3000    │     │
 │  │   Database   │  │   Server     │  │              │     │
-│  │   (port 5432)│  │  (port 9000) │  │              │     │
+│  │   (port 3306)│  │  (port 9000) │  │              │     │
 │  └──────────────┘  └──────────────┘  └──────────────┘     │
 │                                                              │
 │                                       ┌──────────────┐     │
@@ -221,7 +221,7 @@ docker compose exec postgres mysql -U chutea_test -d chutea_test
 docker compose exec app wget -O- http://mock-oauth:9000/health
 
 # 从应用容器测试数据库连接
-docker compose exec app nc -zv postgres 5432
+docker compose exec app nc -zv mysql 3306
 ```
 
 ### 重启特定服务 (Restart Specific Service)
@@ -273,7 +273,7 @@ Error: bind: address already in use
 ```bash
 lsof -i :3000
 lsof -i :3001
-lsof -i :5432
+lsof -i :3306
 lsof -i :9000
 ```
 

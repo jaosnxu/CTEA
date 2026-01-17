@@ -40,7 +40,7 @@ The CHUTEA system has been successfully initialized and tested. All core functio
 
 - **Status**: PASS
 - **Details**: Successfully connected to MySQL database
-- **Connection String**: `mysql://postgres@localhost:5432/chutea_test`
+- **Connection String**: `mysql://chutea_test:test_password@localhost:3306/chutea_test`
 
 ### ✅ Core Tables Verification
 
