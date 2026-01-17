@@ -289,7 +289,7 @@ export const orderRouter = router({
         ctx.prisma.orders.aggregate({
           where: {
             ...where,
-            status: { in: [OrderStatus.COMPLETED, OrderStatus.DELIVERING] },
+            status: OrderStatus.COMPLETED,
           },
           _sum: {
             totalAmount: true,
