@@ -19,7 +19,7 @@ The CHU TEA platform is designed as a "Meituan-like" multi-tenant system with a 
 
 To ensure high performance and data sovereignty, the frontend **NEVER** communicates directly with the IIKO API for read operations.
 
-- **Sync Layer**: A background worker syncs products, stock, and modifiers from IIKO to our internal PostgreSQL database (Shadow DB).
+- **Sync Layer**: A background worker syncs products, stock, and modifiers from IIKO to our internal MySQL database (Shadow DB).
 - **Enrichment**: The Admin Panel allows marketing teams to enrich raw IIKO data with high-res images, multi-language descriptions (ZH/EN/RU), and marketing tags (e.g., "Bestseller", "Seasonal").
 - **Read Path**: PWA/Telegram Bot reads exclusively from the Shadow DB for sub-millisecond response times.
 - **Write Path**: Orders are pushed to IIKO only at the moment of checkout.
@@ -48,7 +48,7 @@ To distinguish order sources in a unified kitchen stream, we use a prefix genera
 
 ### 2.4 Local-First Write Strategy
 
-When cloud PostgreSQL is unavailable, the system uses a resilient local-first write pattern:
+When cloud MySQL is unavailable, the system uses a resilient local-first write pattern:
 
 ```
 Order Request → Write to SQLite (local) → Try Cloud Sync
@@ -80,14 +80,14 @@ Order Request → Write to SQLite (local) → Try Cloud Sync
 | React          | 19.2.1  | Frontend framework  |
 | Express        | 4.21.2  | HTTP server         |
 | @trpc/server   | 11.8.1  | Type-safe API       |
-| Prisma         | 7.2.0   | PostgreSQL ORM      |
+| Prisma         | 7.2.0   | MySQL ORM      |
 | better-sqlite3 | 12.6.0  | Local SQLite driver |
 | Vite           | 7.1.7   | Frontend bundler    |
 | esbuild        | 0.25.0  | Backend bundler     |
 
 ### 3.3 Database Layer
 
-- **Primary**: PostgreSQL 14+ (Cloud: 43.166.239.99)
+- **Primary**: MySQL 8.0+ (Cloud: 43.166.239.99)
 - **Local Fallback**: SQLite (prisma/local.db)
 - **ORM**: Prisma with PrismaPg adapter
 - **Tables**: 74 total
@@ -137,7 +137,7 @@ Order Request → Write to SQLite (local) → Try Cloud Sync
 │                    │                       │                       │        │
 │                    ▼                       ▼                       ▼        │
 │           ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐ │
-│           │   PostgreSQL    │    │     SQLite      │    │    iiko POS     │ │
+│           │   MySQL    │    │     SQLite      │    │    iiko POS     │ │
 │           │   (Cloud DB)    │    │   (Local DB)    │    │   (External)    │ │
 │           │ 43.166.239.99   │    │ prisma/local.db │    │ api-ru.iiko.    │ │
 │           └─────────────────┘    └─────────────────┘    │   services      │ │
@@ -256,7 +256,7 @@ Referrer-Policy: strict-origin-when-cross-origin
 | 80        | Nginx (HTTP redirect) | Public   |
 | 443       | Nginx (HTTPS)         | Public   |
 | 3000-3001 | Node.js (PM2)         | Internal |
-| 5432      | PostgreSQL            | Internal |
+| 5432      | MySQL            | Internal |
 
 ---
 
@@ -285,7 +285,7 @@ Referrer-Policy: strict-origin-when-cross-origin
 
 | Risk                         | Impact                     | Mitigation                         | Status      |
 | ---------------------------- | -------------------------- | ---------------------------------- | ----------- |
-| Cloud PostgreSQL unavailable | Orders cannot be processed | Local SQLite fallback + async sync | Implemented |
+| Cloud MySQL unavailable | Orders cannot be processed | Local SQLite fallback + async sync | Implemented |
 | iiko API timeout             | Orders stuck in pending    | Queue + retry mechanism            | Implemented |
 | Node.js v24 incompatibility  | Server fails to start      | Version check + warning            | Implemented |
 | Nginx crash                  | Site unavailable           | PM2 cluster mode (2 instances)     | Configured  |
@@ -303,7 +303,7 @@ Referrer-Policy: strict-origin-when-cross-origin
 | Risk                             | Mitigation                   | Status  |
 | -------------------------------- | ---------------------------- | ------- |
 | iiko Real implementation missing | Complete RealIikoService     | Pending |
-| No automated backups             | Configure PostgreSQL backups | Pending |
+| No automated backups             | Configure MySQL backups | Pending |
 | Log files not rotated            | Configure logrotate          | Pending |
 
 ### 8.4 Recommendations
@@ -311,7 +311,7 @@ Referrer-Policy: strict-origin-when-cross-origin
 **Immediate Actions:**
 
 1. Complete `RealIikoService` implementation before production launch
-2. Configure automated PostgreSQL backups
+2. Configure automated MySQL backups
 3. Set up log rotation for PM2 and Nginx logs
 
 **Short-term Actions:**

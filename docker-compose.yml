@@ -1,20 +1,22 @@
 version: "3.8"
 
 services:
-  # PostgreSQL database for local testing
-  postgres:
-    image: postgres:15-alpine
-    container_name: chutea-postgres
+  # MySQL database for local testing
+  mysql:
+    image: mysql:8.0
+    container_name: chutea-mysql
     environment:
-      POSTGRES_DB: chutea_test
-      POSTGRES_USER: chutea_test
-      POSTGRES_PASSWORD: test_password
+      MYSQL_DATABASE: chutea_test
+      MYSQL_USER: chutea_test
+      MYSQL_PASSWORD: test_password
+      MYSQL_ROOT_PASSWORD: root_password
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U chutea_test"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "chutea_test", "-ptest_password"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -44,7 +46,7 @@ services:
       dockerfile: Dockerfile.test
     container_name: chutea-app
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
       mock-oauth:
         condition: service_healthy
@@ -53,7 +55,7 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3000
-      DATABASE_URL: postgresql://chutea_test:test_password@postgres:5432/chutea_test
+      DATABASE_URL: mysql://chutea_test:test_password@mysql:3306/chutea_test
       API_KEY: test-api-key-12345
 
       # Standard OAuth 2.0 Configuration (pointing to mock server)
@@ -85,7 +87,7 @@ services:
       dockerfile: Dockerfile.test
     container_name: chutea-app-secondary
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
       mock-oauth:
         condition: service_healthy
@@ -94,7 +96,7 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3001
-      DATABASE_URL: postgresql://chutea_test:test_password@postgres:5432/chutea_test
+      DATABASE_URL: mysql://chutea_test:test_password@mysql:3306/chutea_test
       API_KEY: test-api-key-12345
 
       # Standard OAuth 2.0 Configuration (pointing to mock server)
@@ -120,4 +122,4 @@ services:
       retries: 5
 
 volumes:
-  postgres_data:
+  mysql_data:

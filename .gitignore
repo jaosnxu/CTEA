@@ -111,3 +111,4 @@ temp/
 *.sqlite3
 
 /generated/prisma
+_archive_postgres_schemas/

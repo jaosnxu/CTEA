@@ -36,7 +36,7 @@ CHUTEA 是一个功能完整的奶茶店管理系统，包含：
 
 - Node.js 18+
 - pnpm 8+
-- PostgreSQL 14+
+- MySQL 8.0+
 
 ### 1. 安装依赖
 
@@ -55,7 +55,7 @@ cp .env.production.template .env
 编辑 `.env` 文件，设置数据库连接：
 
 ```bash
-DATABASE_URL=postgresql://username:password@localhost:5432/chutea_db
+DATABASE_URL=mysql://username:password@localhost:3306/chutea_db
 ```
 
 ### 3. 初始化数据库
@@ -199,7 +199,7 @@ pnpm data:cleanup
 
 - 🟢 Node.js + Express
 - 🔷 TypeScript
-- 🗄️ PostgreSQL
+- 🗄️ MySQL
 - 🔒 Prisma ORM
 - 🔐 JWT 认证
 
@@ -256,7 +256,7 @@ PORT=8080
 
 检查：
 
-1. PostgreSQL 服务是否运行
+1. MySQL 服务是否运行
 2. `.env` 文件中的 `DATABASE_URL` 是否正确
 3. 数据库用户权限是否足够
 
