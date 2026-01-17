@@ -122,22 +122,23 @@ export default function EnhancedAdminOrderList() {
   });
 
   // Batch operations mutations
-  const batchUpdateStatusMutation = trpc.enhancedOrder.batchUpdateStatus.useMutation({
-    onSuccess: (result) => {
-      toast.success(
-        `Batch status update completed: ${result.successCount} succeeded, ${result.failureCount} failed`
-      );
-      setSelectedOrders(new Set());
-      setSelectAll(false);
-      refetch();
-    },
-    onError: (error) => {
-      toast.error(`Batch status update failed: ${error.message}`);
-    },
-  });
+  const batchUpdateStatusMutation =
+    trpc.enhancedOrder.batchUpdateStatus.useMutation({
+      onSuccess: result => {
+        toast.success(
+          `Batch status update completed: ${result.successCount} succeeded, ${result.failureCount} failed`
+        );
+        setSelectedOrders(new Set());
+        setSelectAll(false);
+        refetch();
+      },
+      onError: error => {
+        toast.error(`Batch status update failed: ${error.message}`);
+      },
+    });
 
   const batchDeleteMutation = trpc.enhancedOrder.batchDelete.useMutation({
-    onSuccess: (result) => {
+    onSuccess: result => {
       toast.success(
         `Batch delete completed: ${result.successCount} succeeded, ${result.failureCount} failed`
       );
@@ -145,14 +146,14 @@ export default function EnhancedAdminOrderList() {
       setSelectAll(false);
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Batch delete failed: ${error.message}`);
     },
   });
 
   // Export mutations
   const exportCSVMutation = trpc.enhancedOrder.exportCSV.useMutation({
-    onSuccess: (result) => {
+    onSuccess: result => {
       // Create and download file
       const blob = new Blob([result.content], { type: result.mimeType });
       const url = window.URL.createObjectURL(blob);
@@ -165,7 +166,7 @@ export default function EnhancedAdminOrderList() {
       window.URL.revokeObjectURL(url);
       toast.success("Export completed successfully");
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Export failed: ${error.message}`);
     },
   });
@@ -189,7 +190,7 @@ export default function EnhancedAdminOrderList() {
       setSelectedOrders(new Set());
     } else {
       const allIds = new Set(
-        ordersData?.orders.map((order) => order.id.toString()) || []
+        ordersData?.orders.map(order => order.id.toString()) || []
       );
       setSelectedOrders(allIds);
     }
@@ -305,7 +306,7 @@ export default function EnhancedAdminOrderList() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {statsData.byStatus.find((s) => s.status === "COMPLETED")
+                {statsData.byStatus.find(s => s.status === "COMPLETED")
                   ?.count || 0}
               </div>
             </CardContent>
@@ -318,8 +319,8 @@ export default function EnhancedAdminOrderList() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {statsData.byStatus.find((s) => s.status === "PENDING")
-                  ?.count || 0}
+                {statsData.byStatus.find(s => s.status === "PENDING")?.count ||
+                  0}
               </div>
             </CardContent>
           </Card>
@@ -364,7 +365,7 @@ export default function EnhancedAdminOrderList() {
               <Input
                 placeholder="Search by order number"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
               />
             </div>
 
@@ -375,7 +376,7 @@ export default function EnhancedAdminOrderList() {
               <Input
                 placeholder="Search by phone"
                 value={phoneSearch}
-                onChange={(e) => setPhoneSearch(e.target.value)}
+                onChange={e => setPhoneSearch(e.target.value)}
               />
             </div>
 
@@ -387,7 +388,7 @@ export default function EnhancedAdminOrderList() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">All statuses</SelectItem>
-                  {getAllOrderStatuses().map((status) => (
+                  {getAllOrderStatuses().map(status => (
                     <SelectItem key={status} value={status}>
                       {getOrderStatusLabel(status, "en")}
                     </SelectItem>
@@ -426,16 +427,18 @@ export default function EnhancedAdminOrderList() {
                 <Input
                   type="date"
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={e => setStartDate(e.target.value)}
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-2 block">End Date</label>
+                <label className="text-sm font-medium mb-2 block">
+                  End Date
+                </label>
                 <Input
                   type="date"
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  onChange={e => setEndDate(e.target.value)}
                 />
               </div>
             </div>
@@ -631,13 +634,13 @@ export default function EnhancedAdminOrderList() {
               </label>
               <Select
                 value={batchNewStatus}
-                onValueChange={(value) => setBatchNewStatus(value as OrderStatus)}
+                onValueChange={value => setBatchNewStatus(value as OrderStatus)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getAllOrderStatuses().map((status) => (
+                  {getAllOrderStatuses().map(status => (
                     <SelectItem key={status} value={status}>
                       {getOrderStatusLabel(status, "en")}
                     </SelectItem>
@@ -652,7 +655,7 @@ export default function EnhancedAdminOrderList() {
               <Input
                 placeholder="Enter reason for status change"
                 value={batchReason}
-                onChange={(e) => setBatchReason(e.target.value)}
+                onChange={e => setBatchReason(e.target.value)}
               />
             </div>
           </div>
@@ -689,7 +692,7 @@ export default function EnhancedAdminOrderList() {
               <Input
                 placeholder="Enter reason for deletion"
                 value={batchReason}
-                onChange={(e) => setBatchReason(e.target.value)}
+                onChange={e => setBatchReason(e.target.value)}
               />
             </div>
           </div>

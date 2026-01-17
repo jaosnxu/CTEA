@@ -1,6 +1,6 @@
 /**
  * Order Lifecycle Timeline Component
- * 
+ *
  * Visualizes order operations and state changes as a timeline
  */
 
@@ -10,16 +10,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { 
-  Clock, 
-  User, 
-  FileText, 
-  CheckCircle, 
-  XCircle, 
-  Edit, 
+import {
+  Clock,
+  User,
+  FileText,
+  CheckCircle,
+  XCircle,
+  Edit,
   Trash2,
   Plus,
-  RefreshCw 
+  RefreshCw,
 } from "lucide-react";
 import { format } from "date-fns";
 import { getOrderStatusI18n, formatDateI18n, Locale } from "@/lib/order-i18n";
@@ -36,11 +36,13 @@ export function OrderLifecycleTimeline({
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
-  const { data, isLoading, refetch } = trpc.enhancedOrder.getOrderLogs.useQuery({
-    orderId,
-    page,
-    pageSize,
-  });
+  const { data, isLoading, refetch } = trpc.enhancedOrder.getOrderLogs.useQuery(
+    {
+      orderId,
+      page,
+      pageSize,
+    }
+  );
 
   const getActionIcon = (action: string) => {
     switch (action.toUpperCase()) {
@@ -86,10 +88,14 @@ export function OrderLifecycleTimeline({
 
   const getOperatorTypeLabel = (type: string | null) => {
     if (!type) return "System";
-    
+
     const labels: Record<string, Record<Locale, string>> = {
       CUSTOMER: { en: "Customer", ru: "Клиент", zh: "客户" },
-      STORE_STAFF: { en: "Store Staff", ru: "Сотрудник магазина", zh: "门店员工" },
+      STORE_STAFF: {
+        en: "Store Staff",
+        ru: "Сотрудник магазина",
+        zh: "门店员工",
+      },
       HQ_ADMIN: { en: "HQ Admin", ru: "Администратор", zh: "总部管理员" },
       SYSTEM: { en: "System", ru: "Система", zh: "系统" },
     };
@@ -198,9 +204,7 @@ export function OrderLifecycleTimeline({
 
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <User className="h-3 w-3" />
-                  <span>
-                    {log.operatorName || log.operatorId || "System"}
-                  </span>
+                  <span>{log.operatorName || log.operatorId || "System"}</span>
                   <span>·</span>
                   <span>{getOperatorTypeLabel(log.operatorType)}</span>
                   {log.ipAddress && (
