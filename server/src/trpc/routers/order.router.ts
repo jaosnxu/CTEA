@@ -346,7 +346,11 @@ export const orderRouter = router({
       }
 
       // 检查订单状态
-      const nonCancellableStatuses: OrderStatus[] = [OrderStatus.COMPLETED, OrderStatus.DELIVERING, OrderStatus.CANCELLED];
+      const nonCancellableStatuses: OrderStatus[] = [
+        OrderStatus.COMPLETED,
+        OrderStatus.DELIVERING,
+        OrderStatus.CANCELLED,
+      ];
       if (nonCancellableStatuses.includes(order.status)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
