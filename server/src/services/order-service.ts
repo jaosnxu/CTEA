@@ -31,7 +31,7 @@ export interface OrderCreateInput {
   userId?: string;
   status?: OrderStatus;
   items: OrderItemInput[];
-  deliveryAddress?: Record<string, unknown>;
+  deliveryAddress?: Prisma.InputJsonValue;
   notes?: string;
   paymentMethod?: string;
   deliveryFee?: number;
@@ -44,14 +44,14 @@ export interface OrderItemInput {
   quantity: number;
   unitPrice: number;
   discountAmount?: number;
-  specifications?: Record<string, unknown>;
+  specifications?: Prisma.InputJsonValue;
   notes?: string;
 }
 
 export interface OrderUpdateInput {
   status?: OrderStatus;
   notes?: string;
-  deliveryAddress?: Record<string, unknown>;
+  deliveryAddress?: Prisma.InputJsonValue;
   paymentMethod?: string;
   paymentStatus?: string;
 }
@@ -217,6 +217,33 @@ export class OrderService {
       });
     }
 
+    // Fetch store details for snapshot (including taxRate for immutable financial data)
+    const store = await this.prisma.store.findUnique({
+      where: { id: input.storeId },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        address: true,
+        phone: true,
+        taxRate: true,
+      },
+    });
+
+    // Fetch user details for snapshot if userId provided
+    let user = null;
+    if (input.userId) {
+      user = await this.prisma.users.findUnique({
+        where: { id: input.userId },
+        select: {
+          id: true,
+          phone: true,
+          nickname: true,
+          avatar: true,
+        },
+      });
+    }
+
     // Calculate totals
     let subtotalAmount = 0;
     let discountAmount = 0;
@@ -249,6 +276,30 @@ export class OrderService {
     const orderNumber =
       input.orderNumber || this.generateOrderNumber(input.storeId);
 
+    // Create snapshots with immutable financial data (unit prices stored in items, taxRate in store snapshot)
+    const storeSnapshot: Prisma.InputJsonValue | typeof Prisma.DbNull = store
+      ? {
+          id: store.id,
+          code: store.code,
+          name: store.name,
+          address: store.address,
+          phone: store.phone,
+          taxRate: store.taxRate ? Number(store.taxRate) : 0,
+        }
+      : Prisma.DbNull;
+
+    const customerSnapshot: Prisma.InputJsonValue | typeof Prisma.DbNull = user
+      ? {
+          id: user.id,
+          phone: user.phone,
+          nickname: user.nickname,
+          avatar: user.avatar,
+        }
+      : Prisma.DbNull;
+
+    const addressSnapshot: Prisma.InputJsonValue | typeof Prisma.DbNull =
+      input.deliveryAddress || Prisma.DbNull;
+
     // Create order with items in transaction
     const order = await this.prisma.$transaction(async tx => {
       const newOrder = await tx.orders.create({
@@ -264,6 +315,10 @@ export class OrderService {
           deliveryAddress: input.deliveryAddress,
           notes: input.notes,
           paymentMethod: input.paymentMethod,
+          // Snapshot fields
+          customerSnapshot,
+          storeSnapshot,
+          addressSnapshot,
           createdBy: operatorId,
           updatedBy: operatorId,
           orderItems: {

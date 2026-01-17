@@ -9,6 +9,7 @@ import { rbacRouter } from "./src/trpc/routers/rbac.router";
 import { memberRouter } from "./src/trpc/routers/member.router";
 import { orderRouter } from "./src/trpc/routers/order.router";
 import { adminOrderRouter } from "./src/trpc/routers/admin-order.router";
+import { enhancedOrderRouter } from "./src/trpc/routers/enhanced-order.router";
 import { layoutRouter } from "./src/trpc/routers/layout.router";
 
 export const appRouter = router({
@@ -35,6 +36,7 @@ export const appRouter = router({
   member: memberRouter,
   order: orderRouter,
   adminOrder: adminOrderRouter,
+  enhancedOrder: enhancedOrderRouter,
   layout: layoutRouter,
 });
 
