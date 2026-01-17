@@ -13,6 +13,7 @@ import { router, protectedProcedure, createPermissionProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { getAuditService } from "../../services/audit-service";
 import { mapRoleToOperatorType } from "../../utils/role-mapper";
+import { OrderStatus } from "@prisma/client";
 
 /**
  * Order Router
@@ -207,7 +208,7 @@ export const orderRouter = router({
         const updated = await tx.orders.update({
           where: { id },
           data: {
-            status,
+            status: status as OrderStatus,
             updatedAt: new Date(),
           },
         });
@@ -288,7 +289,7 @@ export const orderRouter = router({
         ctx.prisma.orders.aggregate({
           where: {
             ...where,
-            status: { in: ["completed", "delivered"] },
+            status: { in: [OrderStatus.COMPLETED, OrderStatus.DELIVERING] },
           },
           _sum: {
             totalAmount: true,
@@ -345,7 +346,8 @@ export const orderRouter = router({
       }
 
       // 检查订单状态
-      if (["completed", "delivered", "cancelled"].includes(order.status)) {
+      const nonCancellableStatuses: OrderStatus[] = [OrderStatus.COMPLETED, OrderStatus.DELIVERING, OrderStatus.CANCELLED];
+      if (nonCancellableStatuses.includes(order.status)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Order cannot be cancelled in current status",
@@ -358,7 +360,7 @@ export const orderRouter = router({
         const updated = await tx.orders.update({
           where: { id },
           data: {
-            status: "cancelled",
+            status: OrderStatus.CANCELLED,
             updatedAt: new Date(),
           },
         });
