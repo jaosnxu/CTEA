@@ -9,16 +9,7 @@
  */
 
 import { Router, Request, Response } from "express";
-import { getDb } from "../../db";
-import {
-  users,
-  orders,
-  products,
-  stores,
-  withdrawalRequests,
-  auditLogs,
-} from "../../../drizzle/schema";
-import { eq, sql, desc, gte, and } from "drizzle-orm";
+import { getPrismaClient } from "../db/prisma";
 
 const router = Router();
 
@@ -73,7 +64,7 @@ interface DashboardData {
 
 router.get("/dashboard", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
+    const prisma = getPrismaClient();
 
     // 基础统计数据
     let totalRevenue = 0;
@@ -83,45 +74,32 @@ router.get("/dashboard", async (req: Request, res: Response) => {
     let totalProducts = 0;
     let totalStores = 0;
 
-    if (db) {
-      // 获取今日订单数
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+    // 获取今日订单数
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-      const orderStats = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(orders)
-        .where(gte(orders.createdAt, today));
-      todayOrders = Number(orderStats[0]?.count || 0);
+    todayOrders = await prisma.orders.count({
+      where: { createdAt: { gte: today } },
+    });
 
-      // 获取活跃用户数
-      const userStats = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(users);
-      activeUsers = Number(userStats[0]?.count || 0);
+    // 获取活跃用户数
+    activeUsers = await prisma.users.count();
 
-      // 获取待处理提现
-      const withdrawalStats = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(withdrawalRequests)
-        .where(eq(withdrawalRequests.status, "PENDING"));
-      pendingWithdrawals = Number(withdrawalStats[0]?.count || 0);
+    // 获取待处理提现
+    pendingWithdrawals = await prisma.withdrawalrequests.count({
+      where: {
+        createdAt: { gte: today },
+      },
+    });
 
-      // 获取商品数
-      const productStats = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(products);
-      totalProducts = Number(productStats[0]?.count || 0);
+    // 获取商品数
+    totalProducts = await prisma.products.count();
 
-      // 获取门店数
-      const storeStats = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(stores);
-      totalStores = Number(storeStats[0]?.count || 0);
+    // 获取门店数
+    totalStores = await prisma.store.count();
 
-      // 模拟总收入
-      totalRevenue = 125680;
-    }
+    // 模拟总收入
+    totalRevenue = 125680;
 
     // 构建 9 模块状态
     const modules: ModuleStatus[] = [
@@ -493,7 +471,7 @@ router.get("/modules/:moduleId/status", async (req: Request, res: Response) => {
 
 router.get("/financial-risk-report", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
+    const prisma = getPrismaClient();
 
     // 收集财务数据
     let pendingWithdrawals = 0;
@@ -501,40 +479,35 @@ router.get("/financial-risk-report", async (req: Request, res: Response) => {
     let totalWithdrawalAmount = 0;
     let recentApprovedAmount = 0;
 
-    if (db) {
-      // 待处理提现
-      const pendingStats = await db
-        .select({
-          count: sql<number>`count(*)`,
-          total: sql<number>`COALESCE(SUM(amount), 0)`,
-        })
-        .from(withdrawalRequests)
-        .where(eq(withdrawalRequests.status, "PENDING"));
-      pendingWithdrawals = Number(pendingStats[0]?.count || 0);
-      totalWithdrawalAmount = Number(pendingStats[0]?.total || 0);
+    // 待处理提现
+    const pendingResult = await prisma.withdrawalrequests.aggregate({
+      _count: { id: true },
+      _sum: { amount: true },
+      where: {
+        createdAt: { gte: new Date() },
+      },
+    });
+    pendingWithdrawals = pendingResult._count.id;
+    totalWithdrawalAmount = Number(pendingResult._sum.amount || 0);
 
-      // 处理中提现
-      const processingStats = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(withdrawalRequests)
-        .where(eq(withdrawalRequests.status, "PROCESSING"));
-      processingWithdrawals = Number(processingStats[0]?.count || 0);
+    // 处理中提现
+    processingWithdrawals = await prisma.withdrawalrequests.count({
+      where: {
+        createdAt: { gte: new Date() },
+      },
+    });
 
-      // 最近批准的提现金额
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    // 最近批准的提现金额
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-      const recentStats = await db
-        .select({ total: sql<number>`COALESCE(SUM(amount), 0)` })
-        .from(withdrawalRequests)
-        .where(
-          and(
-            eq(withdrawalRequests.status, "PROCESSING"),
-            gte(withdrawalRequests.processedAt, sevenDaysAgo)
-          )
-        );
-      recentApprovedAmount = Number(recentStats[0]?.total || 0);
-    }
+    const recentResult = await prisma.withdrawalrequests.aggregate({
+      _sum: { amount: true },
+      where: {
+        createdAt: { gte: sevenDaysAgo },
+      },
+    });
+    recentApprovedAmount = Number(recentResult._sum.amount || 0);
 
     const now = new Date();
 
@@ -677,34 +650,25 @@ router.get("/financial-risk-report", async (req: Request, res: Response) => {
 
 router.post("/briefing/generate", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
+    const prisma = getPrismaClient();
 
     // 收集数据
     let todayOrders = 0;
     let activeUsers = 0;
     let pendingWithdrawals = 0;
 
-    if (db) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-      const orderStats = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(orders)
-        .where(gte(orders.createdAt, today));
-      todayOrders = Number(orderStats[0]?.count || 0);
+    todayOrders = await prisma.orders.count({
+      where: { createdAt: { gte: today } },
+    });
 
-      const userStats = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(users);
-      activeUsers = Number(userStats[0]?.count || 0);
+    activeUsers = await prisma.users.count();
 
-      const withdrawalStats = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(withdrawalRequests)
-        .where(eq(withdrawalRequests.status, "PENDING"));
-      pendingWithdrawals = Number(withdrawalStats[0]?.count || 0);
-    }
+    pendingWithdrawals = await prisma.withdrawalrequests.count({
+      where: { createdAt: { gte: today } },
+    });
 
     const now = new Date();
     const briefing = {

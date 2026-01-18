@@ -10,9 +10,7 @@
  */
 
 import { Router, Request, Response } from "express";
-import { getDb } from "../../db";
-import { systemConfigs, auditLogs } from "../../../drizzle/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { getPrismaClient } from "../db/prisma";
 
 const router = Router();
 
@@ -201,68 +199,80 @@ const defaultConfig: SDUIConfig = {
 
 // ==================== 辅助函数 ====================
 
-async function getConfigValue(db: any, key: string): Promise<any> {
-  const result = await db
-    .select()
-    .from(systemConfigs)
-    .where(
-      and(
-        eq(systemConfigs.configKey, key),
-        isNull(systemConfigs.orgId),
-        isNull(systemConfigs.storeId)
-      )
-    )
-    .limit(1);
+async function getConfigValue(key: string): Promise<any> {
+  const prisma = getPrismaClient();
+  const config = await prisma.systemConfig.findFirst({
+    where: {
+      configKey: key,
+      orgId: null,
+      storeId: null,
+    },
+  });
 
-  return result[0]?.configValue || null;
+  return config?.configValue || null;
 }
 
 async function setConfigValue(
-  db: any,
   key: string,
   value: any,
   description: any
 ): Promise<void> {
+  const prisma = getPrismaClient();
   const now = new Date();
 
-  await db
-    .insert(systemConfigs)
-    .values({
+  // Try to find existing config with the unique constraint
+  const existingConfig = await prisma.systemConfig.findFirst({
+    where: {
       configKey: key,
-      configValue: value,
-      valueType: "JSON",
-      description,
-      updatedAt: now,
-    })
-    .onDuplicateKeyUpdate({
-      set: { configValue: value, updatedAt: now },
+      orgId: null,
+      storeId: null,
+    },
+  });
+
+  if (existingConfig) {
+    // Update existing config
+    await prisma.systemConfig.update({
+      where: { id: existingConfig.id },
+      data: {
+        configValue: value,
+        updatedAt: now,
+      },
     });
+  } else {
+    // Create new config
+    await prisma.systemConfig.create({
+      data: {
+        configKey: key,
+        configValue: value,
+        valueType: "JSON",
+        description,
+        orgId: null,
+        storeId: null,
+        updatedAt: now,
+      },
+    });
+  }
 }
 
 // ==================== 获取完整配置 ====================
 
 router.get("/config", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
-    if (!db) {
-      return res.json({ success: true, data: defaultConfig });
-    }
-
     const config: SDUIConfig = { ...defaultConfig };
 
-    const membershipTiers = await getConfigValue(db, "sdui_membership_tiers");
+    const membershipTiers = await getConfigValue("sdui_membership_tiers");
     if (membershipTiers) config.membershipTiers = membershipTiers;
 
-    const theme = await getConfigValue(db, "sdui_theme");
+    const theme = await getConfigValue("sdui_theme");
     if (theme) config.theme = theme;
 
-    const banners = await getConfigValue(db, "sdui_banners");
+    const banners = await getConfigValue("sdui_banners");
     if (banners) config.banners = banners;
 
-    const features = await getConfigValue(db, "sdui_features");
+    const features = await getConfigValue("sdui_features");
     if (features) config.features = features;
 
-    const version = await getConfigValue(db, "sdui_version");
+    const version = await getConfigValue("sdui_version");
     if (version) config.version = version;
 
     res.json({ success: true, data: config });
@@ -279,12 +289,7 @@ router.get("/config", async (req: Request, res: Response) => {
 
 router.get("/membership-tiers", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
-    if (!db) {
-      return res.json({ success: true, data: defaultMembershipTiers });
-    }
-
-    const tiers = await getConfigValue(db, "sdui_membership_tiers");
+    const tiers = await getConfigValue("sdui_membership_tiers");
     res.json({ success: true, data: tiers || defaultMembershipTiers });
   } catch (error: any) {
     console.error("[SDUI] Get membership tiers error:", error);
@@ -299,14 +304,7 @@ router.get("/membership-tiers", async (req: Request, res: Response) => {
 
 router.put("/membership-tiers", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
-    if (!db) {
-      return res.status(503).json({
-        success: false,
-        error: { message: "Database not available" },
-      });
-    }
-
+    const prisma = getPrismaClient();
     const { tiers, adminId, adminName } = req.body;
 
     if (!Array.isArray(tiers) || tiers.length !== 4) {
@@ -316,30 +314,32 @@ router.put("/membership-tiers", async (req: Request, res: Response) => {
       });
     }
 
-    await setConfigValue(db, "sdui_membership_tiers", tiers, {
+    await setConfigValue("sdui_membership_tiers", tiers, {
       ru: "Уровни членства",
       zh: "会员等级配置",
     });
 
     // 更新版本号
-    const currentVersion = (await getConfigValue(db, "sdui_version")) || 0;
+    const currentVersion = (await getConfigValue("sdui_version")) || 0;
     const newVersion = currentVersion + 1;
-    await setConfigValue(db, "sdui_version", newVersion, {
+    await setConfigValue("sdui_version", newVersion, {
       ru: "Версия",
       zh: "版本号",
     });
 
     // 记录审计日志
-    await db.insert(auditLogs).values({
-      tableName: "system_configs",
-      recordId: 0,
-      action: "UPDATE",
-      diffBefore: {},
-      diffAfter: { membershipTiers: tiers },
-      operatorId: adminId || 1,
-      operatorType: "ADMIN",
-      operatorName: adminName || "Admin",
-      reason: "Updated membership tiers",
+    await prisma.auditLog.create({
+      data: {
+        tableName: "system_configs",
+        recordId: "0",
+        action: "UPDATE",
+        diffBefore: {},
+        diffAfter: { membershipTiers: tiers },
+        operatorId: adminId?.toString() || "1",
+        operatorType: "ADMIN",
+        operatorName: adminName || "Admin",
+        reason: "Updated membership tiers",
+      },
     });
 
     res.json({
@@ -363,12 +363,7 @@ router.put("/membership-tiers", async (req: Request, res: Response) => {
 
 router.get("/theme", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
-    if (!db) {
-      return res.json({ success: true, data: defaultTheme });
-    }
-
-    const theme = await getConfigValue(db, "sdui_theme");
+    const theme = await getConfigValue("sdui_theme");
     res.json({ success: true, data: theme || defaultTheme });
   } catch (error: any) {
     console.error("[SDUI] Get theme error:", error);
@@ -383,25 +378,17 @@ router.get("/theme", async (req: Request, res: Response) => {
 
 router.put("/theme", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
-    if (!db) {
-      return res.status(503).json({
-        success: false,
-        error: { message: "Database not available" },
-      });
-    }
-
     const { theme, adminId, adminName } = req.body;
 
-    await setConfigValue(db, "sdui_theme", theme, {
+    await setConfigValue("sdui_theme", theme, {
       ru: "Тема приложения",
       zh: "应用主题配置",
     });
 
     // 更新版本号
-    const currentVersion = (await getConfigValue(db, "sdui_version")) || 0;
+    const currentVersion = (await getConfigValue("sdui_version")) || 0;
     const newVersion = currentVersion + 1;
-    await setConfigValue(db, "sdui_version", newVersion, {
+    await setConfigValue("sdui_version", newVersion, {
       ru: "Версия",
       zh: "版本号",
     });
@@ -427,12 +414,7 @@ router.put("/theme", async (req: Request, res: Response) => {
 
 router.get("/banners", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
-    if (!db) {
-      return res.json({ success: true, data: defaultBanners });
-    }
-
-    const banners = await getConfigValue(db, "sdui_banners");
+    const banners = await getConfigValue("sdui_banners");
     res.json({ success: true, data: banners || defaultBanners });
   } catch (error: any) {
     console.error("[SDUI] Get banners error:", error);
@@ -447,25 +429,17 @@ router.get("/banners", async (req: Request, res: Response) => {
 
 router.put("/banners", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
-    if (!db) {
-      return res.status(503).json({
-        success: false,
-        error: { message: "Database not available" },
-      });
-    }
-
     const { banners, adminId, adminName } = req.body;
 
-    await setConfigValue(db, "sdui_banners", banners, {
+    await setConfigValue("sdui_banners", banners, {
       ru: "Баннеры",
       zh: "Banner 配置",
     });
 
     // 更新版本号
-    const currentVersion = (await getConfigValue(db, "sdui_version")) || 0;
+    const currentVersion = (await getConfigValue("sdui_version")) || 0;
     const newVersion = currentVersion + 1;
-    await setConfigValue(db, "sdui_version", newVersion, {
+    await setConfigValue("sdui_version", newVersion, {
       ru: "Версия",
       zh: "版本号",
     });
@@ -491,12 +465,7 @@ router.put("/banners", async (req: Request, res: Response) => {
 
 router.get("/version", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
-    if (!db) {
-      return res.json({ success: true, data: { version: 1 } });
-    }
-
-    const version = await getConfigValue(db, "sdui_version");
+    const version = await getConfigValue("sdui_version");
     res.json({ success: true, data: { version: version || 1 } });
   } catch (error: any) {
     console.error("[SDUI] Get version error:", error);
