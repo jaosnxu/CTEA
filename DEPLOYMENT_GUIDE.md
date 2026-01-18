@@ -509,10 +509,10 @@ cat .env.production | grep DATABASE_URL
 
 ```bash
 # Verify password is correct
-sudo -u postgres mysql -c "SELECT User, Host FROM mysql.user; chutea_admin"
+mysql -u root -p -e "SELECT User, Host FROM mysql.user WHERE User='chutea_admin'"
 
 # Reset password if needed
-sudo -u postgres mysql -c "ALTER USER chutea_admin WITH PASSWORD 'new_password';"
+mysql -u root -p -e "ALTER USER 'chutea_admin'@'localhost' IDENTIFIED BY 'new_password';"
 
 # Update .env.production with new password
 nano .env.production
@@ -778,7 +778,7 @@ pm2 restart chutea-backend
 pm2 logs chutea-backend --lines 100 --raw
 
 # Check database connections
-sudo -u postgres mysql -c "SELECT * FROM pg_stat_activity WHERE datname='chutea_prod';"
+mysql -u root -p chutea_prod -e "SHOW PROCESSLIST;"
 
 # Test API endpoint
 curl -X POST https://your-domain.com/trpc/products.list \

@@ -21,7 +21,7 @@ See `EVIDENCE_PACK_MANIFEST.md` for a complete list of files and verification in
 2. Run compliance check:
 
    ```bash
-   sudo -u postgres psql -d ctea_dev < scripts/compliance_check.sql
+   mysql -u root -p ctea_dev < scripts/compliance_check.sql
    ```
 
 3. Verify audit chain:

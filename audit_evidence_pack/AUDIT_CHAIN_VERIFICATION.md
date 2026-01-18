@@ -32,7 +32,7 @@
 - **Hash Algorithm**: SHA-256 (64 characters hex)
 - **Chain Structure**: Linked list with previous hash reference
 - **Event Tracking**: Unique event_id for each audit record
-- **Storage**: PostgreSQL jsonb for flexible data structure
+- **Storage**: MySQL JSON for flexible data structure
 
 ---
 
@@ -223,7 +223,7 @@ interface AuditEvent {
 ### 5.1 Table Existence Verification
 
 ```bash
-sudo -u postgres psql -d ctea_dev -c "\d audit_logs"
+mysql -u root -p ctea_dev -e "DESCRIBE audit_logs"
 ```
 
 **Result**: ✅ Table exists with correct structure

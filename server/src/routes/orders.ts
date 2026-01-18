@@ -3,7 +3,7 @@
  *
  * Architecture:
  * 1. All orders are first written to local SQLite (resilient write)
- * 2. Background process syncs to cloud PostgreSQL asynchronously
+ * 2. Background process syncs to cloud MySQL asynchronously
  * 3. If cloud is unavailable, orders remain in local DB until sync succeeds
  */
 
@@ -183,7 +183,7 @@ router.post("/sync-now", async (req: Request, res: Response) => {
 // ============================================================================
 
 /**
- * Sync a single local order to cloud PostgreSQL
+ * Sync a single local order to cloud MySQL
  */
 async function syncOrderToCloud(localOrderId: number): Promise<boolean> {
   try {
@@ -198,7 +198,7 @@ async function syncOrderToCloud(localOrderId: number): Promise<boolean> {
       return false;
     }
 
-    // Create order in cloud PostgreSQL
+    // Create order in cloud MySQL
     const cloudOrder = await prisma.orders.create({
       data: {
         orderNumber: localOrder.order_number,

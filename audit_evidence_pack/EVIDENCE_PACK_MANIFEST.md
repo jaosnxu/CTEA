@@ -80,10 +80,10 @@ This evidence pack contains all artifacts required to verify the successful comp
 
 ## 4. Git Commit History
 
-| Commit    | Description                                     | Date       |
-| --------- | ----------------------------------------------- | ---------- |
-| `471e2f9` | Phase 3: PostgreSQL + Prisma database migration | 2026-01-12 |
-| `a36e05b` | Phase 4: Audit chain implementation             | 2026-01-12 |
+| Commit    | Description                             | Date       |
+| --------- | --------------------------------------- | ---------- |
+| `471e2f9` | Phase 3: MySQL + Prisma database schema | 2026-01-12 |
+| `a36e05b` | Phase 4: Audit chain implementation     | 2026-01-12 |
 
 ---
 
@@ -117,7 +117,7 @@ To verify the evidence pack:
 3. **Run compliance check**:
 
    ```bash
-   sudo -u postgres psql -d ctea_dev < scripts/compliance_check.sql
+   mysql -u root -p ctea_dev < scripts/compliance_check.sql
    ```
 
 4. **Verify audit chain**:

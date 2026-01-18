@@ -40,7 +40,7 @@ async function main() {
       diffAfter: {
         event: "M3.4-GLOBAL-COMP-002A-PH3-INIT",
         type: "db_migration_initialization",
-        description: "PostgreSQL + Prisma database initialization completed",
+        description: "MySQL + Prisma database initialization completed",
         tables_migrated: 74,
         enums_created: 24,
         migration_id: "20260112124722_init_schema",

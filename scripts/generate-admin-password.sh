@@ -58,8 +58,8 @@ echo -e "${GREEN}Hash created successfully${NC}"
 
 echo -e "\n${YELLOW}[3/3] Updating admin user in database...${NC}"
 
-# Update admin user password in PostgreSQL
-sudo -u postgres psql -d "$DB_NAME" -c "
+# Update admin user password in MySQL
+mysql -u root -p"${MYSQL_ROOT_PASSWORD:-}" "$DB_NAME" -e "
 UPDATE admin_users 
 SET password_hash = '$PASSWORD_HASH', 
     updated_at = NOW() 

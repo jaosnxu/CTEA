@@ -29,7 +29,7 @@ This Docker Compose setup is for **internal testing only**. It provides an isola
 
 ### 服务说明 (Services)
 
-1. **postgres** - MySQL 8.0 数据库，用于测试环境
+1. **mysql** - MySQL 8.0 数据库，用于测试环境
 2. **mock-oauth** - 模拟 OAuth 服务器，支持标准 OAuth 2.0 和 Manus OAuth
 3. **app** - 主应用实例 (端口 3000)
 4. **app-secondary** - 辅助应用实例 (端口 3001)，用于测试负载均衡
@@ -196,7 +196,7 @@ docker compose logs -f
 # 查看特定服务日志
 docker compose logs -f app
 docker compose logs -f mock-oauth
-docker compose logs -f postgres
+docker compose logs -f mysql
 
 # 查看最近 100 行日志
 docker compose logs --tail=100 app
@@ -211,7 +211,7 @@ docker compose logs --tail=100 app
 docker compose exec app sh
 
 # 进入数据库容器
-docker compose exec postgres mysql -U chutea_test -d chutea_test
+docker compose exec mysql mysql -u chutea_test -p chutea_test
 ```
 
 ### 检查网络连接 (Check Network Connectivity)
@@ -315,7 +315,7 @@ Error: connect ECONNREFUSED
 1. 确保 MySQL 服务已启动且健康：
 
 ```bash
-docker compose ps postgres
+docker compose ps mysql
 ```
 
 2. 检查数据库连接字符串是否正确
