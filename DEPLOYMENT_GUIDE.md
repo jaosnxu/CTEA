@@ -2,7 +2,7 @@
 
 **Target Environment:** Tencent Cloud CVM (Cloud Virtual Machine)  
 **Operating System:** Ubuntu 22.04 LTS  
-**Deployment Method:** PM2 + Nginx + PostgreSQL  
+**Deployment Method:** PM2 + Nginx + MySQL  
 **Prepared by:** Manus AI  
 **Date:** January 6, 2026
 
@@ -94,7 +94,7 @@ The deployment script automates the following tasks in sequence:
 
 1. **System Update:** Updates all Ubuntu packages to latest versions
 2. **Node.js Installation:** Installs Node.js 22.x and pnpm package manager
-3. **PostgreSQL Setup:** Installs PostgreSQL 15 and creates production database
+3. **MySQL Setup:** Installs MySQL 8.0 and creates production database
 4. **Database Initialization:** Creates tables (products, orders, users) with indexes
 5. **Dependency Installation:** Runs `pnpm install` to install all npm packages
 6. **Frontend Build:** Compiles React app to static files in `client/dist`
@@ -119,7 +119,7 @@ Replace the following placeholders with actual values:
 
 ```bash
 # Database (from deploy-tencent.sh output)
-DATABASE_URL=postgresql://chutea_admin:ACTUAL_PASSWORD_HERE@localhost:5432/chutea_prod
+DATABASE_URL=mysql://chutea_admin:ACTUAL_PASSWORD_HERE@localhost:3306/chutea_prod
 
 # JWT Secret (generate new)
 JWT_SECRET=$(openssl rand -base64 64)
@@ -236,7 +236,7 @@ Log in to Tencent Cloud Console and configure the following inbound rules:
 | TCP      | 22   | Your IP only | SSH access                  |
 | TCP      | 80   | 0.0.0.0/0    | HTTP (redirect to HTTPS)    |
 | TCP      | 443  | 0.0.0.0/0    | HTTPS                       |
-| TCP      | 5432 | 127.0.0.1    | PostgreSQL (localhost only) |
+| TCP      | 3306 | 127.0.0.1    | MySQL (localhost only) |
 
 **Important:** Do NOT expose port 3000 (Node.js) directly. All traffic should go through Nginx.
 
@@ -251,7 +251,7 @@ After deployment, verify each component is working correctly:
 | Test                   | Command                           | Expected Result    | Status |
 | ---------------------- | --------------------------------- | ------------------ | ------ |
 | **Nginx Running**      | `systemctl status nginx`          | Active (running)   | ⬜     |
-| **PostgreSQL Running** | `systemctl status postgresql`     | Active (running)   | ⬜     |
+| **MySQL Running** | `systemctl status postgresql`     | Active (running)   | ⬜     |
 | **PM2 Running**        | `pm2 status`                      | 2 instances online | ⬜     |
 | **SSL Certificate**    | `curl -I https://your-domain.com` | HTTP/2 200         | ⬜     |
 | **HTTP Redirect**      | `curl -I http://your-domain.com`  | 301 → HTTPS        | ⬜     |
@@ -259,8 +259,8 @@ After deployment, verify each component is working correctly:
 ### ✅ Phase 2: Database Validation
 
 ```bash
-# Connect to PostgreSQL
-sudo -u postgres psql -d chutea_prod
+# Connect to MySQL
+mysql -u chutea_admin -p -D chutea_prod
 
 # Check tables exist
 \dt
@@ -420,7 +420,7 @@ pm2 restart chutea-backend
 cat .env.production | grep DATABASE_URL
 
 # Test database connection
-psql postgresql://chutea_admin:PASSWORD@localhost:5432/chutea_prod -c "SELECT 1;"
+mysql -h localhost -u chutea_admin -p -D chutea_prod -e "SELECT 1;"
 ```
 
 ### Issue 2: Frontend Not Loading
@@ -495,11 +495,11 @@ pm2 restart chutea-backend
 **Diagnosis:**
 
 ```bash
-# Check PostgreSQL status
+# Check MySQL status
 systemctl status postgresql
 
 # Test connection manually
-psql -U chutea_admin -d chutea_prod -h localhost
+mysql -U chutea_admin -d chutea_prod -h localhost
 
 # Check DATABASE_URL in .env.production
 cat .env.production | grep DATABASE_URL
@@ -509,10 +509,10 @@ cat .env.production | grep DATABASE_URL
 
 ```bash
 # Verify password is correct
-sudo -u postgres psql -c "\du chutea_admin"
+sudo -u postgres mysql -c "SELECT User, Host FROM mysql.user; chutea_admin"
 
 # Reset password if needed
-sudo -u postgres psql -c "ALTER USER chutea_admin WITH PASSWORD 'new_password';"
+sudo -u postgres mysql -c "ALTER USER chutea_admin WITH PASSWORD 'new_password';"
 
 # Update .env.production with new password
 nano .env.production
@@ -693,7 +693,7 @@ pm2 stop all
 systemctl stop nginx
 
 # Restore database backup
-psql -U chutea_admin -d chutea_prod < backup_YYYYMMDD.sql
+mysql -U chutea_admin -d chutea_prod < backup_YYYYMMDD.sql
 
 # Restore code
 cd /var/www
@@ -761,7 +761,7 @@ nmap --script ssl-enum-ciphers -p 443 your-domain.com
 - **PM2 Logs:** `pm2 logs chutea-backend`
 - **Nginx Access:** `/var/log/nginx/chutea-access.log`
 - **Nginx Error:** `/var/log/nginx/chutea-error.log`
-- **PostgreSQL:** `/var/log/postgresql/postgresql-15-main.log`
+- **MySQL:** `/var/log/postgresql/postgresql-15-main.log`
 
 ### Useful Commands
 
@@ -778,7 +778,7 @@ pm2 restart chutea-backend
 pm2 logs chutea-backend --lines 100 --raw
 
 # Check database connections
-sudo -u postgres psql -c "SELECT * FROM pg_stat_activity WHERE datname='chutea_prod';"
+sudo -u postgres mysql -c "SELECT * FROM pg_stat_activity WHERE datname='chutea_prod';"
 
 # Test API endpoint
 curl -X POST https://your-domain.com/trpc/products.list \

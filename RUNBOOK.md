@@ -14,9 +14,9 @@ This Docker Compose setup is for **internal testing only**. It provides an isola
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │   Postgres   │  │  Mock OAuth  │  │  App:3000    │     │
+│  │   MySQL   │  │  Mock OAuth  │  │  App:3000    │     │
 │  │   Database   │  │   Server     │  │              │     │
-│  │   (port 5432)│  │  (port 9000) │  │              │     │
+│  │   (port 3306)│  │  (port 9000) │  │              │     │
 │  └──────────────┘  └──────────────┘  └──────────────┘     │
 │                                                              │
 │                                       ┌──────────────┐     │
@@ -29,7 +29,7 @@ This Docker Compose setup is for **internal testing only**. It provides an isola
 
 ### 服务说明 (Services)
 
-1. **postgres** - PostgreSQL 15 数据库，用于测试环境
+1. **postgres** - MySQL 8.0 数据库，用于测试环境
 2. **mock-oauth** - 模拟 OAuth 服务器，支持标准 OAuth 2.0 和 Manus OAuth
 3. **app** - 主应用实例 (端口 3000)
 4. **app-secondary** - 辅助应用实例 (端口 3001)，用于测试负载均衡
@@ -171,7 +171,7 @@ curl -X POST http://localhost:9000/webdev.v1.WebDevAuthPublicService/GetUserInfo
 | --------------------- | -------------------------------------- | ---------------- |
 | `NODE_ENV`            | `development`                          | 运行环境         |
 | `PORT`                | `3000` / `3001`                        | 服务端口         |
-| `DATABASE_URL`        | `postgresql://...`                     | 数据库连接字符串 |
+| `DATABASE_URL`        | `mysql://...`                     | 数据库连接字符串 |
 | `API_KEY`             | `test-api-key-12345`                   | API 密钥         |
 | `OAUTH_CLIENT_ID`     | `test-client-id`                       | OAuth 客户端 ID  |
 | `OAUTH_CLIENT_SECRET` | `test-client-secret`                   | OAuth 客户端密钥 |
@@ -211,7 +211,7 @@ docker compose logs --tail=100 app
 docker compose exec app sh
 
 # 进入数据库容器
-docker compose exec postgres psql -U chutea_test -d chutea_test
+docker compose exec postgres mysql -U chutea_test -d chutea_test
 ```
 
 ### 检查网络连接 (Check Network Connectivity)
@@ -221,7 +221,7 @@ docker compose exec postgres psql -U chutea_test -d chutea_test
 docker compose exec app wget -O- http://mock-oauth:9000/health
 
 # 从应用容器测试数据库连接
-docker compose exec app nc -zv postgres 5432
+docker compose exec app nc -zv mysql 3306
 ```
 
 ### 重启特定服务 (Restart Specific Service)
@@ -273,7 +273,7 @@ Error: bind: address already in use
 ```bash
 lsof -i :3000
 lsof -i :3001
-lsof -i :5432
+lsof -i :3306
 lsof -i :9000
 ```
 
@@ -312,7 +312,7 @@ Error: connect ECONNREFUSED
 
 **解决方案:**
 
-1. 确保 PostgreSQL 服务已启动且健康：
+1. 确保 MySQL 服务已启动且健康：
 
 ```bash
 docker compose ps postgres
@@ -359,7 +359,7 @@ docker compose logs -f app | grep OAuth
 | 方面     | Docker Compose (测试) | PM2 + Nginx (生产)       |
 | -------- | --------------------- | ------------------------ |
 | 用途     | 本地开发和测试        | 生产部署                 |
-| 数据库   | 容器内 PostgreSQL     | 独立 PostgreSQL 服务器   |
+| 数据库   | 容器内 MySQL     | 独立 MySQL 服务器   |
 | OAuth    | Mock OAuth 服务器     | 真实 OAuth 提供商        |
 | HTTPS    | 不支持                | 支持（通过 Nginx + SSL） |
 | 负载均衡 | 无                    | Nginx 反向代理           |

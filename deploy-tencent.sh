@@ -4,8 +4,8 @@
 # CHU TEA Platform - Tencent Cloud Deployment Script
 # 
 # This script automates the deployment process on Tencent Cloud CVM:
-# 1. Install Node.js, PostgreSQL, Nginx, PM2
-# 2. Initialize PostgreSQL database and tables
+# 1. Install Node.js, MySQL, Nginx, PM2
+# 2. Initialize MySQL database and tables
 # 3. Install project dependencies
 # 4. Build frontend assets
 # 5. Start backend server with PM2
@@ -61,90 +61,35 @@ if ! command -v pnpm &> /dev/null; then
 fi
 pnpm --version
 
-# Step 4: Install PostgreSQL
-echo -e "\n${YELLOW}[4/8] Installing PostgreSQL...${NC}"
-if ! command -v psql &> /dev/null; then
-    apt-get install -y postgresql postgresql-contrib
-    systemctl start postgresql
-    systemctl enable postgresql
+# Step 4: Install MySQL 8.0
+echo -e "\n${YELLOW}[4/8] Installing MySQL 8.0...${NC}"
+if ! command -v mysql &> /dev/null; then
+    apt-get install -y mysql-server mysql-client
+    systemctl start mysql
+    systemctl enable mysql
 fi
-psql --version
+mysql --version
 
-# Step 5: Initialize PostgreSQL database
-echo -e "\n${YELLOW}[5/8] Initializing PostgreSQL database...${NC}"
-sudo -u postgres psql <<EOF
+# Step 5: Initialize MySQL database
+echo -e "\n${YELLOW}[5/8] Initializing MySQL database...${NC}"
+mysql <<EOF
 -- Create database
 DROP DATABASE IF EXISTS ${DB_NAME};
-CREATE DATABASE ${DB_NAME};
+CREATE DATABASE ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Create user
-DROP USER IF EXISTS ${DB_USER};
-CREATE USER ${DB_USER} WITH ENCRYPTED PASSWORD '${DB_PASSWORD}';
+DROP USER IF EXISTS '${DB_USER}'@'localhost';
+CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
 
 -- Grant privileges
-GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};
+GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';
+FLUSH PRIVILEGES;
 
--- Connect to database and create tables
-\c ${DB_NAME}
+-- Use database
+USE ${DB_NAME};
 
--- Grant schema privileges
-GRANT ALL ON SCHEMA public TO ${DB_USER};
-
--- Create products table
-CREATE TABLE IF NOT EXISTS products (
-    id SERIAL PRIMARY KEY,
-    name_zh VARCHAR(255),
-    name_en VARCHAR(255),
-    name_ru VARCHAR(255) NOT NULL,
-    description_zh TEXT,
-    description_en TEXT,
-    description_ru TEXT,
-    category VARCHAR(100) NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    image_url TEXT,
-    is_manual_override BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Create orders table
-CREATE TABLE IF NOT EXISTS orders (
-    id SERIAL PRIMARY KEY,
-    order_number VARCHAR(50) UNIQUE NOT NULL,
-    user_id INTEGER,
-    items JSONB NOT NULL,
-    total_amount DECIMAL(10,2) NOT NULL,
-    status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
-    payment_method VARCHAR(50),
-    delivery_type VARCHAR(50),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Create users table
-CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    open_id VARCHAR(255) UNIQUE,
-    name VARCHAR(255),
-    email VARCHAR(255),
-    phone VARCHAR(50),
-    language VARCHAR(10) DEFAULT 'ru',
-    vip_level INTEGER DEFAULT 0,
-    points INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Create indexes
-CREATE INDEX idx_products_category ON products(category);
-CREATE INDEX idx_products_override ON products(is_manual_override);
-CREATE INDEX idx_orders_status ON orders(status);
-CREATE INDEX idx_orders_user ON orders(user_id);
-CREATE INDEX idx_users_openid ON users(open_id);
-
--- Grant table privileges
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ${DB_USER};
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ${DB_USER};
+-- Note: Tables will be created by Prisma migrations
+-- This is just a placeholder for manual table creation if needed
 
 EOF
 
@@ -229,7 +174,7 @@ echo -e "${GREEN}========================================${NC}"
 
 echo -e "\n${YELLOW}Next Steps:${NC}"
 echo -e "1. Create .env.production file with DATABASE_URL"
-echo -e "   DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}"
+echo -e "   DATABASE_URL=mysql://${DB_USER}:${DB_PASSWORD}@localhost:3306/${DB_NAME}"
 echo -e "2. Configure Nginx (see nginx-chutea.conf)"
 echo -e "3. Obtain SSL certificate (certbot --nginx -d yourdomain.com)"
 echo -e "4. Restart PM2: pm2 restart chutea-backend"
