@@ -587,7 +587,7 @@ ${DATABASE_SCHEMA_DESCRIPTION}
 重要规则：
 1. 只生成 SELECT 查询，禁止 INSERT/UPDATE/DELETE
 2. 必须添加 orgId 过滤条件以确保数据隔离
-3. 使用 Prisma 兼容的 PostgreSQL 语法
+3. 使用 Prisma 兼容的 MySQL 语法
 4. 限制返回结果数量（最多 100 条）
 5. 不要查询敏感字段（password, apiKey, token 等）`;
 
