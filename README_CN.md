@@ -292,6 +292,13 @@ pnpm data:generate --orders=2000
 
 ## 开发指南
 
+### 📚 完整开发文档
+
+- **[贡献指南 (CONTRIBUTING.md)](./CONTRIBUTING.md)** - 如何为项目做贡献
+- **[开发流程 (DEVELOPMENT_WORKFLOW.md)](./DEVELOPMENT_WORKFLOW.md)** - 详细的开发流程和最佳实践
+- **[API 文档 (API_DOCUMENTATION.md)](./API_DOCUMENTATION.md)** - API 接口文档
+- **[部署指南 (DEPLOYMENT_GUIDE.md)](./DEPLOYMENT_GUIDE.md)** - 生产环境部署指南
+
 ### 开发环境设置
 
 1. 安装 VS Code 扩展（推荐）：
