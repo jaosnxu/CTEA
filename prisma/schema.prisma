@@ -1191,13 +1191,23 @@ model Influencercommissions {
 }
 /// Withdrawalrequests
 model Withdrawalrequests {
-  id                   String @id @default(uuid())
-  influencerId         Int
-  amount               Decimal? @db.Decimal(15, 2)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  createdBy            String?
-  updatedBy            String?
+  id                   Int @id @default(autoincrement())
+  influencerId         Int @map("influencer_id")
+  amount               Decimal @db.Decimal(15, 2)
+  bankInfo             Json? @map("bank_info")
+  status               String? @default("PENDING") @db.VarChar(20)
+  processedBy          Int? @map("processed_by")
+  processedAt          DateTime? @map("processed_at")
+  rejectReason         String? @map("reject_reason") @db.Text
+  transactionId        String? @map("transaction_id") @db.VarChar(100)
+  voucherPdfUrl        String? @map("voucher_pdf_url") @db.VarChar(500)
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  createdBy            String? @map("created_by")
+  updatedBy            String? @map("updated_by")
+  
+  @@index([influencerId])
+  @@index([status])
   @@map("withdrawal_requests")
 }
 /// Referrallinks
