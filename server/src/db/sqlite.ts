@@ -4,7 +4,7 @@
  * Purpose: Provides local-first data persistence using better-sqlite3
  * - Creates and manages prisma/local.db
  * - Enables resilient write operations when cloud DB is unavailable
- * - Supports async sync to cloud PostgreSQL
+ * - Supports async sync to cloud MySQL
  */
 
 import Database from "better-sqlite3";
