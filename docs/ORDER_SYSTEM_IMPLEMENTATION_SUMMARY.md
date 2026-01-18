@@ -158,7 +158,7 @@ January 16, 2026
 
 ### Backend Stack
 - **Framework:** tRPC for type-safe API
-- **ORM:** Prisma with PostgreSQL/MySQL
+- **ORM:** Prisma with MySQL 8.0+
 - **Language:** TypeScript
 - **Authentication:** Session-based with RBAC
 - **Audit:** Comprehensive logging with IP tracking

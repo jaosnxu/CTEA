@@ -251,7 +251,7 @@ After deployment, verify each component is working correctly:
 | Test                   | Command                           | Expected Result    | Status |
 | ---------------------- | --------------------------------- | ------------------ | ------ |
 | **Nginx Running**      | `systemctl status nginx`          | Active (running)   | ⬜     |
-| **MySQL Running** | `systemctl status postgresql`     | Active (running)   | ⬜     |
+| **MySQL Running** | `systemctl status mysql`     | Active (running)   | ⬜     |
 | **PM2 Running**        | `pm2 status`                      | 2 instances online | ⬜     |
 | **SSL Certificate**    | `curl -I https://your-domain.com` | HTTP/2 200         | ⬜     |
 | **HTTP Redirect**      | `curl -I http://your-domain.com`  | 301 → HTTPS        | ⬜     |
@@ -496,10 +496,10 @@ pm2 restart chutea-backend
 
 ```bash
 # Check MySQL status
-systemctl status postgresql
+systemctl status mysql
 
 # Test connection manually
-mysql -U chutea_admin -d chutea_prod -h localhost
+mysql -u chutea_admin -p chutea_prod
 
 # Check DATABASE_URL in .env.production
 cat .env.production | grep DATABASE_URL
@@ -761,17 +761,17 @@ nmap --script ssl-enum-ciphers -p 443 your-domain.com
 - **PM2 Logs:** `pm2 logs chutea-backend`
 - **Nginx Access:** `/var/log/nginx/chutea-access.log`
 - **Nginx Error:** `/var/log/nginx/chutea-error.log`
-- **MySQL:** `/var/log/postgresql/postgresql-15-main.log`
+- **MySQL:** `/var/log/mysql/error.log`
 
 ### Useful Commands
 
 ```bash
 # Check all services status
-systemctl status nginx postgresql
+systemctl status nginx mysql
 pm2 status
 
 # Restart all services
-systemctl restart nginx
+systemctl restart nginx mysql
 pm2 restart chutea-backend
 
 # View real-time logs
