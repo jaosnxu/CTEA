@@ -1,0 +1,35 @@
+name: "Step 1: UI Logic Analyzer"
+
+on:
+  push:
+    paths:
+      - 'ui/**'  # 监听 Manus 同步过来的 UI 文件夹
+
+jobs:
+  analyze_and_notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: AI Logic Analysis
+        id: analyzer
+        run: |
+          # 这里模拟大模型分析 Manus 代码的逻辑
+          echo "ANALYSIS_REPORT<<EOF" >> $GITHUB_ENV
+          echo "🔍 **Manus UI 语义分析报告**" >> $GITHUB_ENV
+          echo "-------------------------------" >> $GITHUB_ENV
+          echo "📍 **检测到新页面**: Dashboard.html, Login.html" >> $GITHUB_ENV
+          echo "⚡ **交互逻辑**: 用户点击'登录'将触发 API 鉴权；图表每 30s 自动刷新。" >> $GITHUB_ENV
+          echo "🛠️ **技术栈**: React + Tailwind" >> $GITHUB_ENV
+          echo "-------------------------------" >> $GITHUB_ENV
+          echo "请回复指令确认：/approve_logic 或 /rewrite_logic" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Send Telegram Notification
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            ${{ env.ANALYSIS_REPORT }}
