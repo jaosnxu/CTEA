@@ -66,7 +66,7 @@ router.get("/withdrawals", async (req: Request, res: Response) => {
     const whereClause: any = {};
     
     if (status && status !== "all") {
-      whereClause.createdAt = { gte: new Date() };
+      whereClause.status = status as string;
     }
     
     if (startDate) {
@@ -149,17 +149,31 @@ router.get("/withdrawals", async (req: Request, res: Response) => {
       influencer: influencerMap[w.influencerId] || null,
     }));
 
-    // 统计数据
-    const stats = {
-      pending: { count: 0, total: 0 },
-      processing: { count: 0, total: 0 },
-      completed: { count: 0, total: 0 },
-      rejected: { count: 0, total: 0 },
-    };
+    // 统计数据 - Get stats by status
+    const statsByStatus = await prisma.withdrawalrequests.groupBy({
+      by: ["status"],
+      _count: { id: true },
+      _sum: { amount: true },
+    });
 
-    // Get stats by status
-    // Note: Since the Withdrawalrequests model doesn't have a status field in Prisma,
-    // we'll return empty stats for now
+    const stats = {
+      pending: { 
+        count: statsByStatus.find(s => s.status === "PENDING")?._count.id || 0,
+        total: Number(statsByStatus.find(s => s.status === "PENDING")?._sum.amount || 0)
+      },
+      processing: { 
+        count: statsByStatus.find(s => s.status === "PROCESSING")?._count.id || 0,
+        total: Number(statsByStatus.find(s => s.status === "PROCESSING")?._sum.amount || 0)
+      },
+      completed: { 
+        count: statsByStatus.find(s => s.status === "COMPLETED")?._count.id || 0,
+        total: Number(statsByStatus.find(s => s.status === "COMPLETED")?._sum.amount || 0)
+      },
+      rejected: { 
+        count: statsByStatus.find(s => s.status === "REJECTED")?._count.id || 0,
+        total: Number(statsByStatus.find(s => s.status === "REJECTED")?._sum.amount || 0)
+      },
+    };
 
     res.json({
       success: true,
