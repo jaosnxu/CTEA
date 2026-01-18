@@ -73,9 +73,9 @@ fi
 
 # generate-admin-password.sh
 if [ -f "scripts/generate-admin-password.sh" ]; then
-    if grep -q "postgres" scripts/generate-admin-password.sh; then
+    if grep -q "sudo -u postgres psql" scripts/generate-admin-password.sh; then
         sed -i 's/# Update admin user password in PostgreSQL/# Update admin user password in MySQL/g' scripts/generate-admin-password.sh
-        sed -i 's/sudo -u postgres psql/mysql -u root -p"${MYSQL_ROOT_PASSWORD:-}"/g' scripts/generate-admin-password.sh
+        sed -i 's|sudo -u postgres psql -d|mysql -u root -p"\${MYSQL_ROOT_PASSWORD:-}"|g' scripts/generate-admin-password.sh
         echo -e "${GREEN}  ✓ 已修正: scripts/generate-admin-password.sh${NC}"
         ((FIXED_COUNT++))
     else
