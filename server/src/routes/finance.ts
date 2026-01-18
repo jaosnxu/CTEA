@@ -9,14 +9,7 @@
  */
 
 import { Router, Request, Response } from "express";
-import { getDb } from "../../db";
-import {
-  withdrawalRequests,
-  influencers,
-  auditLogs,
-  users,
-} from "../../../drizzle/schema";
-import { eq, desc, and, sql, gte, lte } from "drizzle-orm";
+import { getPrismaClient } from "../db/prisma";
 import { TelegramBotService } from "../services/telegram-bot-service";
 import { generateAndUploadVoucherPdf } from "../services/voucher-pdf-service";
 
@@ -62,13 +55,7 @@ function generateTransactionId(): string {
 
 router.get("/withdrawals", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
-    if (!db) {
-      return res.status(503).json({
-        success: false,
-        error: { message: "Database not available" },
-      });
-    }
+    const prisma = getPrismaClient();
 
     const { status, page = "1", limit = "20", startDate, endDate } = req.query;
     const pageNum = parseInt(page as string);
@@ -76,101 +63,79 @@ router.get("/withdrawals", async (req: Request, res: Response) => {
     const offset = (pageNum - 1) * limitNum;
 
     // 构建查询条件
-    const conditions = [];
+    const whereClause: any = {};
+    
     if (status && status !== "all") {
-      conditions.push(eq(withdrawalRequests.status, status as any));
+      whereClause.status = status as string;
     }
+    
     if (startDate) {
-      conditions.push(
-        gte(withdrawalRequests.createdAt, new Date(startDate as string))
-      );
+      whereClause.createdAt = {
+        ...whereClause.createdAt,
+        gte: new Date(startDate as string),
+      };
     }
+    
     if (endDate) {
-      conditions.push(
-        lte(withdrawalRequests.createdAt, new Date(endDate as string))
-      );
+      whereClause.createdAt = {
+        ...whereClause.createdAt,
+        lte: new Date(endDate as string),
+      };
     }
 
     // 查询提现记录
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-    const withdrawals = await db
-      .select({
-        id: withdrawalRequests.id,
-        influencerId: withdrawalRequests.influencerId,
-        amount: withdrawalRequests.amount,
-        bankInfo: withdrawalRequests.bankInfo,
-        status: withdrawalRequests.status,
-        processedBy: withdrawalRequests.processedBy,
-        processedAt: withdrawalRequests.processedAt,
-        rejectReason: withdrawalRequests.rejectReason,
-        transactionId: withdrawalRequests.transactionId,
-        voucherPdfUrl: withdrawalRequests.voucherPdfUrl,
-        createdAt: withdrawalRequests.createdAt,
-        updatedAt: withdrawalRequests.updatedAt,
-      })
-      .from(withdrawalRequests)
-      .where(whereClause)
-      .orderBy(desc(withdrawalRequests.createdAt))
-      .limit(limitNum)
-      .offset(offset);
+    const withdrawals = await prisma.withdrawalrequests.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+      take: limitNum,
+      skip: offset,
+    });
 
     // 获取总数
-    const countResult = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(withdrawalRequests)
-      .where(whereClause);
-
-    const total = countResult[0]?.count || 0;
+    const total = await prisma.withdrawalrequests.count({
+      where: whereClause,
+    });
 
     // 获取达人信息
     const influencerIds = Array.from(
-      new Set(withdrawals.map((w: (typeof withdrawals)[0]) => w.influencerId))
+      new Set(withdrawals.map((w) => w.influencerId))
     );
     let influencerMap: Record<number, any> = {};
 
     if (influencerIds.length > 0) {
-      const influencerList = await db
-        .select()
-        .from(influencers)
-        .where(
-          sql`${influencers.id} IN (${sql.join(
-            influencerIds.map((id: number) => sql`${id}`),
-            sql`, `
-          )})`
-        );
+      const influencerList = await prisma.influencers.findMany({
+        where: {
+          userId: { in: influencerIds },
+        },
+      });
 
       // 获取用户信息
       const userIds = influencerList
-        .map((i: (typeof influencerList)[0]) => i.userId)
+        .map((i) => i.userId)
         .filter(Boolean) as number[];
-      let userMap: Record<number, any> = {};
+      let userMap: Record<string, any> = {};
 
       if (userIds.length > 0) {
-        const userList = await db
-          .select()
-          .from(users)
-          .where(
-            sql`${users.id} IN (${sql.join(
-              userIds.map((id: number) => sql`${id}`),
-              sql`, `
-            )})`
-          );
+        const userList = await prisma.users.findMany({
+          where: {
+            id: { in: userIds.map(String) },
+          },
+        });
 
         userMap = userList.reduce(
-          (acc: Record<number, any>, u: (typeof userList)[0]) => {
+          (acc: Record<string, any>, u) => {
             acc[u.id] = u;
             return acc;
           },
-          {} as Record<number, any>
+          {} as Record<string, any>
         );
       }
 
       influencerMap = influencerList.reduce(
-        (acc: Record<number, any>, inf: (typeof influencerList)[0]) => {
-          acc[inf.id] = {
+        (acc: Record<number, any>, inf) => {
+          acc[inf.userId] = {
             ...inf,
-            user: inf.userId ? userMap[inf.userId] : null,
+            user: inf.userId ? userMap[String(inf.userId)] : null,
           };
           return acc;
         },
@@ -179,39 +144,36 @@ router.get("/withdrawals", async (req: Request, res: Response) => {
     }
 
     // 组装返回数据
-    const data = withdrawals.map((w: (typeof withdrawals)[0]) => ({
+    const data = withdrawals.map((w) => ({
       ...w,
       influencer: influencerMap[w.influencerId] || null,
     }));
 
-    // 统计数据
-    const statsResult = await db
-      .select({
-        status: withdrawalRequests.status,
-        count: sql<number>`count(*)`,
-        total: sql<number>`sum(${withdrawalRequests.amount})`,
-      })
-      .from(withdrawalRequests)
-      .groupBy(withdrawalRequests.status);
+    // 统计数据 - Get stats by status
+    const statsByStatus = await prisma.withdrawalrequests.groupBy({
+      by: ["status"],
+      _count: { id: true },
+      _sum: { amount: true },
+    });
 
     const stats = {
-      pending: { count: 0, total: 0 },
-      processing: { count: 0, total: 0 },
-      completed: { count: 0, total: 0 },
-      rejected: { count: 0, total: 0 },
+      pending: { 
+        count: statsByStatus.find(s => s.status === "PENDING")?._count.id || 0,
+        total: Number(statsByStatus.find(s => s.status === "PENDING")?._sum.amount || 0)
+      },
+      processing: { 
+        count: statsByStatus.find(s => s.status === "PROCESSING")?._count.id || 0,
+        total: Number(statsByStatus.find(s => s.status === "PROCESSING")?._sum.amount || 0)
+      },
+      completed: { 
+        count: statsByStatus.find(s => s.status === "COMPLETED")?._count.id || 0,
+        total: Number(statsByStatus.find(s => s.status === "COMPLETED")?._sum.amount || 0)
+      },
+      rejected: { 
+        count: statsByStatus.find(s => s.status === "REJECTED")?._count.id || 0,
+        total: Number(statsByStatus.find(s => s.status === "REJECTED")?._sum.amount || 0)
+      },
     };
-
-    statsResult.forEach(
-      (s: { status: string | null; count: number; total: number }) => {
-        const key = s.status?.toLowerCase() as keyof typeof stats;
-        if (stats[key]) {
-          stats[key] = {
-            count: Number(s.count) || 0,
-            total: Number(s.total) || 0,
-          };
-        }
-      }
-    );
 
     res.json({
       success: true,
@@ -239,23 +201,15 @@ router.get("/withdrawals", async (req: Request, res: Response) => {
 
 router.get("/withdrawals/:id", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
-    if (!db) {
-      return res.status(503).json({
-        success: false,
-        error: { message: "Database not available" },
-      });
-    }
+    const prisma = getPrismaClient();
 
     const { id } = req.params;
 
-    const withdrawal = await db
-      .select()
-      .from(withdrawalRequests)
-      .where(eq(withdrawalRequests.id, parseInt(id)))
-      .limit(1);
+    const withdrawal = await prisma.withdrawalrequests.findFirst({
+      where: { id: parseInt(id) },
+    });
 
-    if (!withdrawal.length) {
+    if (!withdrawal) {
       return res.status(404).json({
         success: false,
         error: { message: "Withdrawal not found" },
@@ -263,27 +217,22 @@ router.get("/withdrawals/:id", async (req: Request, res: Response) => {
     }
 
     // 获取达人信息
-    const influencer = await db
-      .select()
-      .from(influencers)
-      .where(eq(influencers.id, withdrawal[0].influencerId))
-      .limit(1);
+    const influencer = await prisma.influencers.findFirst({
+      where: { userId: withdrawal.influencerId },
+    });
 
     let user = null;
-    if (influencer.length && influencer[0].userId) {
-      const userResult = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, influencer[0].userId))
-        .limit(1);
-      user = userResult[0] || null;
+    if (influencer && influencer.userId) {
+      user = await prisma.users.findFirst({
+        where: { id: String(influencer.userId) },
+      });
     }
 
     res.json({
       success: true,
       data: {
-        ...withdrawal[0],
-        influencer: influencer[0] || null,
+        ...withdrawal,
+        influencer: influencer || null,
         user,
       },
     });
@@ -300,33 +249,25 @@ router.get("/withdrawals/:id", async (req: Request, res: Response) => {
 
 router.post("/withdrawals/:id/approve", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
-    if (!db) {
-      return res.status(503).json({
-        success: false,
-        error: { message: "Database not available" },
-      });
-    }
+    const prisma = getPrismaClient();
 
     const { id } = req.params;
     const { action, reason, adminId, adminName } =
       req.body as WithdrawalApprovalRequest;
 
     // 获取提现记录
-    const withdrawal = await db
-      .select()
-      .from(withdrawalRequests)
-      .where(eq(withdrawalRequests.id, parseInt(id)))
-      .limit(1);
+    const withdrawal = await prisma.withdrawalrequests.findFirst({
+      where: { id: parseInt(id) },
+    });
 
-    if (!withdrawal.length) {
+    if (!withdrawal) {
       return res.status(404).json({
         success: false,
         error: { message: "Withdrawal not found" },
       });
     }
 
-    if (withdrawal[0].status !== "PENDING") {
+    if (withdrawal.status !== "PENDING") {
       return res.status(400).json({
         success: false,
         error: { message: "Withdrawal is not in pending status" },
@@ -346,13 +287,13 @@ router.post("/withdrawals/:id/approve", async (req: Request, res: Response) => {
       voucher = {
         voucherNo: generateVoucherNo(),
         type: "WITHDRAWAL",
-        amount: Number(withdrawal[0].amount),
+        amount: Number(withdrawal.amount),
         currency: "RUB",
         description: {
-          ru: `Вывод средств инфлюенсера #${withdrawal[0].influencerId}`,
-          zh: `达人 #${withdrawal[0].influencerId} 提现`,
+          ru: `Вывод средств инфлюенсера #${withdrawal.influencerId}`,
+          zh: `达人 #${withdrawal.influencerId} 提现`,
         },
-        relatedId: withdrawal[0].id,
+        relatedId: withdrawal.id,
         createdAt: now,
       };
 
@@ -364,7 +305,7 @@ router.post("/withdrawals/:id/approve", async (req: Request, res: Response) => {
           type: voucher.type,
           amount: voucher.amount,
           currency: voucher.currency,
-          recipientName: `Инфлюенсер #${withdrawal[0].influencerId}`,
+          recipientName: `Инфлюенсер #${withdrawal.influencerId}`,
           transactionId,
           status: newStatus,
           operatorName: adminName || "Admin",
@@ -378,29 +319,31 @@ router.post("/withdrawals/:id/approve", async (req: Request, res: Response) => {
       }
 
       // 更新提现记录（包含凭证URL）
-      await db
-        .update(withdrawalRequests)
-        .set({
+      await prisma.withdrawalrequests.update({
+        where: { id: parseInt(id) },
+        data: {
           status: newStatus,
           processedBy: adminId || 1,
           processedAt: now,
           transactionId,
           voucherPdfUrl,
           updatedAt: now,
-        })
-        .where(eq(withdrawalRequests.id, parseInt(id)));
+        },
+      });
 
       // 记录审计日志
-      await db.insert(auditLogs).values({
-        tableName: "withdrawal_requests",
-        recordId: parseInt(id),
-        action: "UPDATE",
-        diffBefore: { status: "PENDING" },
-        diffAfter: { status: newStatus, transactionId, voucher },
-        operatorId: adminId || 1,
-        operatorType: "ADMIN",
-        operatorName: adminName || "Admin",
-        reason: "Withdrawal approved",
+      await prisma.auditLog.create({
+        data: {
+          tableName: "withdrawal_requests",
+          recordId: String(parseInt(id)),
+          action: "UPDATE",
+          diffBefore: { status: "PENDING" },
+          diffAfter: { status: newStatus, transactionId, voucher },
+          operatorId: String(adminId || 1),
+          operatorType: "ADMIN",
+          operatorName: adminName || "Admin",
+          reason: "Withdrawal approved",
+        },
       });
 
       // 发送 Telegram 通知
@@ -408,9 +351,9 @@ router.post("/withdrawals/:id/approve", async (req: Request, res: Response) => {
         await telegramBot.sendNotification({
           type: "WITHDRAW_REQUEST",
           data: {
-            withdrawalId: withdrawal[0].id,
-            influencerId: withdrawal[0].influencerId,
-            amount: Number(withdrawal[0].amount),
+            withdrawalId: withdrawal.id,
+            influencerId: withdrawal.influencerId,
+            amount: Number(withdrawal.amount),
             status: "approved",
             transactionId,
             adminName: adminName || "Admin",
@@ -423,28 +366,30 @@ router.post("/withdrawals/:id/approve", async (req: Request, res: Response) => {
       newStatus = "REJECTED";
 
       // 更新提现记录
-      await db
-        .update(withdrawalRequests)
-        .set({
+      await prisma.withdrawalrequests.update({
+        where: { id: parseInt(id) },
+        data: {
           status: newStatus,
           processedBy: adminId || 1,
           processedAt: now,
           rejectReason: reason || "Rejected by admin",
           updatedAt: now,
-        })
-        .where(eq(withdrawalRequests.id, parseInt(id)));
+        },
+      });
 
       // 记录审计日志
-      await db.insert(auditLogs).values({
-        tableName: "withdrawal_requests",
-        recordId: parseInt(id),
-        action: "UPDATE",
-        diffBefore: { status: "PENDING" },
-        diffAfter: { status: newStatus, rejectReason: reason },
-        operatorId: adminId || 1,
-        operatorType: "ADMIN",
-        operatorName: adminName || "Admin",
-        reason: reason || "Withdrawal rejected",
+      await prisma.auditLog.create({
+        data: {
+          tableName: "withdrawal_requests",
+          recordId: String(parseInt(id)),
+          action: "UPDATE",
+          diffBefore: { status: "PENDING" },
+          diffAfter: { status: newStatus, rejectReason: reason },
+          operatorId: String(adminId || 1),
+          operatorType: "ADMIN",
+          operatorName: adminName || "Admin",
+          reason: reason || "Withdrawal rejected",
+        },
       });
 
       // 发送 Telegram 通知
@@ -452,9 +397,9 @@ router.post("/withdrawals/:id/approve", async (req: Request, res: Response) => {
         await telegramBot.sendNotification({
           type: "WITHDRAW_REQUEST",
           data: {
-            withdrawalId: withdrawal[0].id,
-            influencerId: withdrawal[0].influencerId,
-            amount: Number(withdrawal[0].amount),
+            withdrawalId: withdrawal.id,
+            influencerId: withdrawal.influencerId,
+            amount: Number(withdrawal.amount),
             status: "rejected",
             reason: reason || "Rejected by admin",
             adminName: adminName || "Admin",
@@ -494,32 +439,24 @@ router.post(
   "/withdrawals/:id/complete",
   async (req: Request, res: Response) => {
     try {
-      const db = await getDb();
-      if (!db) {
-        return res.status(503).json({
-          success: false,
-          error: { message: "Database not available" },
-        });
-      }
+      const prisma = getPrismaClient();
 
       const { id } = req.params;
       const { adminId, adminName } = req.body;
 
       // 获取提现记录
-      const withdrawal = await db
-        .select()
-        .from(withdrawalRequests)
-        .where(eq(withdrawalRequests.id, parseInt(id)))
-        .limit(1);
+      const withdrawal = await prisma.withdrawalrequests.findFirst({
+        where: { id: parseInt(id) },
+      });
 
-      if (!withdrawal.length) {
+      if (!withdrawal) {
         return res.status(404).json({
           success: false,
           error: { message: "Withdrawal not found" },
         });
       }
 
-      if (withdrawal[0].status !== "PROCESSING") {
+      if (withdrawal.status !== "PROCESSING") {
         return res.status(400).json({
           success: false,
           error: { message: "Withdrawal is not in processing status" },
@@ -529,25 +466,27 @@ router.post(
       const now = new Date();
 
       // 更新提现记录
-      await db
-        .update(withdrawalRequests)
-        .set({
+      await prisma.withdrawalrequests.update({
+        where: { id: parseInt(id) },
+        data: {
           status: "COMPLETED",
           updatedAt: now,
-        })
-        .where(eq(withdrawalRequests.id, parseInt(id)));
+        },
+      });
 
       // 记录审计日志
-      await db.insert(auditLogs).values({
-        tableName: "withdrawal_requests",
-        recordId: parseInt(id),
-        action: "UPDATE",
-        diffBefore: { status: "PROCESSING" },
-        diffAfter: { status: "COMPLETED" },
-        operatorId: adminId || 1,
-        operatorType: "ADMIN",
-        operatorName: adminName || "Admin",
-        reason: "Withdrawal completed",
+      await prisma.auditLog.create({
+        data: {
+          tableName: "withdrawal_requests",
+          recordId: String(parseInt(id)),
+          action: "UPDATE",
+          diffBefore: { status: "PROCESSING" },
+          diffAfter: { status: "COMPLETED" },
+          operatorId: String(adminId || 1),
+          operatorType: "ADMIN",
+          operatorName: adminName || "Admin",
+          reason: "Withdrawal completed",
+        },
       });
 
       res.json({
@@ -573,37 +512,28 @@ router.post(
 
 router.get("/vouchers", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
-    if (!db) {
-      return res.status(503).json({
-        success: false,
-        error: { message: "Database not available" },
-      });
-    }
+    const prisma = getPrismaClient();
 
     const { page = "1", limit = "20" } = req.query;
 
     // 从审计日志中获取财务凭证
-    const vouchers = await db
-      .select()
-      .from(auditLogs)
-      .where(
-        and(
-          eq(auditLogs.tableName, "withdrawal_requests"),
-          eq(auditLogs.action, "UPDATE")
-        )
-      )
-      .orderBy(desc(auditLogs.createdAt))
-      .limit(parseInt(limit as string))
-      .offset((parseInt(page as string) - 1) * parseInt(limit as string));
+    const vouchers = await prisma.auditLog.findMany({
+      where: {
+        tableName: "withdrawal_requests",
+        action: "UPDATE",
+      },
+      orderBy: { createdAt: "desc" },
+      take: parseInt(limit as string),
+      skip: (parseInt(page as string) - 1) * parseInt(limit as string),
+    });
 
     // 提取凭证信息
     const voucherList = vouchers
-      .filter((v: (typeof vouchers)[0]) => {
+      .filter((v) => {
         const after = v.diffAfter as any;
         return after?.voucher;
       })
-      .map((v: (typeof vouchers)[0]) => {
+      .map((v) => {
         const after = v.diffAfter as any;
         return {
           ...after.voucher,
@@ -636,60 +566,53 @@ router.get("/vouchers", async (req: Request, res: Response) => {
 
 router.get("/stats", async (req: Request, res: Response) => {
   try {
-    const db = await getDb();
-    if (!db) {
-      return res.status(503).json({
-        success: false,
-        error: { message: "Database not available" },
-      });
-    }
+    const prisma = getPrismaClient();
 
     // 提现统计
-    const withdrawalStats = (await db
-      .select({
-        status: withdrawalRequests.status,
-        count: sql<number>`count(*)`,
-        total: sql<number>`COALESCE(sum(${withdrawalRequests.amount}), 0)`,
-      })
-      .from(withdrawalRequests)
-      .groupBy(withdrawalRequests.status)) as {
-      status: string | null;
-      count: number;
-      total: number;
-    }[];
+    const withdrawalStats = await prisma.withdrawalrequests.groupBy({
+      by: ["status"],
+      _count: { id: true },
+      _sum: { amount: true },
+    });
+
+    const formattedStats = withdrawalStats.map((s) => ({
+      status: s.status,
+      count: s._count.id,
+      total: Number(s._sum.amount || 0),
+    }));
 
     // 今日提现
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const todayWithdrawals = await db
-      .select({
-        count: sql<number>`count(*)`,
-        total: sql<number>`COALESCE(sum(${withdrawalRequests.amount}), 0)`,
-      })
-      .from(withdrawalRequests)
-      .where(gte(withdrawalRequests.createdAt, today));
+    const todayWithdrawals = await prisma.withdrawalrequests.aggregate({
+      _count: { id: true },
+      _sum: { amount: true },
+      where: {
+        createdAt: { gte: today },
+      },
+    });
 
     // 待审批金额
     const pendingAmount =
-      withdrawalStats.find(
+      formattedStats.find(
         (s: { status: string | null; count: number; total: number }) =>
           s.status === "PENDING"
       )?.total || 0;
     const pendingCount =
-      withdrawalStats.find(
+      formattedStats.find(
         (s: { status: string | null; count: number; total: number }) =>
           s.status === "PENDING"
       )?.count || 0;
 
     // 已完成金额
     const completedAmount =
-      withdrawalStats.find(
+      formattedStats.find(
         (s: { status: string | null; count: number; total: number }) =>
           s.status === "COMPLETED"
       )?.total || 0;
     const completedCount =
-      withdrawalStats.find(
+      formattedStats.find(
         (s: { status: string | null; count: number; total: number }) =>
           s.status === "COMPLETED"
       )?.count || 0;
@@ -706,10 +629,10 @@ router.get("/stats", async (req: Request, res: Response) => {
           amount: Number(completedAmount),
         },
         today: {
-          count: Number(todayWithdrawals[0]?.count || 0),
-          amount: Number(todayWithdrawals[0]?.total || 0),
+          count: Number(todayWithdrawals._count.id || 0),
+          amount: Number(todayWithdrawals._sum.amount || 0),
         },
-        byStatus: withdrawalStats.map(
+        byStatus: formattedStats.map(
           (s: { status: string | null; count: number; total: number }) => ({
             status: s.status,
             count: Number(s.count),

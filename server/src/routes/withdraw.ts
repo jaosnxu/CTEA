@@ -15,7 +15,6 @@
 
 import { Router, Request, Response } from "express";
 import { getTelegramBotService } from "../services/telegram-bot-service";
-import { getDb } from "../../db";
 
 const router = Router();
 
